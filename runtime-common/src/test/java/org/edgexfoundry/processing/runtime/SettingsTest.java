@@ -1,4 +1,4 @@
-package com.sec.processing.framework;
+package org.edgexfoundry.processing.runtime;
 
 import org.junit.Assert;
 import org.junit.Test;

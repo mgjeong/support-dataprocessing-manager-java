@@ -14,17 +14,18 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.controller;
+package org.edgexfoundry.processing.runtime.controller;
 
 import com.sec.processing.framework.data.model.*;
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.job.DataFormat;
-import com.sec.processing.framework.data.model.job.JobGroupFormat;
-import com.sec.processing.framework.data.model.job.JobInfoFormat;
-import com.sec.processing.framework.data.model.response.JobGroupResponseFormat;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.job.JobManager;
+import org.edgexfoundry.processing.runtime.data.model.Format;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.job.JobManager;
 import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.*;
 import org.junit.runner.RunWith;

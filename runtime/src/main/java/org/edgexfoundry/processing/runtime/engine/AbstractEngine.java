@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine;
+package org.edgexfoundry.processing.runtime.engine;
 
 import java.util.UUID;
 

@@ -14,20 +14,20 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.job;
+package org.edgexfoundry.processing.runtime.job;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.sec.processing.framework.data.model.job.DataFormat;
-import com.sec.processing.framework.data.model.job.JobGroupFormat;
-import com.sec.processing.framework.data.model.job.JobInfoFormat;
-import com.sec.processing.framework.data.model.job.JobState;
-import com.sec.processing.framework.data.model.response.JobGroupResponseFormat;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.db.JobTableManager;
-import com.sec.processing.framework.engine.Engine;
-import com.sec.processing.framework.engine.EngineFactory;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobState;
+import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.db.JobTableManager;
+import org.edgexfoundry.processing.runtime.engine.Engine;
+import org.edgexfoundry.processing.runtime.engine.EngineFactory;
 import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.sec.processing.framework.engine.EngineType.Flink;
+import static org.edgexfoundry.processing.runtime.engine.EngineType.Flink;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;

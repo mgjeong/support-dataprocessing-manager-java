@@ -15,14 +15,14 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.controller;
+package org.edgexfoundry.processing.runtime.controller;
 
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.job.JobGroupFormat;
-import com.sec.processing.framework.data.model.response.JobGroupResponseFormat;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.data.model.response.ResponseFormat;
-import com.sec.processing.framework.job.JobManager;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.processing.runtime.job.JobManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.Locale;
-import static com.sec.processing.framework.controller.InputDefaultValueConstants.*;
 
 @CrossOrigin(origins = "*")
 @RestController

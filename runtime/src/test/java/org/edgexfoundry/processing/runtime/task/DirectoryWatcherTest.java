@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.task;
 /*
-import com.sec.processing.framework.Settings;
-import com.sec.processing.framework.data.model.error.ErrorFormat;
+import Settings;
+import ErrorFormat;
 import org.junit.AfterClass;
 import org.junit.Assert;
 

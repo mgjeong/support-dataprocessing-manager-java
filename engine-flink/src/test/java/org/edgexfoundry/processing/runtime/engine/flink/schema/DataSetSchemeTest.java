@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine.flink.schema;
+package org.edgexfoundry.processing.runtime.engine.flink.schema;
 
 import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.apache.flink.api.common.typeinfo.TypeInformation;

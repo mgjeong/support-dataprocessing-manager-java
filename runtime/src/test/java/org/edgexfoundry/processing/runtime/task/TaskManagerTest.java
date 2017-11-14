@@ -16,9 +16,9 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.task;
 
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.db.TaskTableManager;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.db.TaskTableManager;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;

@@ -1,7 +1,7 @@
-package com.sec.processing.framework.engine.flink.zmq;
+package org.edgexfoundry.processing.runtime.engine.flink.zmq;
 
-import com.sec.processing.framework.engine.flink.zmq.common.ZMQConnectionConfig;
-import com.sec.processing.framework.engine.flink.zmq.common.ZMQUtil;
+import org.edgexfoundry.processing.runtime.engine.flink.zmq.common.ZMQConnectionConfig;
+import org.edgexfoundry.processing.runtime.engine.flink.zmq.common.ZMQUtil;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.util.serialization.SerializationSchema;

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.spring;
+package org.edgexfoundry.processing.runtime.spring;
 
-import com.sec.processing.framework.Application;
+import org.edgexfoundry.processing.runtime.Application;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

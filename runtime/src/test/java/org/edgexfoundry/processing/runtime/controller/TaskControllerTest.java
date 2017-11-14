@@ -14,14 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.controller;
+package org.edgexfoundry.processing.runtime.controller;
 
 import com.sec.processing.framework.data.model.*;
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.data.model.response.ResponseFormat;
-import com.sec.processing.framework.data.model.response.TaskResponseFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.data.model.Format;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.TaskResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.processing.runtime.task.TaskManager;
 import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.*;

@@ -1,4 +1,4 @@
-package com.sec.processing.framework.util;
+package org.edgexfoundry.processing.runtime.util;
 
 
 import org.edgexfoundry.processing.runtime.task.TaskModel;

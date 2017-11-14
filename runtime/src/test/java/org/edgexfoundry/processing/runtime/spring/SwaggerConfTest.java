@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.spring;
+package org.edgexfoundry.processing.runtime.spring;
 
-import com.sec.processing.framework.configuration.SwaggerConfiguration;
+import org.edgexfoundry.processing.runtime.configuration.SwaggerConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.db;
+package org.edgexfoundry.processing.runtime.db;
 
-import com.sec.processing.framework.Settings;
+import org.edgexfoundry.processing.runtime.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteErrorCode;

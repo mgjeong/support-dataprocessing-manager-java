@@ -1,6 +1,6 @@
 package org.edgexfoundry.processing.runtime.task;
 
-import com.sec.processing.framework.db.TaskTableManager;
+import org.edgexfoundry.processing.runtime.db.TaskTableManager;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

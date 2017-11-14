@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.connection;
+package org.edgexfoundry.processing.runtime.connection;
 
 public interface Connection {
 }

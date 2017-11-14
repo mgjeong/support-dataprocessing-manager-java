@@ -1,4 +1,4 @@
-package com.sec.processing.framework.db;
+package org.edgexfoundry.processing.runtime.db;
 
 
 import org.junit.*;

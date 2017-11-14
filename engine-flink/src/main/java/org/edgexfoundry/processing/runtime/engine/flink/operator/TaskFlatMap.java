@@ -15,9 +15,9 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine.flink.operator;
+package org.edgexfoundry.processing.runtime.engine.flink.operator;
 
-import com.sec.processing.framework.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.edgexfoundry.processing.runtime.task.TaskFactory;
 import org.edgexfoundry.processing.runtime.task.TaskModel;

@@ -15,9 +15,9 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine;
+package org.edgexfoundry.processing.runtime.engine;
 
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
 
 public interface Engine {
     JobResponseFormat createJob();

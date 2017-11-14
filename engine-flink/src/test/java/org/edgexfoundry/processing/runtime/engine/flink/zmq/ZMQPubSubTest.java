@@ -1,4 +1,4 @@
-package com.sec.processing.framework.engine.flink.zmq;
+package org.edgexfoundry.processing.runtime.engine.flink.zmq;
 
 import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.junit.Assert;

@@ -14,22 +14,23 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.job;
+package org.edgexfoundry.processing.runtime.job;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.error.ErrorType;
-import com.sec.processing.framework.data.model.job.DataFormat;
-import com.sec.processing.framework.data.model.job.JobGroupFormat;
-import com.sec.processing.framework.data.model.job.JobInfoFormat;
-import com.sec.processing.framework.data.model.job.JobState;
-import com.sec.processing.framework.data.model.response.JobGroupResponseFormat;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.db.JobTableManager;
-import com.sec.processing.framework.engine.Engine;
-import com.sec.processing.framework.engine.EngineFactory;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobState;
+import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.db.JobTableManager;
+import org.edgexfoundry.processing.runtime.engine.Engine;
+import org.edgexfoundry.processing.runtime.engine.EngineFactory;
+import org.edgexfoundry.processing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.sec.processing.framework.engine.EngineType.Flink;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
@@ -62,7 +62,7 @@ public final class JobManager {
             instance = new JobManager();
             try {
                 jobTable = JobTableManager.getInstance();
-                framework = EngineFactory.createEngine(Flink);
+                framework = EngineFactory.createEngine(EngineType.Flink);
                 myJobs = new HashMap<String, List<JobInfoFormat>>();
             } catch (Exception e) {
                 e.printStackTrace();

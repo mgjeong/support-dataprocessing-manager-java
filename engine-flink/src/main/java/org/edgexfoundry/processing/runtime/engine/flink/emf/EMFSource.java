@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine.flink.emf;
+package org.edgexfoundry.processing.runtime.engine.flink.emf;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

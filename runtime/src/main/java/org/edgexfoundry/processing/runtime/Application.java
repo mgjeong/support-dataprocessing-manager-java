@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework;
+package org.edgexfoundry.processing.runtime;
 
-import com.sec.processing.framework.job.JobManager;
+import org.edgexfoundry.processing.runtime.job.JobManager;
 import org.edgexfoundry.processing.runtime.task.TaskManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

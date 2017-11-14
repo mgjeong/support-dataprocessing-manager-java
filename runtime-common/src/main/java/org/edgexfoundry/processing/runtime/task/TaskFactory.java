@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.task;
 
-import com.sec.processing.framework.db.TaskTableManager;
-import com.sec.processing.framework.util.TaskModelLoader;
+import org.edgexfoundry.processing.runtime.db.TaskTableManager;
+import org.edgexfoundry.processing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

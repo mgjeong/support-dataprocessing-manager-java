@@ -1,6 +1,6 @@
-package com.sec.processing.framework.engine.flink.zmq;
+package org.edgexfoundry.processing.runtime.engine.flink.zmq;
 
-import com.sec.processing.framework.engine.flink.zmq.common.ZMQConnectionConfig;
+import org.edgexfoundry.processing.runtime.engine.flink.zmq.common.ZMQConnectionConfig;
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.junit.Test;
 

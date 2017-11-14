@@ -1,9 +1,9 @@
-package com.sec.processing.framework.data.model;
+package org.edgexfoundry.processing.runtime.data.model;
 
-import com.sec.processing.framework.data.model.job.DataFormat;
-import com.sec.processing.framework.data.model.job.JobGroupFormat;
-import com.sec.processing.framework.data.model.job.JobInfoFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;

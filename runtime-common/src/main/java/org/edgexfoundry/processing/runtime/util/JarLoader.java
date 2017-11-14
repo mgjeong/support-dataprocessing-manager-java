@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.util;
+package org.edgexfoundry.processing.runtime.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

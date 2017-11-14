@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.data.model.error;
+package org.edgexfoundry.processing.runtime.data.model.error;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

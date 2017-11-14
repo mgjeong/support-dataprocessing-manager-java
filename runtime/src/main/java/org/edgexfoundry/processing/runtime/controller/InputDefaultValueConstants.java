@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.controller;
+package org.edgexfoundry.processing.runtime.controller;
 
 public class InputDefaultValueConstants {
     private static final String LOGISTIC_BAD_WEIGHT

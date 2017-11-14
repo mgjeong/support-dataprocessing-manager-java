@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.engine;
+package org.edgexfoundry.processing.runtime.engine;
 
-import com.sec.processing.framework.engine.flink.FlinkEngine;
+import org.edgexfoundry.processing.runtime.engine.flink.FlinkEngine;
 
 public class EngineFactory {
 

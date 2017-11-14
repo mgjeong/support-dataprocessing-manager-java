@@ -16,12 +16,12 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.task;
 
-import com.sec.processing.framework.Settings;
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.error.ErrorType;
-import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.db.TaskTableManager;
-import com.sec.processing.framework.util.TaskModelLoader;
+import org.edgexfoundry.processing.runtime.Settings;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.db.TaskTableManager;
+import org.edgexfoundry.processing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

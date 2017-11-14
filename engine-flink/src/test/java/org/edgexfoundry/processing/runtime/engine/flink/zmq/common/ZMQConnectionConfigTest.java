@@ -1,6 +1,5 @@
-package com.sec.processing.framework.engine.flink.zmq.common;
+package org.edgexfoundry.processing.runtime.engine.flink.zmq.common;
 
-import com.sec.processing.framework.engine.flink.zmq.common.ZMQConnectionConfig;
 import org.junit.Assert;
 import org.junit.Test;
 

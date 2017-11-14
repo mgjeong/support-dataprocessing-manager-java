@@ -1,4 +1,4 @@
-package com.sec.processing.framework.db;
+package org.edgexfoundry.processing.runtime.db;
 
 /*
 import org.junit.AfterClass;
@@ -11,8 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.sec.processing.framework.db.DBConnector.ColumnDesc;
-import static com.sec.processing.framework.db.DBConnector.TableDesc;
+import static DBConnector.ColumnDesc;
+import static DBConnector.TableDesc;
 */
 
 public class DBConnectorTest {

@@ -15,16 +15,16 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine.flink;
+package org.edgexfoundry.processing.runtime.engine.flink;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.sec.processing.framework.connection.HTTP;
-import com.sec.processing.framework.data.model.error.ErrorFormat;
-import com.sec.processing.framework.data.model.error.ErrorType;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.db.JobTableManager;
-import com.sec.processing.framework.engine.AbstractEngine;
+import org.edgexfoundry.processing.runtime.connection.HTTP;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.db.JobTableManager;
+import org.edgexfoundry.processing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

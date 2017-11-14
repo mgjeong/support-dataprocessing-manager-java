@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.db;
+package org.edgexfoundry.processing.runtime.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +24,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import static com.sec.processing.framework.db.DBConnector.ColumnDesc;
-import static com.sec.processing.framework.db.DBConnector.TableDesc;
-import static com.sec.processing.framework.db.DBConnector.Util.validateParams;
+import static org.edgexfoundry.processing.runtime.db.DBConnector.ColumnDesc;
+import static org.edgexfoundry.processing.runtime.db.DBConnector.TableDesc;
+import static org.edgexfoundry.processing.runtime.db.DBConnector.Util.validateParams;
 
 //    [Reference Query]
 //    INSERT INTO TABLE_NAME [(column1, column2, column3,...columnN)] VALUES (value1, value2, value3,...valueN);

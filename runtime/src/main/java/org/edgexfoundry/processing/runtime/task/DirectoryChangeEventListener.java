@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.task;
 
-import com.sec.processing.framework.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
 
 public interface DirectoryChangeEventListener {
 

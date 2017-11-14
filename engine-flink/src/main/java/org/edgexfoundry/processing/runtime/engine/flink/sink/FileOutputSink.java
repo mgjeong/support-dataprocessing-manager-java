@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine.flink.sink;
+package org.edgexfoundry.processing.runtime.engine.flink.sink;
 
 import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;

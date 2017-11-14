@@ -1,4 +1,4 @@
-package com.sec.processing.framework.connection;
+package org.edgexfoundry.processing.runtime.connection;
 
 /*
 import com.google.api.client.testing.http;

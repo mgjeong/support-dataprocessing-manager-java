@@ -1,6 +1,6 @@
-package com.sec.processing.framework.data.model.task;
+package org.edgexfoundry.processing.runtime.data.model.task;
 
-import com.sec.processing.framework.data.model.Format;
+import org.edgexfoundry.processing.runtime.data.model.Format;
 import org.edgexfoundry.processing.runtime.task.TaskModelParam;
 import org.edgexfoundry.processing.runtime.task.TaskType;
 import io.swagger.annotations.ApiModel;

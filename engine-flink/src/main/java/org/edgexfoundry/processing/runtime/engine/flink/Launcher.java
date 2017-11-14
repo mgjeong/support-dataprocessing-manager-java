@@ -15,23 +15,23 @@
  *
  *******************************************************************************/
 
-package com.sec.processing.framework.engine.flink;
+package org.edgexfoundry.processing.runtime.engine.flink;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sec.processing.framework.data.model.job.DataFormat;
-import com.sec.processing.framework.data.model.job.JobInfoFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.db.JobTableManager;
-import com.sec.processing.framework.engine.flink.emf.EMFSink;
-import com.sec.processing.framework.engine.flink.emf.EMFSource;
-import com.sec.processing.framework.engine.flink.operator.TaskFlatMap;
-import com.sec.processing.framework.engine.flink.schema.DataSetSchema;
-import com.sec.processing.framework.engine.flink.sink.FileOutputSink;
-import com.sec.processing.framework.engine.flink.sink.WebSocketServerSink;
-import com.sec.processing.framework.engine.flink.zmq.ZMQSink;
-import com.sec.processing.framework.engine.flink.zmq.ZMQSource;
-import com.sec.processing.framework.engine.flink.zmq.common.ZMQConnectionConfig;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.db.JobTableManager;
+import org.edgexfoundry.processing.runtime.engine.flink.emf.EMFSink;
+import org.edgexfoundry.processing.runtime.engine.flink.emf.EMFSource;
+import org.edgexfoundry.processing.runtime.engine.flink.operator.TaskFlatMap;
+import org.edgexfoundry.processing.runtime.engine.flink.schema.DataSetSchema;
+import org.edgexfoundry.processing.runtime.engine.flink.sink.FileOutputSink;
+import org.edgexfoundry.processing.runtime.engine.flink.sink.WebSocketServerSink;
+import org.edgexfoundry.processing.runtime.engine.flink.zmq.ZMQSink;
+import org.edgexfoundry.processing.runtime.engine.flink.zmq.ZMQSource;
+import org.edgexfoundry.processing.runtime.engine.flink.zmq.common.ZMQConnectionConfig;
 import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;

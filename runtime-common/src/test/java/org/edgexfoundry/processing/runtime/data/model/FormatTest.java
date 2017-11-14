@@ -1,15 +1,15 @@
-package com.sec.processing.framework.data.model;
+package org.edgexfoundry.processing.runtime.data.model;
 
-import com.sec.processing.framework.data.model.error.ErrorType;
-import com.sec.processing.framework.data.model.job.DataFormat;
-import com.sec.processing.framework.data.model.job.JobGroupFormat;
-import com.sec.processing.framework.data.model.job.JobInfoFormat;
-import com.sec.processing.framework.data.model.job.JobState;
-import com.sec.processing.framework.data.model.response.JobGroupResponseFormat;
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.data.model.response.ResponseFormat;
-import com.sec.processing.framework.data.model.response.TaskResponseFormat;
-import com.sec.processing.framework.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobState;
+import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.TaskResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.Test;

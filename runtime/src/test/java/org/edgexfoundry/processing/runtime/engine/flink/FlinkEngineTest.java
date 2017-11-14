@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package com.sec.processing.framework.engine.flink;
+package org.edgexfoundry.processing.runtime.engine.flink;
 
 
-import com.sec.processing.framework.data.model.response.JobResponseFormat;
-import com.sec.processing.framework.engine.Engine;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.engine.Engine;
 import org.junit.Assert;
 import org.junit.Test;
 
