@@ -4,6 +4,9 @@ source $(dirname "$0")/path.prefs
 ##### Simple validation #####
 if [ ! -d "$flink_bin" ]; then
 	echo "$flink_bin does not exist."
+	echo "  Download Flink & extract into "se/" folder"
+	echo "  Or locate Flink into user-defined folder"
+	echo "  and update its path in the tools/path.prefs file"
 	exit 1
 fi
 
