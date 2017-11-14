@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.task.model;
+package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 
 public class LinearRegressionModel extends RegressionModel {
 

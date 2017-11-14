@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.task;
+package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 public enum TaskType {
     CUSTOM(0),  CLASSIFICATION(1), CLUSTERING(2), PATTERN(3), TREND(4), PREPROCESSING(5), REGRESSION(6), FILTER(7), ERROR(8),

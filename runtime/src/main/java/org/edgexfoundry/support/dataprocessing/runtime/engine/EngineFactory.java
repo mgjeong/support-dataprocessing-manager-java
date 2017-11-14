@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.engine;
+package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import org.edgexfoundry.processing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 
 public class EngineFactory {
 

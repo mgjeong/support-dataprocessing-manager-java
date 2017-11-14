@@ -14,18 +14,18 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.controller;
+package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
-import org.edgexfoundry.processing.runtime.data.model.Format;
-import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
-import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
-import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.processing.runtime.job.JobManager;
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

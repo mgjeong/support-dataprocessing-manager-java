@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.connection;
+package org.edgexfoundry.support.dataprocessing.runtime.connection;
 
 public interface Connection {
 }

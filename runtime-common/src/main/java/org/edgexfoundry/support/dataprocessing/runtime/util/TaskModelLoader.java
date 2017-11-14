@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.util;
+package org.edgexfoundry.support.dataprocessing.runtime.util;
 
-import org.edgexfoundry.processing.runtime.task.TaskModel;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
 
 import java.lang.reflect.Modifier;
 

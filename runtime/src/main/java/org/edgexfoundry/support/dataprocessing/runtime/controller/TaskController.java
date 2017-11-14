@@ -15,15 +15,15 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.controller;
+package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
-import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.processing.runtime.data.model.response.ResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.response.TaskResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.processing.runtime.task.TaskManager;
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.TaskResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;

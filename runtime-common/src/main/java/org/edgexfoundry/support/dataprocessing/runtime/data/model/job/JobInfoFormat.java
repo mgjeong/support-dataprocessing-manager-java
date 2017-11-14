@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.data.model.job;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
-import org.edgexfoundry.processing.runtime.data.model.Format;
-import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

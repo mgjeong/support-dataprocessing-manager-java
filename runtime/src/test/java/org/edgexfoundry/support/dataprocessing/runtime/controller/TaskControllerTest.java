@@ -14,16 +14,16 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.controller;
+package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
-import org.edgexfoundry.processing.runtime.data.model.Format;
-import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.response.ResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.response.TaskResponseFormat;
-import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.processing.runtime.task.TaskManager;
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.TaskResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

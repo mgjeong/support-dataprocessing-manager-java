@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.controller;
+package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

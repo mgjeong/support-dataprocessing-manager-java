@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime;
+package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.processing.runtime.job.JobManager;
-import org.edgexfoundry.processing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;

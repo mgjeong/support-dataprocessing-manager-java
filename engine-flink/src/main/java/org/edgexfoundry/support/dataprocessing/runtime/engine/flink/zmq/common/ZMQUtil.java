@@ -1,4 +1,4 @@
-package org.edgexfoundry.processing.runtime.engine.flink.zmq.common;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common;
 
 import java.io.UnsupportedEncodingException;
 

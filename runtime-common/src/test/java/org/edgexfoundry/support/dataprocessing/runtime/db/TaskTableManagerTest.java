@@ -1,4 +1,4 @@
-package org.edgexfoundry.processing.runtime.db;
+package org.edgexfoundry.support.dataprocessing.runtime.db;
 
 
 import org.junit.*;

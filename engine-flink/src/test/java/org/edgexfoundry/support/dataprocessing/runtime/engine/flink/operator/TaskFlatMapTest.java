@@ -15,14 +15,14 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.engine.flink.operator;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator;
 
-import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.processing.runtime.task.DataSet;
-import org.edgexfoundry.processing.runtime.task.TaskFactory;
-import org.edgexfoundry.processing.runtime.task.TaskModel;
-import org.edgexfoundry.processing.runtime.task.TaskModelParam;
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskFactory;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.util.Collector;
 import org.junit.Assert;

@@ -1,7 +1,7 @@
 //
 // svm_model
 //
-package org.edgexfoundry.processing.runtime.task.model.libsvm;
+package org.edgexfoundry.support.dataprocessing.runtime.task.model.libsvm;
 public class svm_model implements java.io.Serializable
 {
 	public svm_parameter param;	// parameter
