@@ -17,7 +17,7 @@
 
 package com.sec.processing.framework.engine.flink.emf;
 /*
-import com.sec.processing.framework.task.DataSet;
+import DataSet;
 import org.edgexfoundry.emf.EMFErrorCode;
 import org.junit.Before;
 import org.junit.Test;

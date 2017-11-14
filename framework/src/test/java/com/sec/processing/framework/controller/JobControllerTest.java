@@ -25,7 +25,7 @@ import com.sec.processing.framework.data.model.response.JobGroupResponseFormat;
 import com.sec.processing.framework.data.model.response.JobResponseFormat;
 import com.sec.processing.framework.data.model.task.TaskFormat;
 import com.sec.processing.framework.job.JobManager;
-import com.sec.processing.framework.task.TaskType;
+import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

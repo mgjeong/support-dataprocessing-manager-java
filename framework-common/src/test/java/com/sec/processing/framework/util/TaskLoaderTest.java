@@ -1,7 +1,7 @@
 package com.sec.processing.framework.util;
 
 
-import com.sec.processing.framework.task.TaskModel;
+import org.edgexfoundry.processing.runtime.task.TaskModel;
 import org.junit.Assert;
 import org.junit.Test;
 

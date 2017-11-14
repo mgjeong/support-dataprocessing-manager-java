@@ -17,7 +17,7 @@
 
 package com.sec.processing.framework.engine.flink.schema;
 
-import com.sec.processing.framework.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.util.serialization.DeserializationSchema;

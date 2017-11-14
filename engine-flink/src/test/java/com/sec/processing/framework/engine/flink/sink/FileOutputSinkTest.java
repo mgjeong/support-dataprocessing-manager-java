@@ -17,7 +17,7 @@
 
 package com.sec.processing.framework.engine.flink.sink;
 
-import com.sec.processing.framework.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.junit.Test;
 
 import java.io.File;

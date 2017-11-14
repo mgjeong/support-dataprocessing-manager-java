@@ -18,11 +18,11 @@
 package com.sec.processing.framework.engine.flink.operator;
 
 import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.task.DataSet;
-import com.sec.processing.framework.task.TaskFactory;
-import com.sec.processing.framework.task.TaskModel;
-import com.sec.processing.framework.task.TaskModelParam;
-import com.sec.processing.framework.task.TaskType;
+import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.TaskFactory;
+import org.edgexfoundry.processing.runtime.task.TaskModel;
+import org.edgexfoundry.processing.runtime.task.TaskModelParam;
+import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.util.Collector;
 import org.junit.Assert;

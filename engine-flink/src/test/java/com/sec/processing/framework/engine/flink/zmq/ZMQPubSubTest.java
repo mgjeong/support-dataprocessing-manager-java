@@ -1,6 +1,6 @@
 package com.sec.processing.framework.engine.flink.zmq;
 
-import com.sec.processing.framework.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.zeromq.ZMQ;

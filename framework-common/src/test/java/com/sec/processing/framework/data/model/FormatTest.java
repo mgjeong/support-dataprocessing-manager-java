@@ -10,7 +10,7 @@ import com.sec.processing.framework.data.model.response.JobResponseFormat;
 import com.sec.processing.framework.data.model.response.ResponseFormat;
 import com.sec.processing.framework.data.model.response.TaskResponseFormat;
 import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.task.TaskType;
+import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.Test;
 

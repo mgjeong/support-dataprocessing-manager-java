@@ -28,7 +28,7 @@ import com.sec.processing.framework.data.model.task.TaskFormat;
 import com.sec.processing.framework.db.JobTableManager;
 import com.sec.processing.framework.engine.Engine;
 import com.sec.processing.framework.engine.EngineFactory;
-import com.sec.processing.framework.task.TaskType;
+import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;

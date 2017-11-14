@@ -4,7 +4,7 @@ import com.sec.processing.framework.data.model.job.DataFormat;
 import com.sec.processing.framework.data.model.job.JobGroupFormat;
 import com.sec.processing.framework.data.model.job.JobInfoFormat;
 import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.task.TaskType;
+import org.edgexfoundry.processing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;

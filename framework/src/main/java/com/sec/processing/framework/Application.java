@@ -17,7 +17,7 @@
 package com.sec.processing.framework;
 
 import com.sec.processing.framework.job.JobManager;
-import com.sec.processing.framework.task.TaskManager;
+import org.edgexfoundry.processing.runtime.task.TaskManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;

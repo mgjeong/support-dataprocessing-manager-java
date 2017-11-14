@@ -19,7 +19,7 @@ package com.sec.processing.framework.engine.flink.emf;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sec.processing.framework.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.edgexfoundry.domain.core.Event;

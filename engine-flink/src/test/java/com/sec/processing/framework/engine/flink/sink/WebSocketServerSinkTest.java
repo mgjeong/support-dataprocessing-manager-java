@@ -17,7 +17,7 @@
 
 package com.sec.processing.framework.engine.flink.sink;
 
-import com.sec.processing.framework.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

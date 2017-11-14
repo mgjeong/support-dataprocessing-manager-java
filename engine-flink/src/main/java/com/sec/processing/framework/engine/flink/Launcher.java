@@ -32,7 +32,7 @@ import com.sec.processing.framework.engine.flink.sink.WebSocketServerSink;
 import com.sec.processing.framework.engine.flink.zmq.ZMQSink;
 import com.sec.processing.framework.engine.flink.zmq.ZMQSource;
 import com.sec.processing.framework.engine.flink.zmq.common.ZMQConnectionConfig;
-import com.sec.processing.framework.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;

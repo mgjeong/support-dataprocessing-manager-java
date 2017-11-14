@@ -18,9 +18,9 @@
 package com.sec.processing.framework.engine.flink.operator;
 
 import com.sec.processing.framework.data.model.task.TaskFormat;
-import com.sec.processing.framework.task.DataSet;
-import com.sec.processing.framework.task.TaskFactory;
-import com.sec.processing.framework.task.TaskModel;
+import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.TaskFactory;
+import org.edgexfoundry.processing.runtime.task.TaskModel;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;

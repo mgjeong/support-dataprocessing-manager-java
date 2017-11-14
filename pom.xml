@@ -12,7 +12,7 @@
         <module>framework</module>
         <module>engine-flink</module>
         <module>framework-common</module>
-        <module>framework-task</module>
+        <module>runtime-task</module>
     </modules>
 
     <properties>
