@@ -15,9 +15,9 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.engine.flink.schema;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema;
 
-import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.util.serialization.DeserializationSchema;
