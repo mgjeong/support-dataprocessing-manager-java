@@ -17,7 +17,7 @@
 
 package org.edgexfoundry.processing.runtime.controller;
 
-import org.edgexfoundry.processing.runtime.data.model.response.TaskResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.QueryResponseFormat;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -41,7 +41,9 @@ public class QueryController {
     @ApiOperation(value = "Find Supporting Task", notes = "Find Supporting Task")
     @RequestMapping(value = "", method = RequestMethod.GET)
     @ResponseBody
-    public TaskResponseFormat getQueries(Locale locale, Model model) {
+    public QueryResponseFormat getQueries(Locale locale, Model model) {
+        QueryResponseFormat response = null;
 
+        return response;
     }
 }
