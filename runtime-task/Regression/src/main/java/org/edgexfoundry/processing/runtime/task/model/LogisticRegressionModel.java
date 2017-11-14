@@ -20,6 +20,6 @@ import org.edgexfoundry.processing.runtime.task.TaskType;
 
 public class LogisticRegressionModel extends RegressionModel {
     public LogisticRegressionModel() {
-        super(TaskType.REGRESSION, "regression", LOGISTIC);
+        super(TaskType.REGRESSION, "regression-logistic", LOGISTIC);
     }
 }

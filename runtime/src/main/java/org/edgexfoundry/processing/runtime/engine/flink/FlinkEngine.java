@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FlinkEngine extends AbstractEngine {
-    private static final String DEFAULT_LAUNCHER_JAR_LOCATION = "./framework/resource/engine-flink.jar";
+    private static final String DEFAULT_LAUNCHER_JAR_LOCATION = "./runtime/resource/engine-flink.jar";
     private static final Logger LOGGER = LoggerFactory.getLogger(FlinkEngine.class);
     private HTTP httpClient = null;
     private String launcherJarId = null;

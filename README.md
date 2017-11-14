@@ -1,23 +1,31 @@
-Data Processing Framework
+Data Processing Runtime
 ================================
 
-Data Processing Framework, as name suggests, is a data processing framework for IoT.
+Data Processing Runtime, as name suggests, is a data processing Runtime for IoT.
  
-This framework is currently under active development.
+This Runtime is currently under active development.
 
-## Building Framework from Source ##
-_TODO_
-
-## Developing Framework ##
+## Developing Runtime ##
 ### Prerequisites ###
-- Git
 - Java 8
+```shell
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+```
 - Maven
+```shell
+cd /opt/
+wget http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+sudo tar -xvzf apache-maven-3.3.9-bin.tar.gz
+sudo mv apache-maven-3.3.9 maven
+```
 - IDE
   - IntelliJ Community Edition (recommended)
 - Web Server
   - We recommend you use IntelliJ Community Edition with Jetty Runner plugin installed.
 - [Apache Flink 1.3](https://flink.apache.org)
+  - Chcke the "Build"
 
 
 Remember, you must configure proxies for git and maven accordingly if necessary.
@@ -47,69 +55,60 @@ For more information, please visit [Apache Flink website.](https://flink.apache.
 ### Build source ###
 
 ```shell
-git clone https://github.sec.samsung.net/RS7-EdgeComputing/DataProcessingFW.git
-cd ./DataProcessingFW/development
 mvn clean package -DskipTests 
 ```
 
 ### Setting up IntelliJ Community Edition ###
 
 - Importing project as Maven project
-  - Select `Import Project` and select project directory (i.e. `development`)
+  - Select `Import Project` and select project directory 
   - From `Import project from external model`, select `Maven`
   - Check `Import Maven projects automatically`
   - If IntelliJ fails to download and import maven dependencies, please do it manually from console.
     (To use terminal within IntelliJ, go to View -> Tool Windows -> Terminal)
 
-- Setting up CheckStyle
-  - Run the following from the git repository directory:
-  ```shell
-  ./tools/githooks/setup.sh
-  ``` 
-  - You can also install CheckStyle plugin for IntelliJ.
-    - From IntelliJ, go to File -> Settings -> Plugins -> Browse repositories -> CheckStyle-IDEA and install.
-    - Restart IntelliJ then go to File -> Settings -> Other Settings -> CheckStyle -> '+' on Configuration File tab -> Select `./tools/githooks/checkstyle/sun_checks_customized.xml` from the repository.
+### Running Runtime ###
 
-### Running Framework ###
-
-- Create a shared resource directory for framework and Apache Flink
+- Create a shared resource directory for runtime and Apache Flink
   - Create `/framework/ha` directory in system
   - If necessary, change directory ownership to user
   `chown -R user:user /framework`
-  
-- Start Web Server using Jar 
-  - From IntelliJ, Go to `Run->Edit Configuration`
-  - Select `+` and enter JAR Application as follow:
-    - Path: _projectDir_/framework/target/framework-0.1.0-SNAPSHOT.jar
-    - Runs on Port: 8082
-  
-- Start Apache Flink
-  - If Apache Flink is not running, please build and run Apache Flink
 
+- Update the path information of the Flink in the "tools/path.prefs"
+  -flink_bin="{FLINK_PATH}"
+     
+- Execute Runtime with Flink
+  - Shell script below will build the codebase and execute the runtime & Flink automatically
+  - Terminate the Flink if it's already executed
+```shell
+cd tool
+./start_local.sh
+```
 
-Now you should be able to make RESTful requests to http://localhost:8082/analytics
+### Check Runtime ###
 
-Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui.html
+- Now you should be able to make RESTful requests to http://localhost:8082/analytics
+- Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui.html
 
 
 ## Modules ##
 
-Data Processing Framework is composed of four submodules.
+Data Processing Runtime is composed of four submodules.
 1. Runtime
-  - RESTful APIs
-  - Abstraction layer for open-source data processing engines
+   - RESTful APIs
+   - Abstraction layer for open-source data processing engines
 2. Engine-Flink
-  - Flink-specific implementations
+   - Flink-app. which will execute run-time task(s) 
 3. Runtime-common
-  - runtime-task jar & Custom task jar loader
-  - Processing job/task managing modules
+   - runtime-task or Custom task (jar) loader
+   - Processing job/task managing modules
 4. Runtime-task
-  - Machine learning task
-  - Data models
+   - Data pre-processing task
+   - Data analytic task
 
-The framework is divided into submodules to minimize dependency relations.
+The Data Processing Runtime is divided into submodules to minimize dependency relations.
  -Dependencies
-  -- `Framework`,`Engine-Flink` ---- dependent on ---> `Framework-common` module.
-  -- `Framework-common`         ---- dependent on ---> `runtime-task/task-model` module.
+  - `Runtime`,`Engine-Flink` ---- dependent on ---> `Runtime-common` module.
+  - `Runtime-common`         ---- dependent on ---> `Runtime-task/task-model` module.
 
 

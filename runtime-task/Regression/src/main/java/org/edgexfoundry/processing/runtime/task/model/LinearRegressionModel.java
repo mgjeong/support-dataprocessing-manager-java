@@ -21,7 +21,7 @@ import org.edgexfoundry.processing.runtime.task.TaskType;
 public class LinearRegressionModel extends RegressionModel {
 
     public LinearRegressionModel() {
-        super(TaskType.REGRESSION, "regression", LINEAR);
+        super(TaskType.REGRESSION, "regression-linear", LINEAR);
     }
 
 
