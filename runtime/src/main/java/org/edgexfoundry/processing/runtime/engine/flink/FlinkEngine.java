@@ -75,7 +75,7 @@ public class FlinkEngine extends AbstractEngine {
 
             Map<String, String> args = new HashMap<>();
             args.put("program-args", String.format("--jobId %s", jobId));
-            args.put("entry-class", "com.sec.processing.framework.engine.flink.Launcher");
+            args.put("entry-class", "org.edgexfoundry.processing.runtime.engine.flink.Launcher");
             args.put("parallelism", "1");
 
             LOGGER.info("Running job {}({})", new Object[]{jobId, this.launcherJarId});

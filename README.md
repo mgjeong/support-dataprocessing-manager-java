@@ -95,21 +95,21 @@ Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui
 ## Modules ##
 
 Data Processing Framework is composed of four submodules.
-1. Framework
+1. Runtime
   - RESTful APIs
   - Abstraction layer for open-source data processing engines
 2. Engine-Flink
   - Flink-specific implementations
-3. Framework-common
-  - Framework-task jar & Custom task jar loader
+3. Runtime-common
+  - runtime-task jar & Custom task jar loader
   - Processing job/task managing modules
-4. Framework-task
+4. Runtime-task
   - Machine learning task
   - Data models
 
 The framework is divided into submodules to minimize dependency relations.
  -Dependencies
   -- `Framework`,`Engine-Flink` ---- dependent on ---> `Framework-common` module.
-  -- `Framework-common`         ---- dependent on ---> `Framework-task/task-model` module.
+  -- `Framework-common`         ---- dependent on ---> `runtime-task/task-model` module.
 
 
