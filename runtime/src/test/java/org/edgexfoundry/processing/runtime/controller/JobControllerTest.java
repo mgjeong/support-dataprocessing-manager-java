@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.controller;
 
-import com.sec.processing.framework.data.model.*;
 import org.edgexfoundry.processing.runtime.data.model.Format;
 import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;

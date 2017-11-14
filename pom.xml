@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
     <modules>
-        <module>framework</module>
+        <module>runtime</module>
         <module>engine-flink</module>
-        <module>framework-common</module>
+        <module>runtime-common</module>
         <module>runtime-task</module>
     </modules>
 
