@@ -1,6 +1,6 @@
 #!/bin/bash
 cur_path=$(cd "$(dirname "$0")" && pwd)
-fw_repo="${cur_path}/development"
+fw_repo="${cur_path}"
 
 cd $fw_repo
 mvn test

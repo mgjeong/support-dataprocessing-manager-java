@@ -107,7 +107,7 @@ public class TaskManagerTest {
         List<Map<String, String>> payload = new ArrayList<>();
         Map<String, String> data = new HashMap<String, String>();
         data.put(TaskTableManager.Entry.removable.name(), "1");
-        data.put(TaskTableManager.Entry.path.name(), "/framework/ha/jar/task_user/test-model.jar");
+        data.put(TaskTableManager.Entry.path.name(), "/runtime/ha/jar/task_user/test-model.jar");
         payload.add(data);
         return payload;
     }

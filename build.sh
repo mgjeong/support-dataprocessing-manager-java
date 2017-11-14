@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# This shell script is to make Docker image of this framework.
+# This shell script is to make Docker image of this data processing runtime.
 cur_path=$(cd "$(dirname "$0")" && pwd)
 fw_repo=${cur_path}
 output_path=${cur_path}/docker_files/resources
 
 # Maven build
 cd $fw_repo
-echo "Cleaning framework maven project..."
+echo "Cleaning maven projects..."
 mvn clean
-echo "Starting to build framework..."
+echo "Starting to build projects..."
 mvn install -DskipTests
 
 # Extract jars to the current directory
@@ -41,9 +41,9 @@ function is_extracted() {
 	return
 }
 
-target_fw="${fw_repo}/runtime/target/framework-${version}.jar"
+target_fw="${fw_repo}/runtime/target/runtime-${version}.jar"
 target_engine="${fw_repo}/engine-flink/target/engine-flink-${version}-jar-with-dependencies.jar"
-target_common="${fw_repo}/runtime-common/target/framework-common-${version}.jar"
+target_common="${fw_repo}/runtime-common/target/runtime-common-${version}.jar"
 target_task_parent_dir="${fw_repo}/runtime-task/"
 
 if [ ! -f "$target_fw" ] || [ ! -f "$target_engine" ] || [ ! -f "$target_common" ]; then
@@ -53,9 +53,9 @@ if [ ! -f "$target_fw" ] || [ ! -f "$target_engine" ] || [ ! -f "$target_common"
 fi 
 
 mkdir -p "${output_path}/task"
-copy_here $target_fw "framework.jar"
+copy_here $target_fw "runtime.jar"
 copy_here $target_engine "engine-flink.jar"
-copy_here $target_common "framework-common.jar"
+copy_here $target_common "runtime-common.jar"
 
 echo "Extracting task jars: "
 for i in `find $target_task_parent_dir -name \*${version}\*.jar | grep "target/"`

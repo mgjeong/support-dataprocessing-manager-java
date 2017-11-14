@@ -51,13 +51,13 @@ public class TaskFactoryTest {
         Map<String, String> regression1 = new HashMap<String, String>();
         regression1.put(TaskTableManager.Entry.type.name(), TaskType.CLASSIFICATION.toString());
         regression1.put(TaskTableManager.Entry.name.name(), "svm");
-        regression1.put(TaskTableManager.Entry.path.name(), "/framework/ha/jar/task_user/test-model.jar");
+        regression1.put(TaskTableManager.Entry.path.name(), "/runtime/ha/jar/task_user/test-model.jar");
         regression1.put(TaskTableManager.Entry.classname.name(), "org.edgexfoundry.processing.runtime.task.model.SVMModel");
 
         Map<String, String> classification = new HashMap<String, String>();
         classification.put(TaskTableManager.Entry.type.name(), TaskType.CLASSIFICATION.toString());
         classification.put(TaskTableManager.Entry.name.name(), "test");
-        classification.put(TaskTableManager.Entry.path.name(), "/framework/ha/jar/task_user/test-model.jar");
+        classification.put(TaskTableManager.Entry.path.name(), "/runtime/ha/jar/task_user/test-model.jar");
         classification.put(TaskTableManager.Entry.classname.name(), "org.edgexfoundry.processing.runtime.task.model.Test");
 
         payload.add(regression1);

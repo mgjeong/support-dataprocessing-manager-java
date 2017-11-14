@@ -17,7 +17,7 @@
 package org.edgexfoundry.processing.runtime;
 
 public final class Settings {
-    public static final String DOCKER_PATH = "/framework/ha/";
+    public static final String DOCKER_PATH = "/runtime/ha/";
     public static final String FW_JAR_PATH = DOCKER_PATH + "jar/task/";
     public static final String CUSTOM_JAR_PATH = DOCKER_PATH + "jar/task_user/";
     public static final String DB_PATH = "DPFW.db";

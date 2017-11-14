@@ -17,8 +17,8 @@ if [ ! -d "$flink_bin/../log" ]; then
 fi
 if [ ! -d "$framework_dir" ] || [ ! -d "$framework_dir/jar" ] || [ ! -d "$framework_dir/jar/task" ]; then
 	echo "$framework_dir, $framework_dir/jar or $framework_dir/jar/task does not exist. create directory"
-    sudo mkdir -p /framework/ha/jar/task
-    sudo mkdir -p /framework/ha/jar/task_user
+    sudo mkdir -p /runtime/ha/jar/task
+    sudo mkdir -p /runtime/ha/jar/task_user
     sudo chown $USER:$USER -R /framework
 fi
 

@@ -16,6 +16,9 @@
 ###############################################################################
 FROM openjdk:8-jdk-alpine
 
+ENV http_proxy 'http://10.112.1.184:8080'
+ENV https_proxy 'https://10.112.1.184:8080'
+
 # Install requirements
 RUN apk add --no-cache snappy
 RUN apk --update add bash gcc make perl libc-dev
@@ -35,18 +38,18 @@ COPY "./docker_files/flink-conf.yaml" ${FLINK_HOME}/conf/flink-conf.yaml
 COPY run.sh /
 
 # Framework environment variables
-ENV FW_PATH /framework
+ENV FW_PATH /runtime
 ENV ENGINE_PATH ${FW_PATH}/resource
-ENV FW_JAR /framework.jar
+ENV FW_JAR /runtime.jar
 ENV FW_HA ${FW_PATH}/ha
 
-# Deploy framework
+# Deploy runtime
 RUN mkdir -p $ENGINE_PATH/task
 RUN mkdir -p $FW_HA/jar/task
 
-COPY ./docker_files/resources/framework.jar /
+COPY ./docker_files/resources/runtime.jar /
 COPY ./docker_files/resources/engine-flink.jar $ENGINE_PATH
-COPY ./docker_files/resources/framework-common.jar $ENGINE_PATH
+COPY ./docker_files/resources/runtime-common.jar $ENGINE_PATH
 COPY ./docker_files/resources/task $ENGINE_PATH/task
 EXPOSE 6123 8081-8090
 
