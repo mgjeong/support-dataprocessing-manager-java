@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.task;
+package org.edgexfoundry.processing.runtime.task;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.LinearRegressionModel;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.LogisticRegressionModel;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.RegressionModel;
+import org.edgexfoundry.processing.runtime.task.model.LinearRegressionModel;
+import org.edgexfoundry.processing.runtime.task.model.LogisticRegressionModel;
+import org.edgexfoundry.processing.runtime.task.model.RegressionModel;
 import org.junit.Assert;
 import org.junit.Test;
 

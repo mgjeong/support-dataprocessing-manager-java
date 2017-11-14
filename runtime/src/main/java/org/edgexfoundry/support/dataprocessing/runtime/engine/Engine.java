@@ -15,9 +15,9 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine;
+package org.edgexfoundry.processing.runtime.engine;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
 
 public interface Engine {
     JobResponseFormat createJob();

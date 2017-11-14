@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.task.function;
+package org.edgexfoundry.processing.runtime.task.function;
 
 public final class DistanceFunction {
 

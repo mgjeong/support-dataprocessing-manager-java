@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
+package org.edgexfoundry.processing.runtime.engine.flink.emf;
 /*
 import DataSet;
 import org.edgexfoundry.emf.EMFErrorCode;

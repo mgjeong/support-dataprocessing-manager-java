@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.task;
+package org.edgexfoundry.processing.runtime.task;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel;
+import org.edgexfoundry.processing.runtime.task.model.SVMModel;
 import org.junit.Assert;
 import org.junit.Test;
 

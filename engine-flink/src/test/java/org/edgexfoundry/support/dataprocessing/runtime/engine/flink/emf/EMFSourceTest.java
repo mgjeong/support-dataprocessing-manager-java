@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
+package org.edgexfoundry.processing.runtime.engine.flink.emf;
 /*
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.edgexfoundry.domain.core.Event;

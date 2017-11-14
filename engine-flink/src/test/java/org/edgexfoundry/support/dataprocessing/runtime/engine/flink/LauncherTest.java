@@ -15,11 +15,11 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
+package org.edgexfoundry.processing.runtime.engine.flink;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+import org.edgexfoundry.processing.runtime.db.JobTableManager;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.junit.Assert;
 import org.junit.Test;

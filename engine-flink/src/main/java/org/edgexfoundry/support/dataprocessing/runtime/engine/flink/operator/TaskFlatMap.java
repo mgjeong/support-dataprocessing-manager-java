@@ -15,12 +15,12 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator;
+package org.edgexfoundry.processing.runtime.engine.flink.operator;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskFactory;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.TaskFactory;
+import org.edgexfoundry.processing.runtime.task.TaskModel;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;

@@ -1,7 +1,7 @@
-package org.edgexfoundry.support.dataprocessing.runtime.util;
+package org.edgexfoundry.processing.runtime.util;
 
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.edgexfoundry.processing.runtime.task.TaskModel;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,6 +1,6 @@
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq;
+package org.edgexfoundry.processing.runtime.engine.flink.zmq;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.DataSet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.zeromq.ZMQ;

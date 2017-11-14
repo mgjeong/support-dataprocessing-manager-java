@@ -14,23 +14,23 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.job;
+package org.edgexfoundry.processing.runtime.job;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobGroupResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineFactory;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.processing.runtime.data.model.job.JobState;
+import org.edgexfoundry.processing.runtime.data.model.response.JobGroupResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.processing.runtime.db.JobTableManager;
+import org.edgexfoundry.processing.runtime.engine.Engine;
+import org.edgexfoundry.processing.runtime.engine.EngineFactory;
+import org.edgexfoundry.processing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

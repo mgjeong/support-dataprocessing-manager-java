@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime;
+package org.edgexfoundry.processing.runtime;
 
 public final class Settings {
     public static final String DOCKER_PATH = "/framework/ha/";

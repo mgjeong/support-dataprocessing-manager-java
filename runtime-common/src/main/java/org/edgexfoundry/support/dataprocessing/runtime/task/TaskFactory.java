@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.task;
+package org.edgexfoundry.processing.runtime.task;
 
-import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
+import org.edgexfoundry.processing.runtime.db.TaskTableManager;
+import org.edgexfoundry.processing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

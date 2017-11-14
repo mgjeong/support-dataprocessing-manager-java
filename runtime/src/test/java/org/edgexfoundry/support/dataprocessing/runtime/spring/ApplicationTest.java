@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.spring;
+package org.edgexfoundry.processing.runtime.spring;
 
-import org.edgexfoundry.support.dataprocessing.runtime.Application;
+import org.edgexfoundry.processing.runtime.Application;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

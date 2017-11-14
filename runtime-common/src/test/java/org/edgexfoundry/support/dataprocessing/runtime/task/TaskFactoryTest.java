@@ -1,6 +1,6 @@
-package org.edgexfoundry.support.dataprocessing.runtime.task;
+package org.edgexfoundry.processing.runtime.task;
 
-import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
+import org.edgexfoundry.processing.runtime.db.TaskTableManager;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

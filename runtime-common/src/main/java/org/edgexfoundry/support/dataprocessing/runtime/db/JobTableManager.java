@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.db;
+package org.edgexfoundry.processing.runtime.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,10 @@ import java.security.InvalidParameterException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+
+import static org.edgexfoundry.processing.runtime.db.DBConnector.ColumnDesc;
+import static org.edgexfoundry.processing.runtime.db.DBConnector.TableDesc;
+import static org.edgexfoundry.processing.runtime.db.DBConnector.Util.validateParams;
 
 //    [Reference Query]
 //    INSERT INTO TABLE_NAME [(column1, column2, column3,...columnN)] VALUES (value1, value2, value3,...valueN);
@@ -67,14 +71,14 @@ public final class JobTableManager {
 
     //create "job" table
     private void createJobTable() throws Exception {
-        DBConnector.TableDesc td = new DBConnector.TableDesc(JOBTABLENAME);
-        td.addColum(Entry.jid.name(), new DBConnector.ColumnDesc("TEXT", "PRIMARY KEY NOT NULL"));
-        td.addColum(Entry.gid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.state.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.input.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.output.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.taskinfo.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.engineid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
+        TableDesc td = new TableDesc(JOBTABLENAME);
+        td.addColum(Entry.jid.name(), new ColumnDesc("TEXT", "PRIMARY KEY NOT NULL"));
+        td.addColum(Entry.gid.name(), new ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.state.name(), new ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.input.name(), new ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.output.name(), new ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.taskinfo.name(), new ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.engineid.name(), new ColumnDesc("TEXT", "NOT NULL"));
         dbCon.createTable(td);
     }
 
@@ -84,7 +88,7 @@ public final class JobTableManager {
                           String output, String taskinfo, String engineId)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
+        if (validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
             throw new InvalidParameterException();
         }
 
@@ -108,7 +112,7 @@ public final class JobTableManager {
                           String output, String taskInfo, String engineId)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(jobId, gId, state, input, output, engineId)) {
+        if (validateParams(jobId, gId, state, input, output, engineId)) {
             throw new InvalidParameterException();
         }
 
@@ -128,7 +132,7 @@ public final class JobTableManager {
 
     //Update state column by jid
     public void updateState(String jobId, String state) throws SQLException, InvalidParameterException {
-        if (DBConnector.Util.validateParams(jobId, state)) {
+        if (validateParams(jobId, state)) {
             throw new InvalidParameterException();
         }
 
@@ -143,7 +147,7 @@ public final class JobTableManager {
     public void updatePayload(String jobId, String input, String output, String taskinfo)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(jobId, input, output, taskinfo)) {
+        if (validateParams(jobId, input, output, taskinfo)) {
             throw new InvalidParameterException();
         }
 
@@ -157,7 +161,7 @@ public final class JobTableManager {
     //update engineid column by ID
     public void updateEngineId(String jobId, String engineId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId/*, engineId*/)) {
+        if (validateParams(jobId/*, engineId*/)) {
             throw new InvalidParameterException();
         }
 
@@ -170,7 +174,7 @@ public final class JobTableManager {
     //update gid column by jid
     public void updateGroupId(String jobId, String gId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId, gId)) {
+        if (validateParams(jobId, gId)) {
             throw new InvalidParameterException();
         }
 
@@ -183,7 +187,7 @@ public final class JobTableManager {
     //Select state column value by jid
     public List<Map<String, String>> getStateById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -196,7 +200,7 @@ public final class JobTableManager {
     //select Payload( input, output, taskinfo ) column value by ID
     public List<Map<String, String>> getPayloadById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -209,7 +213,7 @@ public final class JobTableManager {
     //Select engineid column value by jid
     public List<Map<String, String>> getEngineIdById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -222,7 +226,7 @@ public final class JobTableManager {
     //Select gid column value by jid
     public List<Map<String, String>> getGroupIdById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -235,7 +239,7 @@ public final class JobTableManager {
     //select all columns by jid
     public List<Map<String, String>> getRowById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -258,7 +262,7 @@ public final class JobTableManager {
     //delete a job to the table "Job"
     public void deleteJobById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.spring;
+package org.edgexfoundry.processing.runtime.spring;
 
-import org.edgexfoundry.support.dataprocessing.runtime.configuration.SwaggerConfiguration;
+import org.edgexfoundry.processing.runtime.configuration.SwaggerConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.engine;
+package org.edgexfoundry.processing.runtime.engine;
 
 
 import org.junit.Test;

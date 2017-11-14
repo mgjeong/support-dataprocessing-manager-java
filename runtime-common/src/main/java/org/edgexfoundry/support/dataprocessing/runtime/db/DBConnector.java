@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.db;
+package org.edgexfoundry.processing.runtime.db;
 
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
+import org.edgexfoundry.processing.runtime.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteErrorCode;

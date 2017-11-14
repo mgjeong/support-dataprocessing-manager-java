@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.task.model;
+package org.edgexfoundry.processing.runtime.task.model;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
-import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
-import org.edgexfoundry.support.dataprocessing.runtime.task.function.CommonFunction;
-import org.edgexfoundry.support.dataprocessing.runtime.task.function.SigmoidFunction;
+import org.edgexfoundry.processing.runtime.task.AbstractTaskModel;
+import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.processing.runtime.task.TaskModelParam;
+import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.processing.runtime.task.function.CommonFunction;
+import org.edgexfoundry.processing.runtime.task.function.SigmoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

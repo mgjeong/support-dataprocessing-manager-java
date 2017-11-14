@@ -1,9 +1,9 @@
-package org.edgexfoundry.support.dataprocessing.runtime.db;
+package org.edgexfoundry.processing.runtime.db;
 
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
+import org.edgexfoundry.processing.runtime.data.model.job.JobState;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
