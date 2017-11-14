@@ -7,9 +7,9 @@ if [ ! -d "$framework_repo" ] || [ ! -d "$flink_bin" ]; then
 	exit 1
 fi
 
-if [ ! -d "$framework_repo/framework/resource" ]; then
-    echo "$framework_repo/framework/resource does not exist. create directory."
-    mkdir $framework_repo/framework/resource
+if [ ! -d "$framework_repo/runtime/resource" ]; then
+    echo "$framework_repo/runtime/resource does not exist. create directory."
+    mkdir $framework_repo/runtime/resource
 fi
 if [ ! -d "$flink_bin/../log" ]; then
     echo "$flink_bin/../log does not exist. create directory."
@@ -40,10 +40,10 @@ rm $framework_dir/jar/task_user/*.jar
 
 ##### Copy task models #####
 echo "Copying task models..."
-find "$framework_repo/framework-task/" -name \*SNAPSHOT.jar -exec cp {} "$framework_dir/jar/task/" \;
+find "$framework_repo/runtime-task/" -name \*SNAPSHOT.jar -exec cp {} "$framework_dir/jar/task/" \;
 rm $framework_dir/jar/task/task-model-*.jar
 
 echo "Copying engine-flink.jar..."
-cp $framework_repo/engine-flink/target/engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar $framework_repo/framework/resource/engine-flink.jar
+cp $framework_repo/engine-flink/target/engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar $framework_repo/runtime/resource/engine-flink.jar
 
 echo "Done."

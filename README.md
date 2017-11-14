@@ -74,10 +74,10 @@ mvn clean package -DskipTests
   - If necessary, change directory ownership to user
   `chown -R user:user /framework`
 
-- Update the path information of the flink in the "tools/path.prefs"
+- Update the path information of the Flink in the "tools/path.prefs"
   -flink_bin="{FLINK_PATH}"
      
-- Execute Runtime with flink
+- Execute Runtime with Flink
   - Shell script below will build the codebase and execute the runtime & Flink automatically
   - Terminate the Flink if it's already executed
 ```shell
