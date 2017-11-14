@@ -1,10 +1,10 @@
-package org.edgexfoundry.processing.runtime.data.model;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model;
 
-import org.edgexfoundry.processing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
-import org.edgexfoundry.processing.runtime.data.model.job.JobInfoFormat;
-import org.edgexfoundry.processing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package org.edgexfoundry.processing.runtime;
+package org.edgexfoundry.support.dataprocessing.runtime;
 
 import org.junit.Assert;
 import org.junit.Test;

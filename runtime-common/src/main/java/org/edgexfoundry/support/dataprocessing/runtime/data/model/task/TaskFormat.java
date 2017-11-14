@@ -1,8 +1,8 @@
-package org.edgexfoundry.processing.runtime.data.model.task;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.task;
 
-import org.edgexfoundry.processing.runtime.data.model.Format;
-import org.edgexfoundry.processing.runtime.task.TaskModelParam;
-import org.edgexfoundry.processing.runtime.task.TaskType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

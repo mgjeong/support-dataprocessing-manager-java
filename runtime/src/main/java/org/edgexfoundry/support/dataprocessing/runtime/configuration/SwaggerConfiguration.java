@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.configuration;
+package org.edgexfoundry.support.dataprocessing.runtime.configuration;
 
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;

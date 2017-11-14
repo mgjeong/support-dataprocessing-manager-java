@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.task;
+package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.data.model.job;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import java.io.Serializable;
 

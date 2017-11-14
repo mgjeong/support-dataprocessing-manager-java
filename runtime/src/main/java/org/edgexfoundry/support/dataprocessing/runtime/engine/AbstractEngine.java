@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.engine;
+package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 import java.util.UUID;
 

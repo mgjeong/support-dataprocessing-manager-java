@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.task.function;
+package org.edgexfoundry.support.dataprocessing.runtime.task.function;
 
 import org.junit.Test;
 

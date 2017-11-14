@@ -14,9 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.data.model.job;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
-import org.edgexfoundry.processing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import io.swagger.annotations.ApiModelProperty;
 
 public class DataFormat extends Format {

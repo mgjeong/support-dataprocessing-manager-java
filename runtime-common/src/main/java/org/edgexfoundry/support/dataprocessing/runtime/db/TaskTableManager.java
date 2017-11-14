@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.db;
+package org.edgexfoundry.support.dataprocessing.runtime.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

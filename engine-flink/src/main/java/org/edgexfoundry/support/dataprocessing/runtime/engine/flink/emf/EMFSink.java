@@ -15,10 +15,10 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.engine.flink.emf;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
 
 
-import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.edgexfoundry.domain.core.Event;

@@ -1,4 +1,4 @@
-package org.edgexfoundry.processing.runtime.task.model.libsvm;
+package org.edgexfoundry.support.dataprocessing.runtime.task.model.libsvm;
 public class svm_node implements java.io.Serializable
 {
 	public int index;

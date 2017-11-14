@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.engine;
+package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 public enum EngineType {
     Flink,

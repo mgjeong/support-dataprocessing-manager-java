@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.processing.runtime.connection;
+package org.edgexfoundry.support.dataprocessing.runtime.connection;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;

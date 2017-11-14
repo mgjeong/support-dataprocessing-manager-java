@@ -15,9 +15,9 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.engine.flink.sink;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink;
 
-import org.edgexfoundry.processing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

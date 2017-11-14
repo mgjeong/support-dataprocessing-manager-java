@@ -15,16 +15,16 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.processing.runtime.engine.flink;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.edgexfoundry.processing.runtime.connection.HTTP;
-import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.processing.runtime.db.JobTableManager;
-import org.edgexfoundry.processing.runtime.engine.AbstractEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
