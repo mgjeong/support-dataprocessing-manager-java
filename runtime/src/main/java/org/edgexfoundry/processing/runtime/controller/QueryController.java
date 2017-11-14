@@ -17,14 +17,22 @@
 
 package org.edgexfoundry.processing.runtime.controller;
 
+import io.swagger.annotations.ApiParam;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.processing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.processing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.processing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.processing.runtime.data.model.response.QueryResponseFormat;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.edgexfoundry.processing.runtime.data.model.response.ResponseFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Locale;
 
 @RestController
@@ -45,5 +53,17 @@ public class QueryController {
         QueryResponseFormat response = null;
 
         return response;
+    }
+
+    @ApiOperation(value = "Add query Operation", notes = "Add query Operation")
+    @RequestMapping(value = "", method = RequestMethod.POST)
+    @ResponseBody
+    public JobResponseFormat addQuery(Locale locale, Model model,
+                                       @ApiParam(value = "json String",
+                                            name = "json")
+                                       @RequestBody(required = true)
+                                               JobGroupFormat request) {
+
+        return null;
     }
 }
