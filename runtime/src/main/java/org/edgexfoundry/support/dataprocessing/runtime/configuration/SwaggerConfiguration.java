@@ -34,14 +34,14 @@ import javax.servlet.MultipartConfigElement;
 
 @Configuration
 @EnableSwagger2
-@ComponentScan("org.edgexfoundry.processing.runtime.controller")
+@ComponentScan("org.edgexfoundry.support.dataprocessing.runtime.controller")
 public class SwaggerConfiguration {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()//
 //                .apis(RequestHandlerSelectors.any())
-                .apis(RequestHandlerSelectors.basePackage("org.edgexfoundry.processing.runtime.controller"))
+                .apis(RequestHandlerSelectors.basePackage("org.edgexfoundry.support.dataprocessing.runtime.controller"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo());

@@ -48,7 +48,7 @@ public class JarLoader {
 
     /**
      * @param className This should be included the package name.
-     *                  likes "com.sec.processing.framework.task.model.SVMModel"
+     *                  likes "org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel"
      * @return
      */
     public Class getClassInstance(String className) throws ClassNotFoundException, NoClassDefFoundError {
