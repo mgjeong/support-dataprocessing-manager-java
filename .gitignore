@@ -4,3 +4,5 @@
 *.class
 target/
 target/*
+.idea/
+.idea/*
