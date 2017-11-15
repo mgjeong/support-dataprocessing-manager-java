@@ -70,7 +70,7 @@ mvn clean package -DskipTests
 ### Running Runtime ###
 
 - Create a shared resource directory for runtime and Apache Flink
-  - Create `/framework/ha` directory in system
+  - Create `/runtime/ha` directory in system
   - If necessary, change directory ownership to user
   `chown -R user:user /framework`
 
