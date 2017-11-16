@@ -28,9 +28,10 @@ public final class EngineManager {
         Engine engine = null;
 
         try {
+            String ip = host.substring(0, host.indexOf(":"));
             int port = Integer.parseInt(host.substring(host.indexOf(":") + 1, host.length()));
 
-            engine = EngineFactory.createEngine(engineType, host, port);
+            engine = EngineFactory.createEngine(engineType, ip, port);
             engines.put(host, engine);
         } catch (NumberFormatException e) {
             LOGGER.error(e.getMessage(), e);

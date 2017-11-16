@@ -249,7 +249,7 @@ public final class JobTableManager {
         }
 
         String query = String.format(" SELECT * FROM %s WHERE %s = '%s';",
-                JOBTABLENAME, Entry.jid.name(), jobId);
+                JOBTABLENAME, Entry.gid.name(), jobId);
         LOGGER.info(query);
         return dbCon.executeSelect(query);
     }
