@@ -32,6 +32,7 @@ import java.util.Locale;
 
 @RestController
 @Api(tags = "Query Manager", description = "API List for Query Managing")
+@RequestMapping(value = "/v1/query")
 public class QueryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
@@ -45,6 +46,7 @@ public class QueryController {
     @RequestMapping(value = "", method = RequestMethod.GET)
     @ResponseBody
     public QueryResponseFormat getQueries(Locale locale, Model model) {
+
         QueryResponseFormat response = null;
 
         return response;
@@ -57,7 +59,11 @@ public class QueryController {
                                       @ApiParam(value = "json String",
                                             name = "json")
                                        @RequestBody(required = true)
-                                               JobGroupFormat request) {
+                                              JobGroupFormat request) {
+
+
+
+
 
         return null;
     }

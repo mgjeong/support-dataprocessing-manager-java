@@ -31,6 +31,8 @@ public class JobInfoFormat extends Format {
     @ApiModelProperty(required = false)
     private JobState state;
     @ApiModelProperty(required = true)
+    private String targethost = null;
+    @ApiModelProperty(required = true)
     private List<DataFormat> input = null;
     @ApiModelProperty(required = true)
     private List<DataFormat> output = null;
@@ -111,6 +113,14 @@ public class JobInfoFormat extends Format {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public String getTargethost() {
+        return this.targethost;
+    }
+
+    public void setTargethost(String targetHost) {
+        this.targethost = targetHost;
     }
 
     public void setPayload(JobInfoFormat job) {

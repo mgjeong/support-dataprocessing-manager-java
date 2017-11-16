@@ -25,8 +25,10 @@ import java.util.List;
 
 @ApiModel(value = "JobGroup", description = "JobGroup")
 public class JobGroupFormat extends Format {
+
     @ApiModelProperty(required = false)
     private String groupId;
+
     @ApiModelProperty(required = true)
     private List<JobInfoFormat> jobs;
 

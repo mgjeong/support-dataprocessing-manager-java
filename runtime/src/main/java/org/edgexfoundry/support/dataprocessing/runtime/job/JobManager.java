@@ -30,16 +30,14 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskForma
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineFactory;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.sql.SQLException;
+import java.util.*;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -57,18 +55,24 @@ public final class JobManager {
 
     }
 
+
     public static JobManager getInstance() {
         if (instance == null) {
             instance = new JobManager();
             try {
                 jobTable = JobTableManager.getInstance();
-                framework = EngineFactory.createEngine(EngineType.Flink);
+//                framework = EngineFactory.createEngine(EngineType.Flink, "localhost:8081");
+//
                 myJobs = new HashMap<String, List<JobInfoFormat>>();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return instance;
+    }
+
+    public String generateJobId() {
+        return UUID.randomUUID().toString();
     }
 
     public void initialize() {
@@ -86,6 +90,7 @@ public final class JobManager {
         }
 
         for (Map<String, String> job : jobList) {
+            String engineType = null;
             String jobId = null;
             String groupId = null;
             JobState state = null;
@@ -95,6 +100,7 @@ public final class JobManager {
 
             ObjectMapper mapper = new ObjectMapper();
             try {
+                engineType = job.get(JobTableManager.Entry.engineType.name());
                 jobId = job.get(JobTableManager.Entry.jid.name());
                 groupId = job.get(JobTableManager.Entry.gid.name());
                 state = JobState.getState(job.get(JobTableManager.Entry.state.name()));
@@ -118,27 +124,43 @@ public final class JobManager {
             }
 
             JobInfoFormat jobInfo = new JobInfoFormat(input, output, task, state);
-            addJobToGroupWithJobId(groupId, jobId, jobInfo);
+            addJobToGroupWithJobId(EngineType.valueOf(engineType.trim()), groupId, jobId, jobInfo);
          }
     }
 
     private void initJobList() {
         Iterator<String> keys = myJobs.keySet().iterator();
-        while (keys.hasNext()) {
-            String groupId = keys.next();
-            framework.createJob(groupId);
-            List<JobInfoFormat> jobList = getJobList(groupId);
 
-            for (JobInfoFormat job : jobList) {
-                if (job.getState() == JobState.RUNNING) {
-                    framework.createJob(job.getJobId());
-                    framework.run(job.getJobId());
+        while (keys.hasNext()) {
+
+            String groupId = keys.next();
+            try {
+                if(0 >= jobTable.getRowById(groupId).size())
+                    break;
+
+                Map<String, String> map = jobTable.getRowById(groupId).get(0);
+                String host = map.get(JobTableManager.Entry.targetHost.name());
+                String engineType = map.get(JobTableManager.Entry.engineType.name());
+
+                framework = EngineManager.getEngine(host, EngineType.valueOf(engineType));
+
+                framework.createJob(groupId);
+                List<JobInfoFormat> jobList = getJobList(groupId);
+
+                for (JobInfoFormat job : jobList) {
+                    if (job.getState() == JobState.RUNNING) {
+                        framework.createJob(job.getJobId());
+                        framework.run(job.getJobId());
+                    }
                 }
+
+            } catch (SQLException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
 
-    private JobResponseFormat createGroupJob(String groupId, JobGroupFormat request) {
+    private JobResponseFormat createGroupJob(EngineType engineType, String groupId, JobGroupFormat request) {
         if (request.getJobs() == null || request.getJobs().isEmpty()) {
             return new JobResponseFormat(
                     new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "no job info"));
@@ -158,13 +180,14 @@ public final class JobManager {
                         new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "no task value"));
             }
 
-            JobResponseFormat newJobResponse = framework.createJob();
+            framework = EngineManager.getEngine(jobNode.getTargethost(), engineType);
+            JobResponseFormat newJobResponse = framework.createJob(generateJobId());
             if (newJobResponse.getError().isError()) {
                 newJobResponse.getError().setErrorMessage("Fail to Create Job.");
                 return newJobResponse;
             }
 
-            ErrorFormat result = addJobToGroupWithJobId(groupId, newJobResponse.getJobId(), jobNode);
+            ErrorFormat result = addJobToGroupWithJobId(engineType, groupId, newJobResponse.getJobId(), jobNode);
             if (result.isError()) {
                 deleteJob(groupId);
                 return new JobResponseFormat(result);
@@ -173,17 +196,20 @@ public final class JobManager {
         return new JobResponseFormat(groupId);
     }
 
-    public JobResponseFormat createGroupJob(JobGroupFormat request) {
-        JobResponseFormat groupResponse = framework.createJob();
-        if (groupResponse.getError().isError()) {
-            groupResponse.getError().setErrorMessage("Fail to Create Job.");
-            groupResponse.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
-            return groupResponse;
-        }
+    public JobResponseFormat createGroupJob(EngineType engineType, JobGroupFormat request) {
 
-        String groupId = groupResponse.getJobId();
+//        framework = EngineManager.getEngine()
 
-        JobResponseFormat response = createGroupJob(groupId, request);
+//        JobResponseFormat groupResponse = framework.createJob().setJobId(generateJobId());
+//        if (groupResponse.getError().isError()) {
+//            groupResponse.getError().setErrorMessage("Fail to Create Job.");
+//            groupResponse.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
+//            return groupResponse;
+//        }
+//
+        String groupId = generateJobId();
+
+        JobResponseFormat response = createGroupJob(engineType, groupId, request);
         if (response.getError().isError()) {
             framework.delete(groupId);
         }
@@ -231,7 +257,7 @@ public final class JobManager {
         return response;
     }
 
-    public JobResponseFormat updateJob(String groupId, JobGroupFormat request) {
+    public JobResponseFormat updateJob(EngineType engineType, String groupId, JobGroupFormat request) {
         JobResponseFormat response = new JobResponseFormat();
         List<JobInfoFormat> jobList = getJobList(groupId);
 
@@ -244,7 +270,7 @@ public final class JobManager {
 
         // TODO - need to discussion
         deleteJob(groupId);
-        return createGroupJob(groupId, request);
+        return createGroupJob(engineType, groupId, request);
     }
 
     public JobResponseFormat executeJob(String groupId) {
@@ -368,13 +394,14 @@ public final class JobManager {
         }
     }
 
-    private ErrorFormat addJobToGroup(String groupId, JobInfoFormat request) {
-        JobResponseFormat response = framework.createJob();
-        String jobId = response.getJobId();
-        return addJobToGroupWithJobId(groupId, jobId, request);
-    }
+//    private ErrorFormat addJobToGroup(String groupId, JobInfoFormat request) {
+//        JobResponseFormat response = framework.createJob();
+//        String jobId = response.getJobId();
+//
+//        return addJobToGroupWithJobId(groupId, jobId, request);
+//    }
 
-    private ErrorFormat addJobToGroupWithJobId(String groupId, String jobId, JobInfoFormat request) {
+    private ErrorFormat addJobToGroupWithJobId(EngineType engineType, String groupId, String jobId, JobInfoFormat request) {
         List<JobInfoFormat> jobList = getJobList(groupId);
         JobInfoFormat newJob = (JobInfoFormat) request.clone();
         newJob.setJobId(jobId);
@@ -385,12 +412,14 @@ public final class JobManager {
 
         if (request != null && initState == TRUE) {
             try {
-                jobTable.insertJob(jobId, groupId,
+                jobTable.insertJob(engineType.name(),
+                        jobId, groupId,
                         request.getState().toString(),
                         request.getInput().toString(),
                         request.getOutput().toString(),
                         request.getTask().toString(),
-                        "");
+                        "",
+                        request.getTargethost());
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
                 return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());

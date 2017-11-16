@@ -22,13 +22,13 @@ public class EngineFactory {
 
 //    protected EngineFactory() { }
 
-    public static Engine createEngine(EngineType engineType) {
+    public static Engine createEngine(EngineType engineType, String host, Integer port) {
         final Engine engine;
-        final Integer port = 8081;
+//        final Integer port = 8081;
 
         switch (engineType) {
             case Flink:
-                engine = new FlinkEngine("localhost", port);   // TODO: Remove hard-code
+                engine = new FlinkEngine(host, port);
                 break;
             case Spark: // TODO
             default:

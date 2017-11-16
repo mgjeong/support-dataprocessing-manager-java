@@ -21,6 +21,8 @@ public class TaskFormat extends Format {
     private List<String> inrecord;
     @ApiModelProperty(required = true)
     private List<String> outrecord;
+    @ApiModelProperty(required = false)
+    private String script = null;
 
     public TaskFormat() {
         this(TaskType.INVALID, null, (TaskModelParam) null);
@@ -64,6 +66,14 @@ public class TaskFormat extends Format {
 
     public void setType(TaskType type) {
         this.type = type;
+    }
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
     }
 
     public List<String> getInrecord() {

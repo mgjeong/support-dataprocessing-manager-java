@@ -57,7 +57,8 @@ public class JobResponseFormat extends Format {
         return jobId;
     }
 
-    public void setJobId(String jobId) {
+    public JobResponseFormat setJobId(String jobId) {
         this.jobId = jobId;
+        return this;
     }
 }

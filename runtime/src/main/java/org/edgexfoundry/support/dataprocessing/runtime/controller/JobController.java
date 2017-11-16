@@ -22,6 +22,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFo
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobGroupResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -80,7 +81,7 @@ public class JobController {
                                             JobGroupFormat request) {
         LOGGER.debug(request.toString());
 
-        JobResponseFormat response = jobManager.createGroupJob(request);
+        JobResponseFormat response = jobManager.createGroupJob(EngineType.Flink, request);
 
         LOGGER.debug(response.toString());
         return response;
@@ -124,7 +125,7 @@ public class JobController {
         LOGGER.debug("Id : " + id);
         LOGGER.debug(request.toString());
 
-        JobResponseFormat response = jobManager.updateJob(id, request);
+        JobResponseFormat response = jobManager.updateJob(EngineType.Flink, id, request);
 
         LOGGER.debug(response.toString());
         return response;

@@ -25,6 +25,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorTyp
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,16 +47,12 @@ public class FlinkEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat createJob() {
-        return createJob(generateJobId());
+        return new JobResponseFormat();
     }
 
     @Override
     public JobResponseFormat createJob(String jobId) {
-        // Make response
-        JobResponseFormat response = new JobResponseFormat();
-        response.setJobId(jobId);
-
-        return response;
+        return createJob().setJobId(jobId);
     }
 
     @Override
