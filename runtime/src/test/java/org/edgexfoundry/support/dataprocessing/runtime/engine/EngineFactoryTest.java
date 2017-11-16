@@ -25,11 +25,11 @@ public class EngineFactoryTest {
     public void testCreateEngine() {
 
         try {
-            Engine fw = EngineFactory.createEngine(EngineType.Flink);
+            Engine fw = EngineFactory.createEngine(EngineType.Flink, "localhost", 8081);
 
-            ((AbstractEngine) fw).generateJobId();
+//            ((AbstractEngine) fw).generateJobId();
 
-            fw = EngineFactory.createEngine(EngineType.Spark);
+            fw = EngineFactory.createEngine(EngineType.Spark, "localhost", 8081);
 
         } catch (RuntimeException e) {
 
