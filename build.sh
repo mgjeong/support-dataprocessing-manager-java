@@ -78,11 +78,12 @@ function download_flink() {
 	rm flink.tgz
 }
 
-read -p "Do you want to download Flink (yes/no)? " yn
-case $yn in
-	[Nn]* ) echo "Please place Flink binaries in flink directory.";;
-	* ) download_flink;;
-esac
+#read -p "Do you want to download Flink (yes/no)? " yn
+#case $yn in
+#	[Nn]* ) echo "Please place Flink binaries in flink directory.";;
+#	* ) download_flink;;
+#esac
+download_flink
 
 echo -ne "Checking out jobmanager script..."
 if [ ! -f "./flink/bin/jobmanager.sh" ]; then
