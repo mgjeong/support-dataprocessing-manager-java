@@ -58,11 +58,11 @@ public class RegressionModelTest {
 
         TaskModel model1 = new LinearRegressionModel();
 
-        Assert.assertEquals("regression", model1.getName());
+        Assert.assertEquals("regression-linear", model1.getName());
 
         RegressionModel model2 = new LogisticRegressionModel();
 
-        Assert.assertEquals("regression", model2.getName());
+        Assert.assertEquals("regression-logistic", model2.getName());
     }
 
     @Test

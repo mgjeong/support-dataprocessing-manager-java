@@ -72,7 +72,7 @@ mvn clean package -DskipTests
 - Create a shared resource directory for runtime and Apache Flink
   - Create `/runtime/ha` directory in system
   - If necessary, change directory ownership to user
-  `chown -R user:user /framework`
+  `chown -R user:user /runtime`
 
 - Update the path information of the Flink in the "tools/path.prefs"
   -flink_bin="{FLINK_PATH}"
@@ -80,7 +80,7 @@ mvn clean package -DskipTests
 - Execute Runtime with Flink
   - Shell script below will build the codebase and execute the runtime & Flink automatically
   - Terminate the Flink if it's already executed
-```shell
+ ```shell
 cd tool
 ./start_local.sh
 ```
