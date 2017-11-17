@@ -238,6 +238,27 @@ public final class JobManager {
         return response;
     }
 
+    public JobInfoFormat getJobInfoByJobId(String jobId) {
+
+        JobInfoFormat jobResponse = null;
+
+        Iterator<String> keys = myJobs.keySet().iterator();
+
+        while (keys.hasNext()) {
+            String id = keys.next();
+
+            List<JobInfoFormat> jobList = getJobList(id);
+            for(JobInfoFormat jobInfo : jobList) {
+                if (jobInfo.getJobId().compareTo(jobId) == 0) {
+                    jobResponse = jobInfo;
+                    break;
+                }
+            }
+        }
+
+        return jobResponse;
+    }
+
     public JobGroupResponseFormat getJob(String groupId) {
         JobGroupResponseFormat response = new JobGroupResponseFormat();
         JobGroupFormat jobGroup = new JobGroupFormat();

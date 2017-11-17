@@ -17,6 +17,7 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
@@ -32,7 +33,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -50,6 +55,25 @@ public class TaskController {
             e.printStackTrace();
         }
     }
+
+    @ApiOperation(value = "Find Supporting Task", notes = "Find Supporting Task")
+    @RequestMapping(value = "/jar/{path}", method = RequestMethod.GET)
+    public void getFile(@PathVariable("path") String jar,
+                        HttpServletResponse response) {
+
+        try {
+
+            FileInputStream fis = new FileInputStream(new File(Settings.FW_JAR_PATH + jar + ".jar"));
+            org.apache.commons.io.IOUtils.copy(fis, response.getOutputStream());
+            response.flushBuffer();
+
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+    }
+
+
 
     @ApiOperation(value = "Find Supporting Task", notes = "Find Supporting Task")
     @RequestMapping(value = "", method = RequestMethod.GET)
