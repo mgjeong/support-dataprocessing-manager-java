@@ -23,6 +23,8 @@ type pumpHandler struct {
 	agent *agent.Agent
 }
 
+var conn *net.UDPConn
+
 func newPumpHandler(agent *agent.Agent) *pumpHandler {
 	return &pumpHandler{agent: agent}
 }
@@ -32,8 +34,8 @@ func (p *pumpHandler) Info() (*agent.InfoResponse, error) {
 		Wants:    agent.EdgeType_STREAM,
 		Provides: agent.EdgeType_STREAM,
 		Options: map[string]*agent.OptionInfo{
-			"source":  {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"table":  {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -72,12 +74,12 @@ func (p *pumpHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 		const udpPort = "9100"
 		var emfInstance *emf.EMFAPI = nil
 		var emfSub *emf.EMFSubscriber
-		var conn net.Conn
 		init := true
 		for {
 			select {
 			case <-ctx.Done():
 				if conn != nil {
+					log.Println("Closing UDP connection")
 					conn.Close()
 				}
 				if emfInstance != nil {
@@ -87,9 +89,13 @@ func (p *pumpHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 				return
 			default:
 				if init {
-					connection, error := net.Dial("udp", "localhost:" + udpPort)
-					conn = connection
-					if error != nil {
+					udpAddr, err := net.ResolveUDPAddr("udp", "localhost:" + udpPort)
+					if err != nil {
+						// TODO: error handling
+						log.Println("KRKIM: fail to resolve UDP address")
+					}
+					conn, err = net.DialUDP("udp", nil, udpAddr)
+					if err != nil {
 						// TODO: error handling
 						log.Println("KRKIM: fail to make udp connection")
 					}
@@ -117,7 +123,7 @@ func addSource(hostname string) *emf.EMFSubscriber {
 	target := strings.Split(hostname, ":")
 	port, err := strconv.Atoi(target[1])
 	subCB := func(event emf.Event) { eventHandler(event) }
-	subTopicCB := func(topic string, event emf.Event) { eventHandler(event) }
+	subTopicCB := func(topic string, event emf.Event) { eventHandlerWithTopic(topic, event) }
 	if err != nil {
 		// TODO: error handling
 		log.Println("KRKIM wrong port number")
@@ -128,6 +134,7 @@ func addSource(hostname string) *emf.EMFSubscriber {
 	// TODO: error handling
 	log.Println("KRKIM subscriber started with error ", result)
 
+	// TODO: subscribing topics
 	result = subscriber.Subscribe()
 	// TODO: error handling
 	log.Println("KRKIM subscriber is working with error ", result)
@@ -135,10 +142,26 @@ func addSource(hostname string) *emf.EMFSubscriber {
 }
 
 func eventHandler(event emf.Event) {
+	eventHandlerWithTopic("table", event)
+}
+
+func eventHandlerWithTopic(topic string, event emf.Event) {
+	msg := topic + " "
 	readings := event.GetReading()
 	for i := 0; i < len(readings); i++ {
 		// TODO: Assemble keys and values into influx line, and send via UDP
 		log.Println("KRKIM message: ", readings[i].GetValue())
+		msg += readings[i].GetName() + "=" + readings[i].GetValue() + " "
+	}
+
+	forwardEventToEngine(msg)
+}
+
+func forwardEventToEngine(msg string) {
+	// TODO: error handling
+	_, err := conn.Write([]byte(msg))
+	if err != nil {
+		log.Println("KRKIM failed to forward msg via UDP")
 	}
 }
 
