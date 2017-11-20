@@ -80,7 +80,6 @@ public class JobController {
 
         JobInfoFormat response = jobManager.getJobInfoByJobId(jid);
 
-
         LOGGER.debug(response.toString());
         return response;
     }

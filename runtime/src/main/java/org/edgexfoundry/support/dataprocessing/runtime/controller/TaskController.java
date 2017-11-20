@@ -39,7 +39,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @RestController
 @Api(tags = "Task Manager", description = "API List for Task Managing")
@@ -56,8 +58,33 @@ public class TaskController {
         }
     }
 
+    @ApiOperation(value = "Find Supporting Task by Name", notes = "Find Supporting Task by Name")
+    @RequestMapping(value = "/jar/", method = RequestMethod.GET)
+    @ResponseBody
+    public TaskResponseFormat getProcessById(Locale locale, Model model,
+                                         @RequestParam("type") TaskType type,
+                                         @RequestParam("name") String name) {
+        LOGGER.debug("Task Name : " + name + "type : " + type.name());
+
+        TaskResponseFormat response =
+                new TaskResponseFormat((ArrayList<TaskFormat>)
+                        taskManager.getTaskByTypeAndName(type, name));
+
+//        TaskResponseFormat response =
+//                new TaskResponseFormat((ArrayList<TaskFormat>)
+//                        taskManager.getTaskByTypeAndName(type, name));
+
+//        TaskResponseFormat response =
+//                new TaskResponseFormat((ArrayList<TaskFormat>)
+//                        taskManager.getTaskModel(name));
+
+
+        LOGGER.debug(response.toString());
+        return response;
+    }
+
     @ApiOperation(value = "Find Supporting Task", notes = "Find Supporting Task")
-    @RequestMapping(value = "/jar/{path}", method = RequestMethod.GET)
+    @RequestMapping(value = "/jar/get/{path}", method = RequestMethod.GET)
     public void getFile(@PathVariable("path") String jar,
                         HttpServletResponse response) {
 

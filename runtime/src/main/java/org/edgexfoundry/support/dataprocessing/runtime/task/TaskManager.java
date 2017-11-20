@@ -310,6 +310,29 @@ public final class TaskManager implements DirectoryChangeEventListener {
         return response;
     }
 
+    public List<TaskFormat> getTaskByTypeAndName(TaskType type, String name) {
+        try {
+
+            List<TaskFormat> ret = new ArrayList<TaskFormat>();
+//            List<Map<String, String>> taskList = taskTable.getTaskByTypeAndName(type.toString(), name);
+            List<Map<String, String>> taskList = taskTable.getTaskByName(name);
+
+            for(Map<String, String> task : taskList) {
+                TaskFormat taskFormat = new TaskFormat();
+                taskFormat.setJar(new File(task.get(TaskTableManager.Entry.path.name())).getName());
+                taskFormat.setName(task.get(TaskTableManager.Entry.name.name()));
+                taskFormat.setType(TaskType.valueOf(task.get(TaskTableManager.Entry.type.name())));
+
+                ret.add(taskFormat);
+            }
+
+            return ret;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public ErrorFormat deleteTask(TaskType type, String name) {
         Map<String, String> res;
         List<Map<String, String>> resList = null;

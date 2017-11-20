@@ -180,7 +180,7 @@ public final class JobManager {
                         new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "no task value"));
             }
 
-            framework = EngineManager.getEngine(jobNode.getTargethost(), engineType);
+            framework = EngineManager.getEngine(jobNode.getTargetHost(), engineType);
             JobResponseFormat newJobResponse = framework.createJob(generateJobId());
             if (newJobResponse.getError().isError()) {
                 newJobResponse.getError().setErrorMessage("Fail to Create Job.");
@@ -440,7 +440,7 @@ public final class JobManager {
                         request.getOutput().toString(),
                         request.getTask().toString(),
                         "",
-                        request.getTargethost());
+                        request.getTargetHost());
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
                 return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());

@@ -23,6 +23,8 @@ public class TaskFormat extends Format {
     private List<String> outrecord;
     @ApiModelProperty(required = false)
     private String script = null;
+    @ApiModelProperty(required = false)
+    private String jar = null;
 
     public TaskFormat() {
         this(TaskType.INVALID, null, (TaskModelParam) null);
@@ -90,6 +92,14 @@ public class TaskFormat extends Format {
 
     public void setOutrecord(List<String> outrecord) {
         this.outrecord = outrecord;
+    }
+
+    public String getJar() {
+        return this.jar;
+    }
+
+    public void setJar(String jar) {
+        this.jar = jar;
     }
 
 }

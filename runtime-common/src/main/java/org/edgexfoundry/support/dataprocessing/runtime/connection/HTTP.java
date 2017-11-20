@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -143,6 +144,30 @@ public class HTTP implements Connection {
         }
 
         return null;
+    }
+
+    public boolean get(String path, Map<String, String> args, String dstPath, String fName) {
+        try {
+            URI uri = createUri(path, args);
+            HttpGet request = new HttpGet(uri);
+            HttpResponse response = executeRequest(request);
+
+            int httpStatusCode = response.getStatusLine().getStatusCode();
+            if (httpStatusCode != HttpStatus.SC_OK) {
+                throw new HttpResponseException(httpStatusCode, String.format("Bad HTTP status: %d", httpStatusCode));
+            }
+
+            HttpEntity entity = response.getEntity();
+            if(entity != null) {
+                FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName));
+                entity.writeTo(fos);
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;   // Fail.
+        }
+
+        return true;        // Success.
     }
 
     public JsonElement delete(String path) {
