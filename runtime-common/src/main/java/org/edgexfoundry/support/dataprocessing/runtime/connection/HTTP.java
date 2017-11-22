@@ -38,13 +38,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class HTTP implements Connection {
+public class HTTP implements Connection, Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTP.class);
 
     private HttpClient client = null;

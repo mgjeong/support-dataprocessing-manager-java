@@ -23,6 +23,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.edgexfoundry.support.dataprocessing.runtime.RuntimeHost;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
@@ -48,6 +49,8 @@ public class Launcher {
     private JobTableManager jobTableManager = null;
 
     private StreamExecutionEnvironment env = null;
+
+    public RuntimeHost hostInfo = RuntimeHost.getInstance();
 
     public Launcher() {
 
@@ -168,13 +171,9 @@ public class Launcher {
 
     private JobInfoFormat getJobInfo(String jobId) {
 
-        HTTP httpClient = new HTTP();
-        httpClient.initialize(Settings.WEB_ADDRESS, Settings.WEB_PORT, Settings.WEB_SCHEMA);
-
-        String rawJson =  httpClient.get("/analytics/v1/job/info/" + jobId).toString();
+        String rawJson = hostInfo.getHttpClient().get("/analytics/v1/job/info/" + jobId).toString();
 
         JobInfoFormat jobInfo = new Gson().fromJson(rawJson, JobInfoFormat.class);
-
 
         return jobInfo;
     }
@@ -188,6 +187,12 @@ public class Launcher {
         try {
             String jobId = params.get("jobId");
             LOGGER.info("JobID passed: " + jobId);
+            String host = params.get("host");
+            LOGGER.info("Host passed: " + host);
+
+            hostInfo.setHostIP(host.substring(0, host.indexOf(":")));
+            hostInfo.setPort(Integer.parseInt(host.substring(host.indexOf(":") + 1, host.length())));
+            hostInfo.open();
 
             return getJobInfo(jobId);
 

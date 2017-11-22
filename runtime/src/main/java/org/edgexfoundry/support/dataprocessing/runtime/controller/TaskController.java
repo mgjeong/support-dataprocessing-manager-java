@@ -59,7 +59,7 @@ public class TaskController {
     }
 
     @ApiOperation(value = "Find Supporting Task by Name", notes = "Find Supporting Task by Name")
-    @RequestMapping(value = "/jar/", method = RequestMethod.GET)
+    @RequestMapping(value = "/info/", method = RequestMethod.GET)
     @ResponseBody
     public TaskResponseFormat getProcessById(Locale locale, Model model,
                                          @RequestParam("type") TaskType type,
@@ -84,7 +84,7 @@ public class TaskController {
     }
 
     @ApiOperation(value = "Find Supporting Task", notes = "Find Supporting Task")
-    @RequestMapping(value = "/jar/get/{path}", method = RequestMethod.GET)
+    @RequestMapping(value = "/jar/{path}", method = RequestMethod.GET)
     public void getFile(@PathVariable("path") String jar,
                         HttpServletResponse response) {
 

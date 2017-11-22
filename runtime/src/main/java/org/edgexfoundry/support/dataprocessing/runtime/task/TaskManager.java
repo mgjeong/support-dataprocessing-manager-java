@@ -322,6 +322,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
                 taskFormat.setJar(new File(task.get(TaskTableManager.Entry.path.name())).getName());
                 taskFormat.setName(task.get(TaskTableManager.Entry.name.name()));
                 taskFormat.setType(TaskType.valueOf(task.get(TaskTableManager.Entry.type.name())));
+                taskFormat.setClassName(task.get(TaskTableManager.Entry.classname.name()));
 
                 ret.add(taskFormat);
             }

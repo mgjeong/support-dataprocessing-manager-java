@@ -25,6 +25,8 @@ public class TaskFormat extends Format {
     private String script = null;
     @ApiModelProperty(required = false)
     private String jar = null;
+    @ApiModelProperty(required = false)
+    private String className = null;
 
     public TaskFormat() {
         this(TaskType.INVALID, null, (TaskModelParam) null);
@@ -100,6 +102,14 @@ public class TaskFormat extends Format {
 
     public void setJar(String jar) {
         this.jar = jar;
+    }
+
+    public String getClassName() {
+        return this.className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
 }

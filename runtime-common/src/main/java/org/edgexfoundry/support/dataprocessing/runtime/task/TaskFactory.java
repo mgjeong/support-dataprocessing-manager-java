@@ -18,6 +18,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import org.edgexfoundry.support.dataprocessing.runtime.RuntimeHost;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.TaskResponseFormat;
@@ -35,9 +36,12 @@ public final class TaskFactory {
 
     private static TaskFactory instance = null;
 
+    private static RuntimeHost host = null;
+
     public static synchronized TaskFactory getInstance() {
         if (instance == null) {
             instance = new TaskFactory();
+            host = RuntimeHost.getInstance();
         }
         return instance;
     }
@@ -47,22 +51,18 @@ public final class TaskFactory {
     }
 
     /*fromWeb*/
-    private String getTaskJarFilename(TaskType type, String name) {
+    private TaskResponseFormat getTaskJarInfo(TaskType type, String name) {
 
         // Set the arguments.
         Map<String, String> args = new HashMap<>();
         args.put(TaskTableManager.Entry.type.name(), type.name());;
         args.put(TaskTableManager.Entry.name.name(), name);
 
-        // Initialize HTTP Conenction.
-        HTTP httpClient = new HTTP();
-        httpClient.initialize(Settings.WEB_ADDRESS, Settings.WEB_PORT, Settings.WEB_SCHEMA);
-
         // Send Request.
-        JsonElement element = httpClient.get("/analytics/v1/task/jar/", args);
+        JsonElement element = host.getHttpClient().get("/analytics/v1/task/info/", args);
         TaskResponseFormat response = new Gson().fromJson(element.toString(), TaskResponseFormat.class);
 
-        return response.getTask().get(0).getJar();
+        return response;
 
     }
 
@@ -71,15 +71,15 @@ public final class TaskFactory {
         if(null == jar)
             return false;
 
-        HTTP httpClient = new HTTP();
-        httpClient.initialize(Settings.WEB_ADDRESS, Settings.WEB_PORT, Settings.WEB_SCHEMA);
-        return httpClient.get("/analytics/v1/task/jar/get/" + jar, null, "/runtime/ha/", jar);
+        return host.getHttpClient().get("/analytics/v1/task/jar/" + jar, null, "/runtime/ha/", jar);
     }
 
     public TaskModel createTaskModelInst(TaskType type, String name, ClassLoader classLoader) throws Exception {
         try {
-            String jar = null;
-            if(null == (jar = getTaskJarFilename(type, name))) {
+            TaskResponseFormat response = getTaskJarInfo(type, name);
+            String jar = response.getTask().get(0).getJar();
+
+            if(null == jar) {
                 return null;
             }
             if(false == getTaskJarFile(jar)) {
@@ -88,16 +88,9 @@ public final class TaskFactory {
 
             LOGGER.info("Creating task model for " + type.name() + " / " + name);
 
-            // Select task from database
-            List<Map<String, String>> resArray = TaskTableManager.getInstance().getTaskByName(name);
-            if (resArray.size() == 0) {
-                throw new RuntimeException("Task jar info for " + name + " does not exist in database.");
-            }
-
             // Get jar file info
             String jarPath = "/runtime/ha/" + jar;
-//            String jarPath = resArray.get(0).get(TaskTableManager.Entry.path.name());
-            String className = resArray.get(0).get(TaskTableManager.Entry.classname.name());
+            String className = response.getTask().get(0).getClassName();
 
             // Make instance
             TaskModelLoader modelLoader = new TaskModelLoader(jarPath, classLoader);
