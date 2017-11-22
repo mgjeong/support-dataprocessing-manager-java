@@ -30,6 +30,9 @@ public class EngineFactory {
             case Flink:
                 engine = new FlinkEngine(host, port);
                 break;
+            case Kapacitor:
+//                engine = new KapacitorEngine(host, port);
+                break;
             case Spark: // TODO
             default:
                 throw new RuntimeException("Unsupported engine type selected.");
