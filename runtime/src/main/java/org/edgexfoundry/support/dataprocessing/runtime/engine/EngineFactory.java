@@ -17,6 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 
 public class EngineFactory {
 
@@ -28,7 +29,7 @@ public class EngineFactory {
 
         switch (engineType) {
             case Flink:
-                engine = new FlinkEngine("localhost", port);   // TODO: Remove hard-code
+                engine = new KapacitorEngine("localhost", 9092);   // TODO: Remove hard-code
                 break;
             case Spark: // TODO
             default:
