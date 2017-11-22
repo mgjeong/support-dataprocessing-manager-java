@@ -9,13 +9,13 @@ import (
 	"github.com/mgjeong/messaging-zmq/go/emf"
 	"strconv"
 	"strings"
-	"github.com/influxdata/kapacitor/services/udp"
 	"net"
 )
 
 type pumpHandler struct {
+	source string
 	address string
-	table string
+	topic   string
 
 	childContext context.Context
 	cancel       context.CancelFunc
@@ -24,6 +24,7 @@ type pumpHandler struct {
 }
 
 var conn *net.UDPConn
+var hostname string
 
 func newPumpHandler(agent *agent.Agent) *pumpHandler {
 	return &pumpHandler{agent: agent}
@@ -34,8 +35,9 @@ func (p *pumpHandler) Info() (*agent.InfoResponse, error) {
 		Wants:    agent.EdgeType_STREAM,
 		Provides: agent.EdgeType_STREAM,
 		Options: map[string]*agent.OptionInfo{
+			"source": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
-			"table":  {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"topic":   {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -49,10 +51,12 @@ func (p *pumpHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 
 	for _, opt := range r.Options {
 		switch opt.Name {
+		case "source":
+			p.source = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "address":
 			p.address = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
-		case "table":
-			p.table = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
+		case "topic":
+			p.topic = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		}
 	}
 
@@ -61,7 +65,7 @@ func (p *pumpHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 		init.Error += " must supply source address"
 	}
 
-	if p.table == "" {
+	if p.source == "" {
 		init.Success = false
 		init.Error += " must specify table name"
 	}
@@ -89,7 +93,7 @@ func (p *pumpHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 				return
 			default:
 				if init {
-					udpAddr, err := net.ResolveUDPAddr("udp", "localhost:" + udpPort)
+					udpAddr, err := net.ResolveUDPAddr("udp", "localhost:"+udpPort)
 					if err != nil {
 						// TODO: error handling
 						log.Println("KRKIM: fail to resolve UDP address")
@@ -100,7 +104,8 @@ func (p *pumpHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 						log.Println("KRKIM: fail to make udp connection")
 					}
 					emfInstance = initializeEMF()
-					emfSub = addSource(p.address)
+					hostname = p.address
+					emfSub = addSource()
 					init = false
 				}
 			}
@@ -118,7 +123,7 @@ func initializeEMF() *emf.EMFAPI {
 	return instance
 }
 
-func addSource(hostname string) *emf.EMFSubscriber {
+func addSource() *emf.EMFSubscriber {
 	log.Println("KRKIM Start to make source [", hostname, "] in PID ", os.Getpid())
 	target := strings.Split(hostname, ":")
 	port, err := strconv.Atoi(target[1])
@@ -142,17 +147,22 @@ func addSource(hostname string) *emf.EMFSubscriber {
 }
 
 func eventHandler(event emf.Event) {
-	eventHandlerWithTopic("table", event)
+	eventHandlerWithTopic("", event)
 }
 
 func eventHandlerWithTopic(topic string, event emf.Event) {
-	msg := topic + " "
+	msg := hostname
+	if topic != "" {
+		msg += ":" + topic
+	}
+	msg += " "
 	readings := event.GetReading()
 	for i := 0; i < len(readings); i++ {
 		// TODO: Assemble keys and values into influx line, and send via UDP
-		log.Println("KRKIM message: ", readings[i].GetValue())
+		//log.Println("KRKIM message: ", readings[i].GetValue())
 		msg += readings[i].GetName() + "=" + readings[i].GetValue() + " "
 	}
+	log.Println("KRKIM message: ", msg)
 
 	forwardEventToEngine(msg)
 }

@@ -7,7 +7,7 @@ import (
 	"os"
 	"encoding/json"
 
-	"github.com/mgjeong/messaging-zmq/go/emf"
+	"go/emf"
 	"strings"
 	"strconv"
 	"time"
@@ -89,6 +89,7 @@ func (f *flushHandler) addSink() error {
 	case "emf":
 		log.Println("KRKIM emf sink")
 		target := strings.Split(f.address, ":")
+		//emf.GetInstance().Initialize()
 		emf.GetInstance().Initialize()
 		startCB := func(code emf.EMFErrorCode) { log.Println("EMF starting by callback") }
 		stopCB := func(code emf.EMFErrorCode) { log.Println("EMF stopping by callback") }
@@ -136,7 +137,7 @@ func (f *flushHandler) BeginBatch(*agent.BeginBatch) error {
 
 // A point has arrived.
 func (f *flushHandler) Point(p *agent.Point) error {
-	output := make(map[string]interface{}, 0)
+	output := make(map[string]interface{})
 	for key, value := range p.FieldsBool {
 		output[key] = value
 	}
@@ -168,6 +169,7 @@ func (f *flushHandler) Point(p *agent.Point) error {
 		f.targetFile.Write(jsonBytes)
 		f.targetFile.WriteString("\n")
 	} else if f.sink == "emf" {
+		log.Println("KRKIM Writing: ", string(jsonBytes))
 		var event = getEvent(jsonBytes)
 		result := f.targetEMF.Publish(event)
 		if result != 0 {
