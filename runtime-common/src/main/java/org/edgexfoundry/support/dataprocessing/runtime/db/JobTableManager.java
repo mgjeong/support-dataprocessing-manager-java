@@ -285,4 +285,14 @@ public final class JobTableManager {
         LOGGER.info(query);
         dbCon.executeUpdate(query);
     }
+
+    public void deleteAllJob(String engineType) throws SQLException {
+        if(null !=  engineType) {
+            String query = String.format(" DELETE FROM %s WHERE %s = %s;", JOBTABLENAME, Entry.engineType, engineType);
+            LOGGER.info(query);
+            dbCon.executeUpdate(query);
+        } else {
+            deleteAllJob();
+        }
+    }
 }

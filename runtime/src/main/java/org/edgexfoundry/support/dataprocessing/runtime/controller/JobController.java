@@ -107,6 +107,7 @@ public class JobController {
         ErrorFormat response = jobManager.deleteAllJob();
 
         LOGGER.debug(response.toString());
+
         return new ResponseFormat(response);
     }
 

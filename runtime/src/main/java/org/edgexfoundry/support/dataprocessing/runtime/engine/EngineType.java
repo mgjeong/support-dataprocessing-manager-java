@@ -19,4 +19,5 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine;
 public enum EngineType {
     Flink,
     Spark,
+    Kapacitor
 }

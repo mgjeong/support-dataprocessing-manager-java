@@ -38,6 +38,9 @@ public class JobInfoFormat extends Format {
     private List<DataFormat> output = null;
     @ApiModelProperty(required = true)
     private List<TaskFormat> task = null;
+    @ApiModelProperty(required = false)
+    private String engineType = null;
+
 
     public JobInfoFormat() {
         this(new ArrayList<DataFormat>(),
@@ -117,6 +120,13 @@ public class JobInfoFormat extends Format {
 
     public String getTargetHost() {
         return this.targetHost;
+    }
+
+    public void setEngineType(String type) {
+        this.engineType = type;
+    }
+    public String getEngineType() {
+        return this.engineType;
     }
 
     public void setTargetHost(String targethost) {

@@ -198,20 +198,12 @@ public final class JobManager {
 
     public JobResponseFormat createGroupJob(EngineType engineType, JobGroupFormat request) {
 
-//        framework = EngineManager.getEngine()
-
-//        JobResponseFormat groupResponse = framework.createJob().setJobId(generateJobId());
-//        if (groupResponse.getError().isError()) {
-//            groupResponse.getError().setErrorMessage("Fail to Create Job.");
-//            groupResponse.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
-//            return groupResponse;
-//        }
-//
         String groupId = generateJobId();
 
         JobResponseFormat response = createGroupJob(engineType, groupId, request);
         if (response.getError().isError()) {
-            framework.delete(groupId);
+            response.getError().setErrorMessage("Fail to Create Job.");
+            response.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
         }
 
         return response;
@@ -399,6 +391,33 @@ public final class JobManager {
         myJobs.clear();
         try {
             jobTable.deleteAllJob();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());
+        }
+        return new ErrorFormat();
+    }
+
+    public ErrorFormat deleteAllQuery() {
+        Iterator<String> keys = myJobs.keySet().iterator();
+        while (keys.hasNext()) {
+            String groupId = keys.next();
+            List<JobInfoFormat> jobList = getJobList(groupId);
+
+            for (JobInfoFormat job : jobList) {
+                if(0 == job.getEngineType().compareTo(EngineType.Kapacitor.name())) {
+                    if (job.getState() == JobState.RUNNING) {
+                        framework.stop(job.getJobId());
+                    }
+                    framework.delete(job.getJobId());
+                }
+            }
+            framework.delete(groupId);
+        }
+
+//        myJobs.clear();
+        try {
+            jobTable.deleteAllJob(EngineType.Kapacitor.name());
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());
