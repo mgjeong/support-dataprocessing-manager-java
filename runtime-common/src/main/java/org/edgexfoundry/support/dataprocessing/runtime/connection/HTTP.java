@@ -22,11 +22,10 @@ import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -263,6 +262,56 @@ public class HTTP implements Connection, Serializable {
 
             return this.jsonParser.parse(rawJson);
 
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    public JsonElement post(String path, String dataString) {
+        throwExceptionIfNotInitialized();
+        try {
+            URI uri = createUri(path, null);
+            HttpPost request = new HttpPost(uri);
+            StringEntity entity = new StringEntity(dataString, ContentType.APPLICATION_FORM_URLENCODED);
+            request.setEntity(entity);
+
+            HttpResponse response = executeRequest(request);
+
+            int httpStatusCode = response.getStatusLine().getStatusCode();
+            if (httpStatusCode != HttpStatus.SC_OK) {
+                String errorMsg = String.format("Bad Connection.HTTP status: %d", httpStatusCode);
+                throw new HttpResponseException(httpStatusCode, errorMsg);
+            }
+
+            String rawJson = EntityUtils.toString(response.getEntity());
+            return this.jsonParser.parse(rawJson);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    public JsonElement patch(String path, String dataString) {
+        throwExceptionIfNotInitialized();
+        try {
+            URI uri = createUri(path, null);
+            HttpPatch request = new HttpPatch(uri);
+            StringEntity entity = new StringEntity(dataString, ContentType.APPLICATION_FORM_URLENCODED);
+            request.setEntity(entity);
+
+            HttpResponse response = executeRequest(request);
+
+            int httpStatusCode = response.getStatusLine().getStatusCode();
+            if (httpStatusCode != HttpStatus.SC_OK) {
+                String errorMsg = String.format("Bad Connection.HTTP status: %d", httpStatusCode);
+                throw new HttpResponseException(httpStatusCode, errorMsg);
+            }
+
+            String rawJson = EntityUtils.toString(response.getEntity());
+            return this.jsonParser.parse(rawJson);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

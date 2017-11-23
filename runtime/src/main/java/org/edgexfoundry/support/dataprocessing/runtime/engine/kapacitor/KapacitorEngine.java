@@ -32,16 +32,15 @@ public class KapacitorEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat createJob() {
-        return createJob(generateJobId());
+        return new JobResponseFormat();
     }
 
     @Override
     public JobResponseFormat createJob(String jobId) {
-        JobResponseFormat response = new JobResponseFormat();
-        response.setJobId(jobId);
+
         LOGGER.info("Kapacitor job {} is created", jobId);
 
-        return response;
+        return createJob().setJobId(jobId);
     }
 
     @Override

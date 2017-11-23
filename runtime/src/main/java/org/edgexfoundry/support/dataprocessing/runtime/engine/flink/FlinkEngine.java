@@ -52,6 +52,9 @@ public class FlinkEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat createJob(String jobId) {
+
+        LOGGER.info("Flink job {} is created", jobId);
+
         return createJob().setJobId(jobId);
     }
 
