@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+@CrossOrigin(origins = "*")
 @RestController
 @Api(tags = "Task Manager", description = "API List for Task Managing")
 @RequestMapping(value = "/v1/task")
