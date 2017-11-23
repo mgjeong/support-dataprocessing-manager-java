@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
 
+@CrossOrigin(origins = "*")
 @RestController
 @Api(tags = "Query Manager", description = "API List for Query Managing")
 @RequestMapping(value = "/v1/query")

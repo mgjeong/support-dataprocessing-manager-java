@@ -181,6 +181,7 @@ public final class JobManager {
             }
 
             framework = EngineManager.getEngine(jobNode.getTargetHost(), engineType);
+            
             JobResponseFormat newJobResponse = framework.createJob(generateJobId());
             if (newJobResponse.getError().isError()) {
                 newJobResponse.getError().setErrorMessage("Fail to Create Job.");
@@ -298,6 +299,9 @@ public final class JobManager {
             return response;
         }
 
+        framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
+                EngineType.valueOf(jobList.get(0).getEngineType()));
+
         for (JobInfoFormat job : jobList) {
             if (job.getState() == JobState.RUNNING) {
                 continue;
@@ -328,6 +332,9 @@ public final class JobManager {
             return response;
         }
 
+        framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
+                EngineType.valueOf(jobList.get(0).getEngineType()));
+
         for (JobInfoFormat job : jobList) {
             if (job.getState() == JobState.STOPPED) {
                 continue;
@@ -342,6 +349,7 @@ public final class JobManager {
             updateJobState(job, JobState.STOPPED);
             response.setError(frameworkResponse.getError());
         }
+
         return response;
     }
 
@@ -356,6 +364,9 @@ public final class JobManager {
             return response;
         }
 
+        framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
+                EngineType.valueOf(jobList.get(0).getEngineType()));
+
         for (JobInfoFormat job : jobList) {
             if (job.getState() == JobState.RUNNING) {
                 framework.stop(job.getJobId());
@@ -369,6 +380,7 @@ public final class JobManager {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+
         framework.delete(groupId);
         return response;
     }
@@ -379,12 +391,16 @@ public final class JobManager {
             String groupId = keys.next();
             List<JobInfoFormat> jobList = getJobList(groupId);
 
+            framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
+                EngineType.valueOf(jobList.get(0).getEngineType()));
+
             for (JobInfoFormat job : jobList) {
                 if (job.getState() == JobState.RUNNING) {
                     framework.stop(job.getJobId());
                 }
                 framework.delete(job.getJobId());
             }
+
             framework.delete(groupId);
         }
 
@@ -404,6 +420,9 @@ public final class JobManager {
             String groupId = keys.next();
             List<JobInfoFormat> jobList = getJobList(groupId);
 
+            framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
+                            EngineType.valueOf(jobList.get(0).getEngineType()));
+
             for (JobInfoFormat job : jobList) {
                 if(0 == job.getEngineType().compareTo(EngineType.Kapacitor.name())) {
                     if (job.getState() == JobState.RUNNING) {
@@ -412,6 +431,7 @@ public final class JobManager {
                     framework.delete(job.getJobId());
                 }
             }
+
             framework.delete(groupId);
         }
 
