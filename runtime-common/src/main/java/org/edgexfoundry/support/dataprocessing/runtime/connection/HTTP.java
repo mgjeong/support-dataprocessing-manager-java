@@ -170,7 +170,7 @@ public class HTTP implements Connection, Serializable {
         return true;        // Success.
     }
 
-    public JsonElement delete(String path) {
+    public JsonElement delete(String path) throws IOException {
         throwExceptionIfNotInitialized();
 
         try {
@@ -187,8 +187,9 @@ public class HTTP implements Connection, Serializable {
 
             return this.jsonParser.parse(rawJson);
 
-        } catch (Exception e) {
+        } catch (URISyntaxException e) {
             LOGGER.error(e.getMessage(), e);
+        } catch (IOException  e) {
         }
         return null;
     }
