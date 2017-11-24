@@ -51,7 +51,7 @@ public class KapacitorEngine extends AbstractEngine {
         taskInfo.addProperty("status", "disabled");
         JsonArray dbrps = new JsonArray();
         JsonObject dbrp = new JsonObject();
-        dbrp.addProperty("db", "telegraf3");
+        dbrp.addProperty("db", "dpruntime");
         dbrp.addProperty("rp", "autogen");
         dbrps.add(dbrp);
         taskInfo.add("dbrps", dbrps);
@@ -98,7 +98,7 @@ public class KapacitorEngine extends AbstractEngine {
                 throw new RuntimeException("For now, only one query type task is supported");
             }
 
-            String scriptBody = task.getScript().replace("<", "\'").replace(">", "\'");
+            String scriptBody = task.getScript();
 
             LOGGER.info("Building Kapacitor jobId: {}", jobId);
 
@@ -107,7 +107,15 @@ public class KapacitorEngine extends AbstractEngine {
                 scriptHeader += headers.get(header) + '\n';
             }
 
-            String script = scriptHeader + '|' + scriptBody + scriptTail;
+
+            String script;
+            if (scriptBody != null) {
+                scriptBody = scriptBody.replace("<", "\'").replace(">", "\'");
+                script = scriptHeader + '|' + scriptBody + scriptTail;
+            } else {
+                script = scriptHeader + scriptTail;
+            }
+
 
             LOGGER.info("Kapacitor script is following: {}", script);
             taskInfo.addProperty("script", script);

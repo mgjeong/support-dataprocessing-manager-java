@@ -369,7 +369,6 @@ public final class JobManager {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
-        framework.delete(groupId);
         return response;
     }
 
