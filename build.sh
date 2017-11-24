@@ -83,12 +83,12 @@ function download_flink() {
 #	[Nn]* ) echo "Please place Flink binaries in flink directory.";;
 #	* ) download_flink;;
 #esac
-download_flink
+#download_flink
 
-echo -ne "Checking out jobmanager script..."
-if [ ! -f "./flink/bin/jobmanager.sh" ]; then
-	mv -f flink-${FLINK_VERSION} ${output_path}/flink
-fi
-is_extracted "${output_path}/flink/bin/jobmanager.sh"
+#echo -ne "Checking out jobmanager script..."
+#if [ ! -f "./flink/bin/jobmanager.sh" ]; then
+#	mv -f flink-${FLINK_VERSION} ${output_path}/flink
+#fi
+#is_extracted "${output_path}/flink/bin/jobmanager.sh"
 
 echo "Finished."
