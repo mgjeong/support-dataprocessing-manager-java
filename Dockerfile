@@ -16,25 +16,14 @@
 ###############################################################################
 FROM openjdk:8-jdk-alpine
 
-ENV http_proxy 'http://10.112.1.184:8080'
-ENV https_proxy 'https://10.112.1.184:8080'
-
+ENV http_proxy http://10.112.1.184:8080
+ENV https_proxy https://10.112.1.184:8080
 # Install requirements
 RUN apk add --no-cache snappy
 RUN apk --update add bash gcc make perl libc-dev
 
-# Flink environment variables
-ENV FLINK_INSTALL_PATH=/opt
-ENV FLINK_HOME $FLINK_INSTALL_PATH/flink
-ENV PATH $PATH:$FLINK_HOME/bin
-
 # Variables pointing file paths in the local system
-
 # Install build dependencies and flink
-ADD ./docker_files/resources/flink/ $FLINK_HOME
-RUN set -x $FLINK_HOME
-RUN chmod +x -R ${FLINK_HOME}
-COPY "./docker_files/flink-conf.yaml" ${FLINK_HOME}/conf/flink-conf.yaml
 COPY run.sh /
 
 # Framework environment variables
@@ -51,7 +40,7 @@ COPY ./docker_files/resources/runtime.jar /
 COPY ./docker_files/resources/engine-flink.jar $ENGINE_PATH
 COPY ./docker_files/resources/runtime-common.jar $ENGINE_PATH
 COPY ./docker_files/resources/task $ENGINE_PATH/task
-EXPOSE 6123 8081-8090
+EXPOSE 6123 8081-8090 5562 5570 
 
 ENTRYPOINT ["/run.sh"]
 
