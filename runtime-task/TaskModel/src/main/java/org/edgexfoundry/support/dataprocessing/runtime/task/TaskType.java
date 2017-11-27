@@ -56,6 +56,8 @@ public enum TaskType {
             return OUTLIER;
         } else if (type == CUSTOM.toInt()) {
             return CUSTOM;
+        }  else if (type == QUERY.toInt()) {
+            return QUERY;
         } else {
             return INVALID;
         }

@@ -43,6 +43,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
+
 public class Launcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
 
@@ -171,11 +173,20 @@ public class Launcher {
 
     private JobInfoFormat getJobInfo(String jobId) {
 
-        String rawJson = hostInfo.getHttpClient().get("/analytics/v1/job/info/" + jobId).toString();
+        if(null != hostInfo.getHttpClient()) {
+            try {
+                String rawJson = hostInfo.getHttpClient().get("/analytics/v1/job/info/" + jobId).toString();
 
-        JobInfoFormat jobInfo = new Gson().fromJson(rawJson, JobInfoFormat.class);
+                JobInfoFormat jobInfo = new Gson().fromJson(rawJson, JobInfoFormat.class);
+                return jobInfo;
+            } catch (NullPointerException e) {
+                LOGGER.error(e.getMessage(), e);
+            } finally {
+                return null;
+            }
+        }
 
-        return jobInfo;
+        return null;
     }
 
     private JobInfoFormat getJobInfoFormat(ParameterTool params) throws Exception {
@@ -195,31 +206,6 @@ public class Launcher {
             hostInfo.open();
 
             return getJobInfo(jobId);
-
-
-//            if (this.jobTableManager == null) {
-//                this.jobTableManager = JobTableManager.getInstance();
-//            }
-//
-//            List<Map<String, String>> payload = this.jobTableManager.getPayloadById(jobId);
-//            if (payload.isEmpty()) {
-//                throw new RuntimeException("Job payload not found. JobId = " + jobId);
-//            }
-//            Map<String, String> job = payload.get(0); // TODO: Exception handling
-//
-//            ObjectMapper mapper = new ObjectMapper();
-//
-//            List<DataFormat> input = mapper.readValue(job.get(JobTableManager.Entry.input.name()),
-//                    new TypeReference<List<DataFormat>>() {
-//                    });
-//            List<DataFormat> output = mapper.readValue(job.get(JobTableManager.Entry.output.name()),
-//                    new TypeReference<List<DataFormat>>() {
-//                    });
-//            List<TaskFormat> task = mapper.readValue(job.get(JobTableManager.Entry.taskinfo.name()),
-//                    new TypeReference<List<TaskFormat>>() {
-//                    });
-//
-//            return new JobInfoFormat(input, output, task);
         } catch (Exception e) {
             LOGGER.error("Failed to retrieve JobInfoFormat: " + e.getMessage(), e);
             throw e;

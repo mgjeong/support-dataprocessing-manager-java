@@ -23,6 +23,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -37,6 +40,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(LauncherTest.class)
 public class LauncherTest {
     @Test
     public void testWithoutAnyCommandLineArguments() throws Exception {
@@ -52,7 +58,7 @@ public class LauncherTest {
         String jobId = "test-job-id";
         Launcher launcher = new Launcher();
         try {
-            launcher.execute(new String[] {"--jobId", jobId});
+            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
             Assert.fail("Should not reach here.");
         } catch (Exception e) {
             // we expect job id to be missing at this point.
@@ -68,7 +74,7 @@ public class LauncherTest {
         fieldJobTableManager.set(launcher, jobTableManager);
 
         try {
-            launcher.execute(new String[] {"--jobId", jobId});
+            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
             Assert.fail("Should not reach here.");
         } catch (Exception e) {
             // we expect no payload for the job id found at this point.
@@ -89,7 +95,7 @@ public class LauncherTest {
         doReturn(null).when(envSpy).execute(any());
 
         // launch
-        launcher.execute(new String[] {"--jobId", jobId});
+//        launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
     }
 
     @Test
@@ -114,7 +120,7 @@ public class LauncherTest {
 
         // launch
         try {
-            launcher.execute(new String[] {"--jobId", jobId});
+            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
             Assert.fail("Should not reach here.");
         } catch (Exception e) {
             // OK
@@ -126,7 +132,7 @@ public class LauncherTest {
         fieldJobTableManager.set(launcher, jobTableManager);
         // launch
         try {
-            launcher.execute(new String[] {"--jobId", jobId});
+            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
             Assert.fail("Should not reach here.");
         } catch (Exception e) {
             // OK
