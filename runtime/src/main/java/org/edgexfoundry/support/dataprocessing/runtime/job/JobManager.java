@@ -463,6 +463,7 @@ public final class JobManager {
         List<JobInfoFormat> jobList = getJobList(groupId);
         JobInfoFormat newJob = (JobInfoFormat) request.clone();
         newJob.setJobId(jobId);
+        newJob.setEngineType(engineType.name());
         if (jobList == null) {
             jobList = new ArrayList<JobInfoFormat>();
         }
