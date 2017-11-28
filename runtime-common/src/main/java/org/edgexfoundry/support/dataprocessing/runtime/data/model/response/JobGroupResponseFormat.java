@@ -28,9 +28,9 @@ import java.util.List;
 @ApiModel(value = "JobGroupResponse", description = "JobGroupResponse")
 public class JobGroupResponseFormat extends Format {
     @ApiModelProperty(required = true)
-    private ErrorFormat error;
+    protected ErrorFormat error;
     @ApiModelProperty(required = true)
-    private List<JobGroupFormat> jobGroups;
+    protected List<JobGroupFormat> jobGroups;
 
     public JobGroupResponseFormat() {
         this(new ArrayList<JobGroupFormat>());

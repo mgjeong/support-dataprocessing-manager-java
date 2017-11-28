@@ -55,19 +55,23 @@ public final class JobTableManager {
 
 
     public enum Entry {
+        engineType,
         jid,
         gid,
         state,
         input,
         output,
         taskinfo,
-        engineid;
+        engineid,
+        targetHost
     }
 
 
     //create "job" table
     private void createJobTable() throws Exception {
         DBConnector.TableDesc td = new DBConnector.TableDesc(JOBTABLENAME);
+
+        td.addColum(Entry.engineType.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         td.addColum(Entry.jid.name(), new DBConnector.ColumnDesc("TEXT", "PRIMARY KEY NOT NULL"));
         td.addColum(Entry.gid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         td.addColum(Entry.state.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
@@ -75,22 +79,24 @@ public final class JobTableManager {
         td.addColum(Entry.output.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         td.addColum(Entry.taskinfo.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         td.addColum(Entry.engineid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.targetHost.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         dbCon.createTable(td);
     }
 
 
     //insert a job to the table "job"
-    public void insertJob(String jobId, String gId, String state, String input,
-                          String output, String taskinfo, String engineId)
+    public void insertJob(String engineType, String jobId, String gId, String state, String input,
+                          String output, String taskinfo, String engineId, String targetHost)
             throws SQLException, InvalidParameterException {
 
         if (DBConnector.Util.validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
             throw new InvalidParameterException();
         }
 
-        String query = String.format(" INSERT OR REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s ) "
-                        + " VALUES ( '%s','%s','%s','%s','%s','%s','%s');",
+        String query = String.format(" INSERT OR REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s ) "
+                        + " VALUES ( '%s', '%s','%s','%s','%s','%s','%s','%s', '%s');",
                 JOBTABLENAME,
+                Entry.engineType.name(),
                 Entry.jid.name(),
                 Entry.gid.name(),
                 Entry.state.name(),
@@ -98,7 +104,10 @@ public final class JobTableManager {
                 Entry.output.name(),
                 Entry.taskinfo.name(),
                 Entry.engineid.name(),
-                jobId, gId, state, input, output, taskinfo, engineId);
+                Entry.targetHost.name(),
+                engineType,
+                jobId, gId, state, input, output, taskinfo, engineId,
+                targetHost);
         LOGGER.info(query);
         dbCon.executeUpdate(query);
     }
@@ -240,14 +249,15 @@ public final class JobTableManager {
         }
 
         String query = String.format(" SELECT * FROM %s WHERE %s = '%s';",
-                JOBTABLENAME, Entry.jid.name(), jobId);
+                JOBTABLENAME, Entry.gid.name(), jobId);
         LOGGER.info(query);
         return dbCon.executeSelect(query);
     }
 
     //select jid, state of all jobs
     public List<Map<String, String>> getAllJobs() throws SQLException {
-        String query = String.format(" SELECT %s, %s, %s, %s, %s, %s FROM %s;",
+        String query = String.format(" SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s;",
+                Entry.targetHost.name(), Entry.engineType.name(),
                 Entry.jid.name(), Entry.gid.name(), Entry.state.name(), Entry.input.name(),
                 Entry.output.name(), Entry.taskinfo.name(), JOBTABLENAME);
         LOGGER.info(query);
@@ -274,5 +284,15 @@ public final class JobTableManager {
         String query = String.format(" DELETE FROM %s;", JOBTABLENAME);
         LOGGER.info(query);
         dbCon.executeUpdate(query);
+    }
+
+    public void deleteAllJob(String engineType) throws SQLException {
+        if(null !=  engineType) {
+            String query = String.format(" DELETE FROM %s WHERE %s = %s;", JOBTABLENAME, Entry.engineType, engineType);
+            LOGGER.info(query);
+            dbCon.executeUpdate(query);
+        } else {
+            deleteAllJob();
+        }
     }
 }

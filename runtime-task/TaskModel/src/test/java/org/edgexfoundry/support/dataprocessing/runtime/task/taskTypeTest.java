@@ -44,7 +44,9 @@ public class taskTypeTest {
 
         Assert.assertEquals(TaskType.OUTLIER.toInt(), 9);
 
-        Assert.assertEquals(TaskType.INVALID.toInt(), 10);
+        Assert.assertEquals(TaskType.QUERY.toInt(), 10);
+
+        Assert.assertEquals(TaskType.INVALID.toInt(), 11);
 
     }
 
@@ -70,6 +72,8 @@ public class taskTypeTest {
         Assert.assertEquals(TaskType.ERROR.toString(), "ERROR");
 
         Assert.assertEquals(TaskType.OUTLIER.toString(), "OUTLIER");
+
+        Assert.assertEquals(TaskType.QUERY.toString(), "QUERY");
 
         Assert.assertEquals(TaskType.INVALID.toString(), "INVALID");
 
@@ -98,7 +102,9 @@ public class taskTypeTest {
 
         Assert.assertEquals(TaskType.getType(9), TaskType.OUTLIER);
 
-        Assert.assertEquals(TaskType.getType(10), TaskType.INVALID);
+        Assert.assertEquals(TaskType.getType(10), TaskType.QUERY);
+
+        Assert.assertEquals(TaskType.getType(11), TaskType.INVALID);
 
     }
 
@@ -120,6 +126,8 @@ public class taskTypeTest {
         Assert.assertEquals(TaskType.getType("CUSTOM"), TaskType.CUSTOM);
 
         Assert.assertEquals(TaskType.getType("OUTLIER"), TaskType.OUTLIER);
+
+        Assert.assertEquals(TaskType.getType("QUERY"), TaskType.QUERY);
 
         Assert.assertEquals(TaskType.getType("INVALID"), TaskType.INVALID);
 

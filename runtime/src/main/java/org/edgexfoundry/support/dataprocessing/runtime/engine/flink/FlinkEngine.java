@@ -25,6 +25,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorTyp
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,16 +47,15 @@ public class FlinkEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat createJob() {
-        return createJob(generateJobId());
+        return new JobResponseFormat();
     }
 
     @Override
     public JobResponseFormat createJob(String jobId) {
-        // Make response
-        JobResponseFormat response = new JobResponseFormat();
-        response.setJobId(jobId);
 
-        return response;
+        LOGGER.info("Flink job {} is created", jobId);
+
+        return createJob().setJobId(jobId);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class FlinkEngine extends AbstractEngine {
             }
 
             Map<String, String> args = new HashMap<>();
-            args.put("program-args", String.format("--jobId %s", jobId));
+            args.put("program-args", String.format("--jobId %s --host %s", jobId, "127.0.0.1:8082"));
             args.put("entry-class", "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
             args.put("parallelism", "1");
 

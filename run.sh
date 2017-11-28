@@ -11,8 +11,4 @@ mkdir -p ${FW_HA}/jar/task_user
 mv -f ${ENGINE_PATH}/task/* ${FW_HA}/jar/task/
 
 echo "Starting runtime web server..."
-java -jar ${FW_JAR} &
-
-echo "Starting flink local cluster..."
-exec ${FLINK_HOME}/bin/jobmanager.sh start-foreground local
-
+java -jar ${FW_JAR} 

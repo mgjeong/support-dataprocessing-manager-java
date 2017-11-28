@@ -22,11 +22,10 @@ import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -36,14 +35,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class HTTP implements Connection {
+public class HTTP implements Connection, Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTP.class);
 
     private HttpClient client = null;
@@ -145,7 +146,31 @@ public class HTTP implements Connection {
         return null;
     }
 
-    public JsonElement delete(String path) {
+    public boolean get(String path, Map<String, String> args, String dstPath, String fName) {
+        try {
+            URI uri = createUri(path, args);
+            HttpGet request = new HttpGet(uri);
+            HttpResponse response = executeRequest(request);
+
+            int httpStatusCode = response.getStatusLine().getStatusCode();
+            if (httpStatusCode != HttpStatus.SC_OK) {
+                throw new HttpResponseException(httpStatusCode, String.format("Bad HTTP status: %d", httpStatusCode));
+            }
+
+            HttpEntity entity = response.getEntity();
+            if(entity != null) {
+                FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName));
+                entity.writeTo(fos);
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;   // Fail.
+        }
+
+        return true;        // Success.
+    }
+
+    public JsonElement delete(String path) throws IOException {
         throwExceptionIfNotInitialized();
 
         try {
@@ -162,8 +187,9 @@ public class HTTP implements Connection {
 
             return this.jsonParser.parse(rawJson);
 
-        } catch (Exception e) {
+        } catch (URISyntaxException e) {
             LOGGER.error(e.getMessage(), e);
+        } catch (IOException  e) {
         }
         return null;
     }
@@ -237,6 +263,56 @@ public class HTTP implements Connection {
 
             return this.jsonParser.parse(rawJson);
 
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    public JsonElement post(String path, String dataString) {
+        throwExceptionIfNotInitialized();
+        try {
+            URI uri = createUri(path, null);
+            HttpPost request = new HttpPost(uri);
+            StringEntity entity = new StringEntity(dataString, ContentType.APPLICATION_FORM_URLENCODED);
+            request.setEntity(entity);
+
+            HttpResponse response = executeRequest(request);
+
+            int httpStatusCode = response.getStatusLine().getStatusCode();
+            if (httpStatusCode != HttpStatus.SC_OK) {
+                String errorMsg = String.format("Bad Connection.HTTP status: %d", httpStatusCode);
+                throw new HttpResponseException(httpStatusCode, errorMsg);
+            }
+
+            String rawJson = EntityUtils.toString(response.getEntity());
+            return this.jsonParser.parse(rawJson);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    public JsonElement patch(String path, String dataString) {
+        throwExceptionIfNotInitialized();
+        try {
+            URI uri = createUri(path, null);
+            HttpPatch request = new HttpPatch(uri);
+            StringEntity entity = new StringEntity(dataString, ContentType.APPLICATION_FORM_URLENCODED);
+            request.setEntity(entity);
+
+            HttpResponse response = executeRequest(request);
+
+            int httpStatusCode = response.getStatusLine().getStatusCode();
+            if (httpStatusCode != HttpStatus.SC_OK) {
+                String errorMsg = String.format("Bad Connection.HTTP status: %d", httpStatusCode);
+                throw new HttpResponseException(httpStatusCode, errorMsg);
+            }
+
+            String rawJson = EntityUtils.toString(response.getEntity());
+            return this.jsonParser.parse(rawJson);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

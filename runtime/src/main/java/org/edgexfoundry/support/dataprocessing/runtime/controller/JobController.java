@@ -19,9 +19,11 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobGroupResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -70,6 +72,18 @@ public class JobController {
         return response;
     }
 
+    @ApiOperation(value = "Find Job description by jobId", notes = "Find Job description by jobId")
+    @RequestMapping(value = "/info/{jobid}", method = RequestMethod.GET)
+    @ResponseBody
+    public JobInfoFormat getJobInfoByJobId(Locale locale, Model model, @PathVariable("jobid") String jid) {
+        LOGGER.debug("Data : " + jid);
+
+        JobInfoFormat response = jobManager.getJobInfoByJobId(jid);
+
+        LOGGER.debug(response.toString());
+        return response;
+    }
+
     @ApiOperation(value = "Create Job Instance", notes = "Create Job Instance")
     @RequestMapping(value = "", method = RequestMethod.POST)
     @ResponseBody
@@ -80,7 +94,7 @@ public class JobController {
                                             JobGroupFormat request) {
         LOGGER.debug(request.toString());
 
-        JobResponseFormat response = jobManager.createGroupJob(request);
+        JobResponseFormat response = jobManager.createGroupJob(EngineType.Flink, request);
 
         LOGGER.debug(response.toString());
         return response;
@@ -93,6 +107,7 @@ public class JobController {
         ErrorFormat response = jobManager.deleteAllJob();
 
         LOGGER.debug(response.toString());
+
         return new ResponseFormat(response);
     }
 
@@ -124,7 +139,7 @@ public class JobController {
         LOGGER.debug("Id : " + id);
         LOGGER.debug(request.toString());
 
-        JobResponseFormat response = jobManager.updateJob(id, request);
+        JobResponseFormat response = jobManager.updateJob(EngineType.Flink, id, request);
 
         LOGGER.debug(response.toString());
         return response;
