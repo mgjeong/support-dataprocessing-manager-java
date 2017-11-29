@@ -91,7 +91,7 @@ public class Launcher {
         // Tasks
         for (TaskFormat task : request.getTask()) {
             LOGGER.info("Adding task: {} - {}", task.getName(), task.getType());
-            stream = stream.flatMap(new TaskFlatMap(task));
+            stream = stream.flatMap(new TaskFlatMap(task, params.get("host")));
         }
 
         // Output
@@ -181,8 +181,6 @@ public class Launcher {
                 return jobInfo;
             } catch (NullPointerException e) {
                 LOGGER.error(e.getMessage(), e);
-            } finally {
-                return null;
             }
         }
 
@@ -200,6 +198,9 @@ public class Launcher {
             LOGGER.info("JobID passed: " + jobId);
             String host = params.get("host");
             LOGGER.info("Host passed: " + host);
+            if(null == host) {
+                host = "localhost:8082";
+            }
 
             hostInfo.setHostIP(host.substring(0, host.indexOf(":")));
             hostInfo.setPort(Integer.parseInt(host.substring(host.indexOf(":") + 1, host.length())));

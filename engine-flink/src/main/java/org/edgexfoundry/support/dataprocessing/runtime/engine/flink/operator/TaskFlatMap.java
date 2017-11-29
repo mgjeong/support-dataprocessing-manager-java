@@ -36,8 +36,15 @@ public class TaskFlatMap extends RichFlatMapFunction<DataSet, DataSet> {
 
     private transient TaskFactory taskFactory;
 
+    private String host = null;
+
     public TaskFlatMap(TaskFormat taskFormat) {
+        this(taskFormat, null);
+    }
+
+    public TaskFlatMap(TaskFormat taskFormat, String host) {
         this.taskFormat = taskFormat;
+        this.host = host;
     }
 
     @Override
@@ -47,7 +54,7 @@ public class TaskFlatMap extends RichFlatMapFunction<DataSet, DataSet> {
         LOGGER.info("Attempting to create task for {} / {}", taskFormat.getType(), taskFormat.getName());
         // Create task using TaskFactory which is made up by factory pattern.
         this.task = getTaskFactory().createTaskModelInst(taskFormat.getType(), taskFormat.getName(),
-                getRuntimeContext().getUserCodeClassLoader());
+                getRuntimeContext().getUserCodeClassLoader(), this.host);
         if (null != this.task) {
             this.task.setParam(taskFormat.getParams());
             this.task.setInRecordKeys(taskFormat.getInrecord());

@@ -89,7 +89,8 @@ public class TaskFactoryTest {
         try {
             tf.createTaskModelInst(TaskType.CLASSIFICATION,
                     "unknown",
-                     ClassLoader.getSystemClassLoader());
+                     ClassLoader.getSystemClassLoader(),
+                    "localhost:8082");
         } catch (Exception e) {
             isCalled = true;
         }
