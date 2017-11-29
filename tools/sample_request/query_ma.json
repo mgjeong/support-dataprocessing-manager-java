@@ -1,0 +1,30 @@
+{
+	"jobs": [
+		{
+			"targetHost": "localhost:9092",
+			"input": [
+				{
+					"dataType": "emf",
+					"dataSource": "localhost:5562"
+				}
+			],
+			"output": [
+				{
+					"dataType": "emf",
+					"dataSource": "localhost:5570"
+				}
+			],
+			"task": [
+				{			
+					"name": "query",
+					"script": "movingAverage(<BC>, 5).as(<avg>)",
+					"params": {},
+					"inrecord": [],
+					"outrecord": []
+				}
+			],
+			"state": "CREATE"
+		}
+	]
+}
+
