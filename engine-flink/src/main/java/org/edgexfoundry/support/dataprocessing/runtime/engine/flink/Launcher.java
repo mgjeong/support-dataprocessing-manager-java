@@ -23,8 +23,6 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.edgexfoundry.support.dataprocessing.runtime.RuntimeHost;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
@@ -43,8 +41,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.ConnectException;
-
 public class Launcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
 
@@ -52,7 +48,7 @@ public class Launcher {
 
     private StreamExecutionEnvironment env = null;
 
-    public RuntimeHost hostInfo = RuntimeHost.getInstance();
+    private HTTP httpClient = null;
 
     public Launcher() {
 
@@ -173,9 +169,9 @@ public class Launcher {
 
     private JobInfoFormat getJobInfo(String jobId) {
 
-        if(null != hostInfo.getHttpClient()) {
+        if(null != httpClient) {
             try {
-                String rawJson = hostInfo.getHttpClient().get("/analytics/v1/job/info/" + jobId).toString();
+                String rawJson = httpClient.get("/analytics/v1/job/info/" + jobId).toString();
 
                 JobInfoFormat jobInfo = new Gson().fromJson(rawJson, JobInfoFormat.class);
                 return jobInfo;
@@ -201,10 +197,8 @@ public class Launcher {
             if(null == host) {
                 host = "localhost:8082";
             }
-
-            hostInfo.setHostIP(host.substring(0, host.indexOf(":")));
-            hostInfo.setPort(Integer.parseInt(host.substring(host.indexOf(":") + 1, host.length())));
-            hostInfo.open();
+            
+            httpClient = new HTTP().initialize(host, "http");
 
             return getJobInfo(jobId);
         } catch (Exception e) {
