@@ -1,46 +1,72 @@
-###############################################################################
-# Copyright 2017 Samsung Electronics All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-###############################################################################
-FROM openjdk:8-jdk-alpine
+FROM golang:1.9.2-alpine3.6 AS buildenv 
 
-ENV http_proxy http://10.112.1.184:8080
-ENV https_proxy https://10.112.1.184:8080
-# Install requirements
-RUN apk add --no-cache snappy
-RUN apk --update add bash gcc make perl libc-dev
+ENV http_proxy 'http://10.112.1.184:8080'
+ENV https_proxy 'https://10.112.1.184:8080'
+COPY docker_files/resources/SRnD_Web_Proxy.crt /
 
-# Variables pointing file paths in the local system
-# Install build dependencies and flink
-COPY run.sh /
+RUN apk add --no-cache bash
 
-# Framework environment variables
-ENV FW_PATH /runtime
-ENV ENGINE_PATH ${FW_PATH}/resource
-ENV FW_JAR /runtime.jar
-ENV FW_HA ${FW_PATH}/ha
+# Installing packages for EMF
+RUN apk update
+RUN apk add gcc pkgconfig zeromq-dev
+RUN apk add git musl-dev
+RUN go get github.com/pebbe/zmq4
+RUN go get -u github.com/golang/protobuf/protoc-gen-go
+RUN mv /SRnD_Web_Proxy.crt /etc/ssl/certs/
+RUN update-ca-certificates
+RUN go get -u go.uber.org/zap
+RUN go get -u github.com/influxdata/kapacitor/udf/agent
+RUN go get -u github.com/mgjeong/messaging-zmq/go/emf
 
-# Deploy runtime
-RUN mkdir -p $ENGINE_PATH/task
-RUN mkdir -p $FW_HA/jar/task
+ENV UDF_PATH /runtime/ha/go
+ENV KAPA_PATH /kapacitor
+ENV PATH $PATH:$KAPA_PATH
 
-COPY ./docker_files/resources/runtime.jar /
-COPY ./docker_files/resources/engine-flink.jar $ENGINE_PATH
-COPY ./docker_files/resources/runtime-common.jar $ENGINE_PATH
-COPY ./docker_files/resources/task $ENGINE_PATH/task
-EXPOSE 6123 8081-8090 5562 5570 
+RUN mkdir -p $UDF_PATH
 
-ENTRYPOINT ["/run.sh"]
+ADD engine/engine-kapacitor/inject.go $UDF_PATH
+ADD engine/engine-kapacitor/deliver.go $UDF_PATH
+RUN go build ${UDF_PATH}/inject.go
+RUN go build ${UDF_PATH}/deliver.go
+RUN go build github.com/influxdata/kapacitor/cmd/kapacitord
+#RUN mv inject ${UDF_PATH}/
+#RUN mv deliver ${UDF_PATH}/
 
+FROM alpine:3.6
+
+ENV http_proxy 'http://10.112.1.184:8080'
+ENV https_proxy 'https://10.112.1.184:8080'
+
+RUN apk add --no-cache bash
+
+# Copy EMF-related libraries
+COPY --from=buildenv /lib/ld-musl-*.so.* /lib/
+COPY --from=buildenv /usr/lib/libzmq.so.* /usr/lib/
+COPY --from=buildenv /lib/ld-musl-*.so.* /lib/
+COPY --from=buildenv /usr/lib/libsodium.so.* /usr/lib/
+COPY --from=buildenv /usr/lib/libstdc++.so.* /usr/lib/
+COPY --from=buildenv /usr/lib/libgcc_s.so.* /usr/lib/
+
+# Set configurations
+ENV UDF_PATH /runtime/ha/go
+ENV KAPA_PATH /kapacitor
+ENV PATH $PATH:$KAPA_PATH
+
+RUN mkdir -p $UDF_PATH
+RUN mkdir -p $KAPA_PATH
+
+# Copy UDF binaries for EMF
+COPY --from=buildenv /go/inject ${UDF_PATH}/
+COPY --from=buildenv /go/deliver ${UDF_PATH}/
+
+
+# ADD kapacitor binaries
+COPY --from=buildenv /go/kapacitord $KAPA_PATH
+
+ADD docker_files/kapacitor.conf $KAPA_PATH/
+EXPOSE 9092
+
+# Start container at entrypoint
+COPY kaparun.sh /
+#CMD ["/bin/bash"]
+ENTRYPOINT ["/kaparun.sh"]
