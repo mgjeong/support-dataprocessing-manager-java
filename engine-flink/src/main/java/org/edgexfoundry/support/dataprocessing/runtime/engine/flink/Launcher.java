@@ -197,7 +197,7 @@ public class Launcher {
             if(null == host) {
                 host = "localhost:8082";
             }
-            
+
             httpClient = new HTTP().initialize(host, "http");
 
             return getJobInfo(jobId);

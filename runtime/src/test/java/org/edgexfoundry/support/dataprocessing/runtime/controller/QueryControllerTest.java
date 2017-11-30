@@ -57,12 +57,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @PrepareForTest(JobManager.class)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @RunWith(PowerMockRunner.class)
-public class JobControllerTest {
+public class QueryControllerTest {
 
     private static MockMvc mockMvc;
 
     @InjectMocks
-    private JobController jobController;
+    private QueryController queryController;
 
     @Mock
     private static JobManager jobManager;
@@ -105,7 +105,7 @@ public class JobControllerTest {
     @Before
     public void setUpMvc() {
         MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(jobController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(queryController).build();
     }
 
     @Test
@@ -114,7 +114,7 @@ public class JobControllerTest {
 
         when(jobManager.getAllJobs()).thenReturn(mockResponse);
 
-        ResultActions result = mockMvc.perform(get("/v1/job")
+        ResultActions result = mockMvc.perform(get("/v1/query")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -124,7 +124,7 @@ public class JobControllerTest {
         Assert.assertNotNull(response);
 
         when(jobManager.getJob(anyString())).thenReturn(mockResponse);
-        result = mockMvc.perform(get("/v1/job/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30")
+        result = mockMvc.perform(get("/v1/query/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -140,7 +140,7 @@ public class JobControllerTest {
 
         when(jobManager.createGroupJob(any(EngineType.class), (JobGroupFormat) notNull())).thenReturn(mockResponse);
 
-        ResultActions result = mockMvc.perform(post("/v1/job")
+        ResultActions result = mockMvc.perform(post("/v1/query")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSON_JOB_CREATE)
                 .accept(MediaType.APPLICATION_JSON))
@@ -159,7 +159,7 @@ public class JobControllerTest {
 
         when(jobManager.deleteJob(anyString())).thenReturn(mockResponse);
 
-        ResultActions result = mockMvc.perform(delete("/v1/job/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30")
+        ResultActions result = mockMvc.perform(delete("/v1/query/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -170,7 +170,7 @@ public class JobControllerTest {
 
         when(jobManager.deleteAllJob()).thenReturn(mockError);
 
-        result = mockMvc.perform(delete("/v1/job")
+        result = mockMvc.perform(delete("/v1/query")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -186,7 +186,7 @@ public class JobControllerTest {
 
         when(jobManager.executeJob(anyString())).thenReturn(mockResponse);
 
-        ResultActions result = mockMvc.perform(post("/v1/job/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30/execute")
+        ResultActions result = mockMvc.perform(post("/v1/query/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30/execute")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -204,7 +204,7 @@ public class JobControllerTest {
 
         when(jobManager.stopJob(anyString())).thenReturn(mockResponse);
 
-        ResultActions result = mockMvc.perform(post("/v1/job/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30/stop")
+        ResultActions result = mockMvc.perform(post("/v1/query/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30/stop")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -231,7 +231,7 @@ public class JobControllerTest {
                 + "-2.689e16 1.993e17 -4.806e16 -4.364e17 1.102e15 1.390e14 6.421e13 -9.950e12 -6.379e15 "
                 + "-7.493e15 6.282e15 -7.308e15 1.098e16 4.755e16\"}}],\"state\":\"CREATE\"}]}";
 
-        ResultActions result = mockMvc.perform(put("/v1/job/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30")
+        ResultActions result = mockMvc.perform(put("/v1/query/ef91c5b3-b5bb-4e8b-8145-e271ac16ce30")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonUpdate)
                 .accept(MediaType.APPLICATION_JSON))
