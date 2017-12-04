@@ -42,7 +42,7 @@ function is_extracted() {
 }
 
 target_fw="${fw_repo}/runtime/target/runtime-${version}.jar"
-target_engine="${fw_repo}/engine-flink/target/engine-flink-${version}-jar-with-dependencies.jar"
+target_engine="${fw_repo}/engine/engine-flink/target/engine-flink-${version}-jar-with-dependencies.jar"
 target_common="${fw_repo}/runtime-common/target/runtime-common-${version}.jar"
 target_task_parent_dir="${fw_repo}/runtime-task/"
 

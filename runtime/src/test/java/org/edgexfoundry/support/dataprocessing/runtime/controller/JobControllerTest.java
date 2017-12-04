@@ -251,6 +251,7 @@ public class JobControllerTest {
     private JobResponseFormat makeMockJobResponse() {
         JobResponseFormat payload = new JobResponseFormat();
         payload.setJobId("ef91c5b3-b5bb-4e8b-8145-e271ac16ce30");
+//        payload.setError();
         return payload;
     }
 

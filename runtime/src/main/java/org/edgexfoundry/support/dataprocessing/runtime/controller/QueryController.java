@@ -67,6 +67,18 @@ public class QueryController {
 
     }
 
+    @ApiOperation(value = "Find Job Instance by ID", notes = "Find Job Instance by ID")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public JobGroupResponseFormat getJobById(Locale locale, Model model, @PathVariable("id") String id) {
+        LOGGER.debug("Data : " + id);
+
+        JobGroupResponseFormat response = jobManager.getJob(id);
+
+        LOGGER.debug(response.toString());
+        return response;
+    }
+
     @ApiOperation(value = "Add query Operation", notes = "Add query Operation")
     @RequestMapping(value = "", method = RequestMethod.POST)
     @ResponseBody

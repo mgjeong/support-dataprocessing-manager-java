@@ -10,7 +10,7 @@
     <version>0.1.0-SNAPSHOT</version>
     <modules>
         <module>runtime</module>
-        <module>engine-flink</module>
+        <module>engine/engine-flink</module>
         <module>runtime-common</module>
         <module>runtime-task</module>
     </modules>
@@ -21,7 +21,7 @@
         <junit-version>4.12</junit-version>
         <org.mockito-version>2.9.0</org.mockito-version>
         <net.bytebuddy-version>1.7.3</net.bytebuddy-version>
-        <edgex.libdir>${basedir}/engine-flink/lib</edgex.libdir>
+        <edgex.libdir>${basedir}/engine/engine-flink/lib</edgex.libdir>
     </properties>
 
     <dependencies>
