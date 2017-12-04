@@ -60,6 +60,22 @@ public class FlinkEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat run(String jobId) {
+        String host = null;
+        List<Map<String, String>> result = null;
+        try {
+            result = JobTableManager.getInstance().getPayloadById(jobId);
+
+            if (!result.isEmpty()) {
+                host = result.get(0).get(JobTableManager.Entry.runtimeHost.name());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return run(jobId, host);
+    }
+
+    public JobResponseFormat run(String jobId, String runtimeHost) {
         JobResponseFormat responseFormat = new JobResponseFormat();
         try {
             // Check if launcher jar for flink is uploaded
@@ -73,8 +89,12 @@ public class FlinkEngine extends AbstractEngine {
                 this.launcherJarId = launcherJarId;
             }
 
+            if(null == runtimeHost) {
+                runtimeHost = "127.0.0.1:8082";
+            }
+
             Map<String, String> args = new HashMap<>();
-            args.put("program-args", String.format("--jobId %s --host %s", jobId, "127.0.0.1:8082"));
+            args.put("program-args", String.format("--jobId %s --host %s", jobId, runtimeHost));
             args.put("entry-class", "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
             args.put("parallelism", "1");
 

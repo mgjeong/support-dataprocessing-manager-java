@@ -59,6 +59,13 @@ public class HTTP implements Connection, Serializable {
 
     }
 
+    public HTTP initialize(String ip_port, String scheme) {
+        String ip = ip_port.substring(0, ip_port.indexOf(":"));
+        int port = Integer.parseInt(ip_port.substring(ip_port.indexOf(":") + 1, ip_port.length()));
+
+        return initialize(ip, port, scheme);
+    }
+
     /***
      * Initialize HTTP.
      *
@@ -66,7 +73,7 @@ public class HTTP implements Connection, Serializable {
      * @param port port number
      * @param scheme    e.g.: http, https
      */
-    public void initialize(String host, int port, String scheme) {
+    public HTTP initialize(String host, int port, String scheme) {
         if (host == null || port <= 0) {
             throw new RuntimeException("Invalid host or port entered.");
         }
@@ -84,6 +91,8 @@ public class HTTP implements Connection, Serializable {
         this.uriBuilder.setScheme(scheme).setHost(host).setPort(port);
 
         this.initialized = true;
+
+        return this;
     }
 
     public void setProxy(String host, int port, String scheme) {
@@ -161,6 +170,7 @@ public class HTTP implements Connection, Serializable {
             if(entity != null) {
                 FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName));
                 entity.writeTo(fos);
+                fos.close();
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

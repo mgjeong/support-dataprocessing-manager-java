@@ -18,8 +18,6 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import org.edgexfoundry.support.dataprocessing.runtime.RuntimeHost;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.TaskResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
@@ -28,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public final class TaskFactory {
@@ -36,12 +33,11 @@ public final class TaskFactory {
 
     private static TaskFactory instance = null;
 
-    private static RuntimeHost host = null;
+    private static HTTP httpClient = null;
 
     public static synchronized TaskFactory getInstance() {
         if (instance == null) {
             instance = new TaskFactory();
-            host = RuntimeHost.getInstance();
         }
         return instance;
     }
@@ -55,15 +51,24 @@ public final class TaskFactory {
 
         // Set the arguments.
         Map<String, String> args = new HashMap<>();
-        args.put(TaskTableManager.Entry.type.name(), type.name());;
+        args.put(TaskTableManager.Entry.type.name(), type.name());
         args.put(TaskTableManager.Entry.name.name(), name);
 
+        LOGGER.debug(TaskTableManager.Entry.type.name() + " " + type.name());
+        LOGGER.debug(TaskTableManager.Entry.name.name() + " " + name);
+
+        JsonElement element = null;
         // Send Request.
-        JsonElement element = host.getHttpClient().get("/analytics/v1/task/info/", args);
-        TaskResponseFormat response = new Gson().fromJson(element.toString(), TaskResponseFormat.class);
+        if(null != this.httpClient) {
+            element = this.httpClient.get("/analytics/v1/task/info/", args);
+            LOGGER.debug(element.toString());
+            TaskResponseFormat response = new Gson().fromJson(element.toString(), TaskResponseFormat.class);
 
-        return response;
-
+            return response;
+        } else {
+            LOGGER.error("Error : host cannot reachable.", httpClient);
+            return null;
+        }
     }
 
     private boolean getTaskJarFile(String jar) {
@@ -71,10 +76,20 @@ public final class TaskFactory {
         if(null == jar)
             return false;
 
-        return host.getHttpClient().get("/analytics/v1/task/jar/" + jar, null, "/runtime/ha/", jar);
+        return this.httpClient.get("/analytics/v1/task/jar/" + jar, null, "/runtime/ha/", jar);
     }
 
-    public TaskModel createTaskModelInst(TaskType type, String name, ClassLoader classLoader) throws Exception {
+
+
+    public TaskModel createTaskModelInst(TaskType type, String name, ClassLoader classLoader, String host) throws Exception {
+
+        if(null == host)
+        {
+            throw new Exception("Host cannot reachable.");
+        } else {
+            this.httpClient = new HTTP().initialize(host, "http");
+        }
+
         try {
             TaskResponseFormat response = getTaskJarInfo(type, name);
             String jar = response.getTask().get(0).getJar();

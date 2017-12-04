@@ -27,9 +27,9 @@ public class EngineFactoryTest {
         try {
             Engine fw = EngineFactory.createEngine(EngineType.Flink, "localhost", 8081);
 
-//            ((AbstractEngine) fw).generateJobId();
-
             fw = EngineFactory.createEngine(EngineType.Spark, "localhost", 8081);
+
+            fw = EngineFactory.createEngine(EngineType.Kapacitor, "localhost", 8081);
 
         } catch (RuntimeException e) {
 

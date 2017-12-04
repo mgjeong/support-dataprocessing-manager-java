@@ -34,6 +34,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.batch.BatchProperties;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -93,6 +94,8 @@ public final class JobManager {
             String engineType = null;
             String jobId = null;
             String groupId = null;
+            String runtimeHost = null;
+            String targetHost = null;
             JobState state = null;
             List<DataFormat> input = null;
             List<DataFormat> output = null;
@@ -104,6 +107,8 @@ public final class JobManager {
                 jobId = job.get(JobTableManager.Entry.jid.name());
                 groupId = job.get(JobTableManager.Entry.gid.name());
                 state = JobState.getState(job.get(JobTableManager.Entry.state.name()));
+                runtimeHost = job.get(JobTableManager.Entry.runtimeHost.name());
+                targetHost = job.get(JobTableManager.Entry.targetHost.name());
                 input = mapper.readValue(job.get(JobTableManager.Entry.input.name()),
                         new TypeReference<List<DataFormat>>() {
                         });
@@ -123,8 +128,9 @@ public final class JobManager {
                 continue;
             }
 
-            JobInfoFormat jobInfo = new JobInfoFormat(input, output, task, state);
-            addJobToGroupWithJobId(EngineType.valueOf(engineType.trim()), groupId, jobId, jobInfo);
+            JobInfoFormat jobInfo = new JobInfoFormat(input, output, task, state, targetHost, runtimeHost);
+            addJobToGroupWithJobId(EngineType.valueOf(engineType.trim()), runtimeHost,
+                    groupId, jobId, jobInfo);
          }
     }
 
@@ -188,7 +194,8 @@ public final class JobManager {
                 return newJobResponse;
             }
 
-            ErrorFormat result = addJobToGroupWithJobId(engineType, groupId, newJobResponse.getJobId(), jobNode);
+            ErrorFormat result = addJobToGroupWithJobId(engineType,
+                    request.getRuntimeHost(), groupId, newJobResponse.getJobId(), jobNode);
             if (result.isError()) {
                 deleteJob(groupId);
                 return new JobResponseFormat(result);
@@ -459,10 +466,14 @@ public final class JobManager {
 //        return addJobToGroupWithJobId(groupId, jobId, request);
 //    }
 
-    private ErrorFormat addJobToGroupWithJobId(EngineType engineType, String groupId, String jobId, JobInfoFormat request) {
+    private ErrorFormat addJobToGroupWithJobId(EngineType engineType, String runtimeHost,
+                                               String groupId, String jobId, JobInfoFormat request) {
         List<JobInfoFormat> jobList = getJobList(groupId);
         JobInfoFormat newJob = (JobInfoFormat) request.clone();
         newJob.setJobId(jobId);
+        newJob.setEngineType(engineType.name());
+        newJob.setRuntimeHost(runtimeHost);
+
         if (jobList == null) {
             jobList = new ArrayList<JobInfoFormat>();
         }
@@ -477,7 +488,8 @@ public final class JobManager {
                         request.getOutput().toString(),
                         request.getTask().toString(),
                         "",
-                        request.getTargetHost());
+                        request.getTargetHost(),
+                        runtimeHost);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
                 return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());
