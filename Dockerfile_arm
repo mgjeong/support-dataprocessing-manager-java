@@ -1,4 +1,5 @@
-FROM golang:1.9.2-alpine3.6 AS buildenv
+FROM armhf/golang:1.8-alpine AS buildenv 
+COPY docker_files/resources/qemu-arm-static /usr/bin
 
 ENV http_proxy 'http://10.112.1.184:8080'
 ENV https_proxy 'https://10.112.1.184:8080'
@@ -31,7 +32,8 @@ ADD engine/engine-kapacitor/deliver.go $UDF_PATH
 RUN go build ${UDF_PATH}/inject.go
 RUN go build ${UDF_PATH}/deliver.go
 
-FROM alpine:3.6
+FROM armhf/alpine
+COPY docker_files/resources/qemu-arm-static /usr/bin
 
 ENV http_proxy 'http://10.112.1.184:8080'
 ENV https_proxy 'https://10.112.1.184:8080'
