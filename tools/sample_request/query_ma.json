@@ -1,4 +1,5 @@
 {
+	"runtimeHost":"localhost:8082",
 	"jobs": [
 		{
 			"targetHost": "localhost:9092",
