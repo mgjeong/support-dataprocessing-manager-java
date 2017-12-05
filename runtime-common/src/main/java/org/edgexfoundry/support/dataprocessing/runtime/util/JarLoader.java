@@ -61,7 +61,7 @@ public class JarLoader {
 
         File file = new File(jarPath);
 
-        if (!file.exists() || !file.canRead() || file.length() == 0) {
+        if (!file.exists() || file.length() == 0) {
             throw new RuntimeException("Jar file is not valid. " + jarPath);
         }
         //urlClassLoader = new URLClassLoader(new URL[] {file.toURL()}, ClassLoader.getSystemClassLoader());

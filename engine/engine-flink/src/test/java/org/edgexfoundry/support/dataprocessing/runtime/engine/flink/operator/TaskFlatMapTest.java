@@ -55,7 +55,7 @@ public class TaskFlatMapTest {
         when(runtimeContext.getUserCodeClassLoader()).thenReturn(classLoader);
 
         TaskFactory taskFactory = mock(TaskFactory.class);
-        when(taskFactory.createTaskModelInst(any(), anyString(), any()))
+        when(taskFactory.createTaskModelInst(any(), anyString(), any(), any()))
                 .thenReturn(new MockTaskModel());
 
         TaskFlatMap flatMap = new TaskFlatMap(taskFormat);
@@ -77,7 +77,7 @@ public class TaskFlatMapTest {
         when(runtimeContext.getUserCodeClassLoader()).thenReturn(classLoader);
 
         TaskFactory taskFactory = mock(TaskFactory.class);
-        when(taskFactory.createTaskModelInst(any(), anyString(), any()))
+        when(taskFactory.createTaskModelInst(any(), anyString(), any(), any()))
                 .thenThrow(new Exception("Failed to create new model."));
 
         TaskFlatMap flatMap = new TaskFlatMap(taskFormat);

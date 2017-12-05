@@ -30,6 +30,8 @@ public class JobInfoFormat extends Format {
     private String jobId = null;
     @ApiModelProperty(required = false)
     private JobState state;
+    @ApiModelProperty(required = false)
+    private String runtimeHost = null;
     @ApiModelProperty(required = true)
     private String targetHost = null;
     @ApiModelProperty(required = true)
@@ -58,6 +60,16 @@ public class JobInfoFormat extends Format {
         setOutput(output);
         setTask(task);
         setState(state);
+    }
+
+    public JobInfoFormat(List<DataFormat> input, List<DataFormat> output, List<TaskFormat> task, JobState state,
+                         String targetHost, String runtimeHost) {
+        setInput(input);
+        setOutput(output);
+        setTask(task);
+        setState(state);
+        setTargetHost(targetHost);
+        setRuntimeHost(runtimeHost);
     }
 
     public void addTask(TaskFormat task) {
@@ -118,6 +130,10 @@ public class JobInfoFormat extends Format {
         this.jobId = jobId;
     }
 
+    public void setTargetHost(String targethost) {
+        this.targetHost = targethost;
+    }
+
     public String getTargetHost() {
         return this.targetHost;
     }
@@ -129,8 +145,11 @@ public class JobInfoFormat extends Format {
         return this.engineType;
     }
 
-    public void setTargetHost(String targethost) {
-        this.targetHost = targethost;
+    public void setRuntimeHost(String runtimeHost) {
+        this.runtimeHost = runtimeHost;
+    }
+    public String getRuntimeHost()  {
+        return this.runtimeHost;
     }
 
     public void setPayload(JobInfoFormat job) {

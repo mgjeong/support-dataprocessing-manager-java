@@ -63,7 +63,8 @@ public final class JobTableManager {
         output,
         taskinfo,
         engineid,
-        targetHost
+        targetHost,
+        runtimeHost
     }
 
 
@@ -80,21 +81,23 @@ public final class JobTableManager {
         td.addColum(Entry.taskinfo.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         td.addColum(Entry.engineid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
         td.addColum(Entry.targetHost.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.runtimeHost.name(), new DBConnector.ColumnDesc("TEXT", ""));
         dbCon.createTable(td);
     }
 
 
     //insert a job to the table "job"
     public void insertJob(String engineType, String jobId, String gId, String state, String input,
-                          String output, String taskinfo, String engineId, String targetHost)
+                          String output, String taskinfo, String engineId, String targetHost,
+                          String runtimeHost)
             throws SQLException, InvalidParameterException {
 
         if (DBConnector.Util.validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
             throw new InvalidParameterException();
         }
 
-        String query = String.format(" INSERT OR REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s ) "
-                        + " VALUES ( '%s', '%s','%s','%s','%s','%s','%s','%s', '%s');",
+        String query = String.format(" INSERT OR REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s ) "
+                        + " VALUES ( '%s', '%s','%s','%s','%s','%s','%s','%s', '%s', '%s');",
                 JOBTABLENAME,
                 Entry.engineType.name(),
                 Entry.jid.name(),
@@ -105,9 +108,11 @@ public final class JobTableManager {
                 Entry.taskinfo.name(),
                 Entry.engineid.name(),
                 Entry.targetHost.name(),
+                Entry.runtimeHost.name(),
                 engineType,
                 jobId, gId, state, input, output, taskinfo, engineId,
-                targetHost);
+                targetHost,
+                runtimeHost);
         LOGGER.info(query);
         dbCon.executeUpdate(query);
     }
@@ -209,8 +214,10 @@ public final class JobTableManager {
             throw new InvalidParameterException();
         }
 
-        String query = String.format(" SELECT %s, %s, %s FROM %s WHERE %s = '%s';",
-                Entry.input.name(), Entry.output.name(), Entry.taskinfo.name(), JOBTABLENAME, Entry.jid.name(), jobId);
+        String query = String.format(" SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = '%s';",
+                Entry.runtimeHost.name(), Entry.engineType.name(), Entry.input.name(),
+                Entry.output.name(), Entry.taskinfo.name(), JOBTABLENAME, Entry.jid.name(),
+                jobId);
         LOGGER.info(query);
         return dbCon.executeSelect(query);
     }
@@ -256,7 +263,8 @@ public final class JobTableManager {
 
     //select jid, state of all jobs
     public List<Map<String, String>> getAllJobs() throws SQLException {
-        String query = String.format(" SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s;",
+        String query = String.format(" SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s;",
+                Entry.runtimeHost.name(),
                 Entry.targetHost.name(), Entry.engineType.name(),
                 Entry.jid.name(), Entry.gid.name(), Entry.state.name(), Entry.input.name(),
                 Entry.output.name(), Entry.taskinfo.name(), JOBTABLENAME);
