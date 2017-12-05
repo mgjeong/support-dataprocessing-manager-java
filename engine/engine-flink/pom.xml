@@ -98,7 +98,7 @@
     <repositories>
         <repository>
             <id>EdgeX-Foundry</id>
-            <url>file://${project.basedir}/lib/</url>
+            <url>file://./lib/</url>
         </repository>
     </repositories>
 
