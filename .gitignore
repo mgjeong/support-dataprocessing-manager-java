@@ -1,5 +1,4 @@
 *.iml
-*.jar
 *.lst
 *.class
 target/
