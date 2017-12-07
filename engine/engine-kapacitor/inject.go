@@ -76,8 +76,8 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 	go func(ctx context.Context) {
 		// TODO: Read UDP port dynamically
 		const udpPort = "9100"
-		var emfInstance *emf.EMFAPI = nil
-		var emfSub *emf.EMFSubscriber
+		var emfInstance *emf.EZMQAPI = nil
+		var emfSub *emf.EZMQSubscriber
 		init := true
 		for {
 			select {
@@ -87,7 +87,7 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 					conn.Close()
 				}
 				if emfInstance != nil {
-					log.Println("Terminating EMF")
+					log.Println("Terminating EZMQ")
 					emfSub.Stop()
 				}
 				return
@@ -103,7 +103,7 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 						// TODO: error handling
 						log.Println("DPRuntime: fail to make udp connection")
 					}
-					emfInstance = initializeEMF()
+					emfInstance = initializeEZMQ()
 					hostname = p.address
 					emfSub = addSource()
 					init = false
@@ -112,18 +112,18 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 		}
 	}(p.childContext)
 
-	// TODO: Handle errors during setting EMF subscriber
+	// TODO: Handle errors during setting EZMQ subscriber
 	return init, nil
 }
 
-func initializeEMF() *emf.EMFAPI {
+func initializeEZMQ() *emf.EZMQAPI {
 	instance := emf.GetInstance()
 	result := instance.Initialize()
-	log.Println("Initializing EMF, error code: ", result)
+	log.Println("Initializing EZMQ, error code: ", result)
 	return instance
 }
 
-func addSource() *emf.EMFSubscriber {
+func addSource() *emf.EZMQSubscriber {
 	log.Println("DPRuntime Start to make source [", hostname, "] in PID ", os.Getpid())
 	target := strings.Split(hostname, ":")
 	port, err := strconv.Atoi(target[1])
@@ -134,7 +134,7 @@ func addSource() *emf.EMFSubscriber {
 		log.Println("DPRuntime wrong port number")
 	}
 
-	subscriber := emf.GetEMFSubscriber(target[0], port, subCB, subTopicCB)
+	subscriber := emf.GetEZMQSubscriber(target[0], port, subCB, subTopicCB)
 	result := subscriber.Start()
 	// TODO: error handling
 	log.Println("DPRuntime subscriber started with error ", result)

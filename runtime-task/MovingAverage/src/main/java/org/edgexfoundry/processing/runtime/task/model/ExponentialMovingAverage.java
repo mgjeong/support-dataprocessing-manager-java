@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.processing.runtime.task.model;
 
+
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import java.util.List;
 
 public class ExponentialMovingAverage extends MovingAverage {
@@ -35,42 +37,20 @@ public class ExponentialMovingAverage extends MovingAverage {
         mPrevEMAs = new HashMap<>();
     }
 
-    public HashMap<String, Double> getEMAs() {
-        return mPrevEMAs;
+    @Override
+    public String getName() {
+        return "ema";
     }
 
     @Override
-    DataSet compute(DataSet in) {
+    public TaskModelParam getDefaultParam() {
 
-        List<DataSet.Record> records = in.getRecords();
+        TaskModelParam base = new TaskModelParam();
+        HashMap data = new HashMap<String, Object>();
+        data.put("data", 3);
+        base.put("interval", data);
 
-        String targetKey = null;
-        String outputKey = null;
-        Double average = 0.0;
-        Double preEMA = 0.0;
-        // 1. Loop for each records
-        for (DataSet.Record record : records) {
-            // 2. Loop for each target variables
-            for (int index = 0; index < getTarget().size(); index++) {
-                // 2-1. Get name of target,output variable and avg value in the queue
-                targetKey = getTarget().get(index); //.replace("/", "");
-                outputKey = getOutput().get(index); //.replace("/", "");
-                preEMA = getEMAs().get(getTarget().get(index)); //.replace("/", ""));
-                // 2-3. Get value from the record
-                Object kVal = record.get(targetKey.replace("/", ""));
-                Double value = Double.parseDouble(kVal.toString());
-                // 2-5. Calculate exponential moving average value
-                average = ((value - preEMA) * mAlpha) + preEMA;
-                // 2-6. Update ema value in queue
-                getEMAs().put(targetKey, average);
-                // 2-7. Insert moving average value into data set
-                in.setValue(outputKey, average);
-            }
-        }
-        LOGGER.debug("[Moving Average] Type : " + getName());
-        LOGGER.debug("[Moving Average] Result : " + in.toString());
-
-        return in;
+        return base;
     }
 
     @Override
@@ -88,33 +68,47 @@ public class ExponentialMovingAverage extends MovingAverage {
         }
     }
 
-    @Override
-    public String getName() {
-        return "ema";
+    public HashMap<String, Double> getEMAs() {
+        return mPrevEMAs;
     }
 
     @Override
-    public TaskModelParam getDefaultParam() {
+    DataSet compute(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
+        LOGGER.debug("[Moving Average] Entering calculation");
 
-        TaskModelParam base = new TaskModelParam();
-        HashMap data = new HashMap<String, Object>();
-        data.put("data", 3);
-        base.put("interval", data);
-        List<String> target = new ArrayList<>();
-        target.add("/BC");
-        target.add("/BL");
-        target.add("/BR");
-        target.add("/TL");
-        target.add("/TR");
-        base.put("target", target);
-        List<String> output = new ArrayList<>();
-        output.add("/MA_BC");
-        output.add("/MA_BL");
-        output.add("/MA_BR");
-        output.add("/MA_TL");
-        output.add("/MA_TR");
-        base.put("outputKey", output);
+        List<Number> values;
+        Double preEMA = 0.0;
+        Double average = 0.0;
+        // 1. Get Key from Keys
+        for (int index = 0; index < inRecordKeys.size(); index++) {
+            // 2. Create cache for ema value of given target key if not exist
+            if (!mPrevEMAs.containsKey(inRecordKeys.get(index))) {
+                mPrevEMAs.put(inRecordKeys.get(index), 0.0);
+            }
+            values = (List<Number>) in.getValue(inRecordKeys.get(index), List.class);
+            if (values.size() > 0) {
+                List<Number> result = new ArrayList<>();
+                // 3-1. Iterate if # of given data is more then one record
+                for (int loop = 0; loop < values.size(); loop++) {
+                    // 3-2. Get the cache which stores the values of give key.
+                    // 3. Get the sum value for given key
+                    preEMA = mPrevEMAs.get(inRecordKeys.get(index));
+                    Double value = Double.parseDouble(values.get(loop).toString());
+                    // 2-5. Calculate exponential moving average value
+                    average = ((value - preEMA) * mAlpha) + preEMA;
+                    // 2-6. Update ema value in queue
+                    getEMAs().put(inRecordKeys.get(index), average);
+                    // 2-7. Insert moving average value into data set
+                    //in.setValue(outRecordKeys.get(index), average);
+                    result.add(average);
+                }
+                if (result.size() > 0) {
+                    in.setValue(outRecordKeys.get(index), result);
+                }
+            }
+        }
+        LOGGER.debug("[Moving Average] Type : " + getName() + "  Result : " + in.toString());
 
-        return base;
+        return in;
     }
 }

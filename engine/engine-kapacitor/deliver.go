@@ -18,7 +18,7 @@ type deliverHandler struct {
 	address string
 
 	targetFile *(os.File)
-	targetEMF *(emf.EMFPublisher)
+	targetEZMQ *(emf.EZMQPublisher)
 
 	agent *agent.Agent
 }
@@ -91,16 +91,16 @@ func (f *deliverHandler) addSink() error {
 		target := strings.Split(f.address, ":")
 		//emf.GetInstance().Initialize()
 		emf.GetInstance().Initialize()
-		startCB := func(code emf.EMFErrorCode) { log.Println("EMF starting by callback") }
-		stopCB := func(code emf.EMFErrorCode) { log.Println("EMF stopping by callback") }
-		errorCB := func(code emf.EMFErrorCode) { log.Println("EMF error by callback") }
+		startCB := func(code emf.EZMQErrorCode) { log.Println("EZMQ starting by callback") }
+		stopCB := func(code emf.EZMQErrorCode) { log.Println("EZMQ stopping by callback") }
+		errorCB := func(code emf.EZMQErrorCode) { log.Println("EZMQ error by callback") }
 		port, err := strconv.Atoi(target[1])
 		log.Println("port: ", port)
 		if err != nil {
 			return errors.New("error: wrong port number for emf")
 		}
-		f.targetEMF = emf.GetEMFPublisher(port, startCB, stopCB, errorCB)
-		result := f.targetEMF.Start()
+		f.targetEZMQ = emf.GetEZMQPublisher(port, startCB, stopCB, errorCB)
+		result := f.targetEZMQ.Start()
 
 		if result != 0 {
 			log.Println("DPRuntime failed to start emf publisher")
@@ -171,7 +171,7 @@ func (f *deliverHandler) Point(p *agent.Point) error {
 	} else if f.sink == "emf" {
 		log.Println("DPRuntime Writing: ", string(jsonBytes))
 		var event = getEvent(jsonBytes)
-		result := f.targetEMF.Publish(event)
+		result := f.targetEZMQ.Publish(event)
 		if result != 0 {
 			log.Println("DPRuntime error: failed to publish emf event")
 		}
@@ -238,7 +238,7 @@ func (f *deliverHandler) Stop() {
 	if f.sink == "f" {
 		f.targetFile.Close()
 	} else if f.sink == "emf" {
-		f.targetEMF.Stop()
+		f.targetEZMQ.Stop()
 	}
 	close(f.agent.Responses)
 }

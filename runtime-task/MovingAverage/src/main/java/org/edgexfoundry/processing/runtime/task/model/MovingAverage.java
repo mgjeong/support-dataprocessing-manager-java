@@ -76,29 +76,22 @@ public abstract class MovingAverage extends AbstractTaskModel {
     @Override
     public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
 
-        in = compute(in);
+        if ((inRecordKeys != null && outRecordKeys != null)
+                && (inRecordKeys.size() == outRecordKeys.size())) {
+            in = compute(in, inRecordKeys, outRecordKeys);
+        } else {
+            LOGGER.error("[TREND] Size of input/output key list are not equal");
+        }
 
         return in;
     }
 
     @Override
     public void setParam(TaskModelParam params) {
-
-        if (params.containsKey("target")) {
-            mTarget = (List<String>) params.get("target");
-
-            for (int index = 0; index < getTarget().size(); index++) {
-                mValues.put(getTarget().get(index), new LinkedList<Double>());
-            }
-        }
-        if (params.containsKey("outputKey")) {
-            mResult = (List<String>) params.get("outputKey");
-        }
         if (params.containsKey("interval")) {
             HashMap tInterval = (HashMap) params.get("interval");
             if (tInterval.containsKey("data")) {
-
-                Integer dataSize = ((Number)tInterval.get("data")).intValue();
+                Integer dataSize = ((Number) tInterval.get("data")).intValue();
                 if (dataSize != null) {
                     setWindowType(0);
                     setWindowSize(dataSize.intValue());
@@ -114,5 +107,5 @@ public abstract class MovingAverage extends AbstractTaskModel {
         }
     }
 
-    abstract DataSet compute(DataSet in);
+    abstract DataSet compute(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys);
 }

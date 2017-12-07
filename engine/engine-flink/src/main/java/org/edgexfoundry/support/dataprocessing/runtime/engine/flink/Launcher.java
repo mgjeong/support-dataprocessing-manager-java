@@ -128,7 +128,7 @@ public class Launcher {
             String[] dataSource = output.getDataSource().split(":");
             return stream.addSink(new WebSocketServerSink(Integer.parseInt(dataSource[1])))
                     .setParallelism(1);
-        } else if (dataType.equals("EMF")) {
+        } else if (dataType.equals("EZMQ")) {
             String[] dataSource = output.getDataSource().split(":");
             // String host = dataSource[0].trim(); // unused
             int port = Integer.parseInt(dataSource[1].trim());

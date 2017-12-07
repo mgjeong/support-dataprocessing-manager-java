@@ -197,10 +197,10 @@ public class LauncherTest {
         inputZMQ.addProperty("dataSource", "localhost:5555:topic");
         inputZMQ.addProperty("dataType", "ZMQ");
         input.add(inputZMQ);
-        JsonObject inputEMF = new JsonObject();
-        inputEMF.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
-        inputEMF.addProperty("dataType", "EMF");
-        input.add(inputEMF);
+        JsonObject inputEZMQ = new JsonObject();
+        inputEZMQ.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
+        inputEZMQ.addProperty("dataType", "EZMQ");
+        input.add(inputEZMQ);
         p.put(JobTableManager.Entry.input.name(), input.toString());
 
         // Output
@@ -209,10 +209,10 @@ public class LauncherTest {
         outputZMQ.addProperty("dataSource", "localhost:5555:topic");
         outputZMQ.addProperty("dataType", "ZMQ");
         output.add(outputZMQ);
-        JsonObject outputEMF = new JsonObject();
-        outputEMF.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
-        outputEMF.addProperty("dataType", "EMF");
-        output.add(outputEMF);
+        JsonObject outputEZMQ = new JsonObject();
+        outputEZMQ.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
+        outputEZMQ.addProperty("dataType", "EZMQ");
+        output.add(outputEZMQ);
         JsonObject outputPayload = new JsonObject();
         outputPayload.addProperty("dataSource", "output");
         outputPayload.addProperty("dataType", "F");

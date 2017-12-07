@@ -1,6 +1,6 @@
 scriptPath=$(cd "$(dirname "$0")" && pwd)
 repoPath=$(dirname "$scriptPath")
 echo $repoPath
-flink_bin="${repoPath}/se/flink/bin"
+flink_bin="/flink/"
 framework_dir=/runtime/ha
 framework_repo="${repoPath}"

@@ -29,10 +29,10 @@ public class InputJsonGenerator {
     private static final String ZMQ_DATA_TYPE = "ZMQ";
     private static final String FILE_DATA_TYPE = "F";
     private static final String WEBSOCKET_DATA_TYPE = "WS";
-    private static final String EMF_DATA_TYPE = "EMF";
+    private static final String EZMQ_DATA_TYPE = "EZMQ";
 
     private static final String ZMQ_DATA_SOURCE_INPUT = IP_ADDR + ":5555:topic";
-    private static final String EMF_DATA_SOURCE_INPUT = "edgex-device-file:5562:PROTOBUF_MSG";
+    private static final String EZMQ_DATA_SOURCE_INPUT = "edgex-device-file:5562:PROTOBUF_MSG";
     private static final String ZMQ_DATA_SOURCE_OUTPUT = IP_ADDR + ":5556:topic";
     private static final String FILE_DATA_SOURCE_OUPUT = "output";
     private static final String WEBSOCKET_DATA_SOURCE_OUTPUT = IP_ADDR + ":8083";
@@ -314,7 +314,7 @@ public class InputJsonGenerator {
         // alias Flinck Job A
         JobInfoFormat job = new JobInfoFormat();
 //        job.addInput(new DataFormat(ZMQ_DATA_TYPE, ZMQ_DATA_SOURCE_INPUT));
-        job.addInput(new DataFormat(EMF_DATA_TYPE, EMF_DATA_SOURCE_INPUT));
+        job.addInput(new DataFormat(EZMQ_DATA_TYPE, EZMQ_DATA_SOURCE_INPUT));
         job.addOutput(new DataFormat(ZMQ_DATA_TYPE, TEMP_ZMQ1));
         job.addTask(createParserTask("{\"delimiter\":\"\\t\",\"index\":\"1 2\"}"));
         job.addTask(createLogisticRegressionTask(
@@ -325,7 +325,7 @@ public class InputJsonGenerator {
        // alias Flinck Job B
         job = new JobInfoFormat();
 //        job.addInput(new DataFormat(ZMQ_DATA_TYPE, ZMQ_DATA_SOURCE_INPUT));
-        job.addInput(new DataFormat(EMF_DATA_TYPE, EMF_DATA_SOURCE_INPUT));
+        job.addInput(new DataFormat(EZMQ_DATA_TYPE, EZMQ_DATA_SOURCE_INPUT));
         job.addOutput(new DataFormat(ZMQ_DATA_TYPE, TEMP_ZMQ2));
         job.addTask(createParserTask("{\"delimiter\":\"\\t\",\"index\":\"0\"}"));
         job.addTask(createJsonGeneratorTask("{\"keys\":\"loadsp\"}"));

@@ -19,27 +19,29 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.edgexfoundry.ezmq.EZMQAPI;
+import org.edgexfoundry.ezmq.EZMQErrorCode;
+import org.edgexfoundry.ezmq.EZMQSubscriber;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.edgexfoundry.domain.core.Event;
 import org.edgexfoundry.domain.core.Reading;
-import org.edgexfoundry.emf.EMFAPI;
-import org.edgexfoundry.emf.EMFErrorCode;
-import org.edgexfoundry.emf.EMFSubscriber;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscriber.EMFSubCallback {
+public class EMFSource extends RichSourceFunction<DataSet> implements EZMQSubscriber.EZMQSubCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(EMFSource.class);
 
     private final String host;
     private final int port;
 
-    private EMFAPI emfApi = null;
-    private EMFSubscriber emfSubscriber = null;
+    private EZMQAPI emfApi = null;
+    private EZMQSubscriber emfSubscriber = null;
 
     private SourceContext<DataSet> sourceContext = null;
 
@@ -57,22 +59,22 @@ public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscri
 
         this.waitLock = new Object();
 
-        this.emfApi = EMFAPI.getInstance();
+        this.emfApi = EZMQAPI.getInstance();
         this.emfApi.initialize();
-        LOGGER.info("EMF API initialized.");
+        LOGGER.info("EZMQ API initialized.");
 
-        this.emfSubscriber = new EMFSubscriber(this.host, this.port, this);
-        EMFErrorCode emfErrorCode = this.emfSubscriber.start();
-        if (emfErrorCode != EMFErrorCode.EMF_OK) {
+        this.emfSubscriber = new EZMQSubscriber(this.host, this.port, this);
+        EZMQErrorCode emfErrorCode = this.emfSubscriber.start();
+        if (emfErrorCode != EZMQErrorCode.EZMQ_OK) {
             throw new RuntimeException(
-                    String.format("Failed to start EMF subscriber. [ErrorCode=%s]", emfErrorCode));
+                    String.format("Failed to start EZMQ subscriber. [ErrorCode=%s]", emfErrorCode));
         }
         emfErrorCode = this.emfSubscriber.subscribe();
-        if (emfErrorCode != EMFErrorCode.EMF_OK) {
+        if (emfErrorCode != EZMQErrorCode.EZMQ_OK) {
             throw new RuntimeException(
-                    String.format("Failed to start EMF subscriber. [ErrorCode=%s]", emfErrorCode));
+                    String.format("Failed to start EZMQ subscriber. [ErrorCode=%s]", emfErrorCode));
         }
-        LOGGER.info("EMF Subscriber started. [host={}/port={}]",
+        LOGGER.info("EZMQ Subscriber started. [host={}/port={}]",
                 new Object[] {this.host, this.port});
     }
 
@@ -93,25 +95,25 @@ public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscri
 
     @Override
     public void cancel() {
-        LOGGER.info("Cancelling EMF Source...");
+        LOGGER.info("Cancelling EZMQ Source...");
         this.running = false;
 
         if (this.emfSubscriber != null) {
             this.emfSubscriber.stop();
-            LOGGER.info("EMF Subscriber stopped.");
+            LOGGER.info("EZMQ Subscriber stopped.");
         }
 
         if (this.emfApi != null) {
-            LOGGER.info("EMF API terminating...");
+            LOGGER.info("EZMQ API terminating...");
             this.emfApi.terminate(); // Is it safe to terminate here? Singleton.
-            LOGGER.info("EMF API terminated.");
+            LOGGER.info("EZMQ API terminated.");
         }
 
-        // Terminate loop after shutting down EMF
+        // Terminate loop after shutting down EZMQ
         synchronized (this.waitLock) {
             this.waitLock.notify();
         }
-        LOGGER.info("EMF Source cancelled.");
+        LOGGER.info("EZMQ Source cancelled.");
     }
 
     @Override
@@ -130,7 +132,7 @@ public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscri
         for (Reading reading : readings) {
             //LOGGER.info(reading.getValue());
             if (this.sourceContext != null) {
-                // TODO: This may vary depending on how EMF package its values.
+                // TODO: This may vary depending on how EZMQ package its values.
                 JsonObject obj = jsonParser.parse(reading.getValue().trim()).getAsJsonObject();
                 DataSet streamData = DataSet.create(event.getId(), obj.toString());
                 streamData.setValue("/topic", topic);

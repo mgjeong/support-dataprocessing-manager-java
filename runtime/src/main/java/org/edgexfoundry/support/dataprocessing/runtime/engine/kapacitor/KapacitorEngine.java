@@ -154,7 +154,7 @@ public class KapacitorEngine extends AbstractEngine {
         if (source.getTopics() != null) {
             topics = source.getTopics().replaceAll("\\s", "").split(",");
         }
-        if (!dataType.equalsIgnoreCase("EMF")) {
+        if (!dataType.equalsIgnoreCase("EZMQ")) {
             throw new RuntimeException("Unsupported input data type" + dataType);
         }
 
@@ -189,7 +189,7 @@ public class KapacitorEngine extends AbstractEngine {
         String dataSink = output.getDataSource();
         String topics = output.getTopics();
 
-        if (!dataType.equalsIgnoreCase("EMF") && !dataType.equalsIgnoreCase("F")) {
+        if (!dataType.equalsIgnoreCase("EZMQ") && !dataType.equalsIgnoreCase("F")) {
             throw new RuntimeException("Unsupported output data type" + dataType);
         }
 

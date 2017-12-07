@@ -44,11 +44,11 @@ public final class CommonFunction {
     /**
      * Override function
      * Multiply values in arrays
-     * @param x Double []
-     * @param y Double []
+     * @param x Number []
+     * @param y Number []
      * @return
      */
-    public static double product(Double[] x, Double[] y) {
+    public static double product(Number[] x, Number[] y) {
         double ret = 0.0;
 
         if (x.length != y.length) {
@@ -65,11 +65,11 @@ public final class CommonFunction {
     /**
      * Override function
      * Multiply values in arrays
-     * @param x Double []
+     * @param x Number []
      * @param y double []
      * @return
      */
-    public static double product(Double[] x, double[] y) {
+    public static double product(Number[] x, double[] y) {
         double ret = 0.0;
 
         if (x.length != y.length) {
@@ -110,11 +110,11 @@ public final class CommonFunction {
     /**
      * Override function
      * Multiply values until it has its pair
-     * @param x Double []
+     * @param x Number []
      * @param y double []
      * @return
      */
-    public static double forceProduct(Double[] x, double[] y) {
+    public static double forceProduct(Number[] x, double[] y) {
         double ret = 0.0;
 
         if (x.length <= y.length) {
@@ -134,11 +134,11 @@ public final class CommonFunction {
     /**
      * Override function
      * Multiply values until it has its pair
-     * @param x Double []
-     * @param y Double []
+     * @param x Number []
+     * @param y Number []
      * @return
      */
-    public static double forceProduct(Double[] x, Double[] y) {
+    public static double forceProduct(Number[] x, Number[] y) {
         double ret = 0.0;
 
         if (x.length <= y.length) {
