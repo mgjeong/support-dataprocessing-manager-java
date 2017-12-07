@@ -34,6 +34,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator.Tas
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.WebSocketServerSink;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.MongoDBSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.ZMQSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.ZMQSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZMQConnectionConfig;
@@ -139,6 +140,11 @@ public class Launcher {
                 outputFilePath += ".txt";
             }
             return stream.addSink(new FileOutputSink(outputFilePath));
+        } else if (dataType.equals("MongoDB")) {
+            String[] dataSource = output.getDataSource().split(":");
+
+            return stream.addSink(new MongoDBSink(dataSource[0], Integer.parseInt(dataSource[1])))
+                    .setParallelism(1);
         } else {
             throw new RuntimeException("Unsupported output data type: " + dataType);
         }
