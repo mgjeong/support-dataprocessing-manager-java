@@ -77,11 +77,11 @@
         <!-- Message FW -->
         <dependency>
             <groupId>org.edgexfoundry.emf</groupId>
-            <artifactId>edgex-ezmq</artifactId>
+            <artifactId>edgex-emf</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <!--
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/edgex-ezmq-0.0.1-SNAPSHOT.jar</systemPath>
+            <systemPath>${project.basedir}/lib/edgex-emf-0.0.1-SNAPSHOT.jar</systemPath>
             -->
         </dependency>
              

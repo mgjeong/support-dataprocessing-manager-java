@@ -99,16 +99,16 @@
                 <artifactId>maven-install-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>install-edgex-ezmq</id>
+                        <id>install-edgex-emf</id>
                         <phase>validate</phase>
                         <goals>
                             <goal>install-file</goal>
                         </goals>
                         <configuration>
                             <groupId>org.edgexfoundry.emf</groupId>
-                            <artifactId>edgex-ezmq</artifactId>
+                            <artifactId>edgex-emf</artifactId>
                             <version>0.0.1-SNAPSHOT</version>
-                            <file>${edgex.libdir}/edgex-ezmq-0.0.1-SNAPSHOT.jar</file>
+                            <file>${edgex.libdir}/edgex-emf-0.0.1-SNAPSHOT.jar</file>
                             <packaging>jar</packaging>
                         </configuration>
                     </execution>

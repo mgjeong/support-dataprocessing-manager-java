@@ -29,8 +29,8 @@ import static org.mockito.Mockito.mock;
 */
 
 public class EMFSourceTest {
-    private static final String EZMQ_HOST = "localhost";
-    private static final int EZMQ_PORT = 5599;
+    private static final String EMF_HOST = "localhost";
+    private static final int EMF_PORT = 5599;
 
     //FIXLATER:
     /*
@@ -41,7 +41,7 @@ public class EMFSourceTest {
 
 //    @Test
 //    public void testEmfErrorCode() throws Exception{
-//        EZMQSource sourceA = new EZMQSource(EZMQ_HOST, -1, EZMQMessageType.PROTOBUF_MSG);
+//        EMFSource sourceA = new EMFSource(EMF_HOST, -1, EMFMessageType.PROTOBUF_MSG);
 //
 //        try{
 //            sourceA.open(null);
@@ -52,7 +52,7 @@ public class EMFSourceTest {
 
     //FIXLATER: @Test(timeout = 3000L)
     public void testEmfMessageCB() throws Exception {
-        EZMQSource source = new EZMQSource(EZMQ_HOST, EZMQ_PORT);
+        EMFSource source = new EMFSource(EMF_HOST, EMF_PORT);
         Thread temp = null;
         try {
             source.open(null);
@@ -86,7 +86,7 @@ public class EMFSourceTest {
 
     @Test(timeout = 3000L)
     public void testOpenClose() throws Exception {
-        EZMQSource source = new EZMQSource(EZMQ_HOST, EZMQ_PORT);
+        EMFSource source = new EMFSource(EMF_HOST, EMF_PORT);
         try {
             source.open(null);
             Thread.sleep(50L);
@@ -98,8 +98,8 @@ public class EMFSourceTest {
 
 //    @Test
 //    public void testOpenTwice() throws Exception {
-//        EZMQSourceThread sourceA = new EZMQSourceThread();
-//        EZMQSourceThread sourceB = new EZMQSourceThread();
+//        EMFSourceThread sourceA = new EMFSourceThread();
+//        EMFSourceThread sourceB = new EMFSourceThread();
 //        try {
 //            sourceA.open();
 //            sourceB.open();

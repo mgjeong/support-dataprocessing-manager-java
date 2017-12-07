@@ -18,14 +18,14 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
 /*
 import DataSet;
-import org.edgexfoundry.emf.EZMQErrorCode;
+import org.edgexfoundry.emf.EMFErrorCode;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 */
 public class EMFSinkTest {
-    private static final String EZMQ_HOST = "localhost";
-    private static final int EZMQ_PORT = 5599;
+    private static final String EMF_HOST = "localhost";
+    private static final int EMF_PORT = 5599;
 
     //FIXLATER:
     /*
@@ -36,12 +36,12 @@ public class EMFSinkTest {
 
     @Test(timeout = 3000L)
     public void testInvoke() throws Exception {
-        EZMQSink sink = new EZMQSink(EZMQ_PORT);
+        EMFSink sink = new EMFSink(EMF_PORT);
         try {
             sink.open(null);
-            sink.onStartCB(EZMQErrorCode.EZMQ_OK);
-            sink.onStopCB(EZMQErrorCode.EZMQ_OK);
-            sink.onErrorCB(EZMQErrorCode.EZMQ_OK);
+            sink.onStartCB(EMFErrorCode.EMF_OK);
+            sink.onStopCB(EMFErrorCode.EMF_OK);
+            sink.onErrorCB(EMFErrorCode.EMF_OK);
 
             sink.invoke(DataSet.create("{}"));
         } finally {
@@ -51,7 +51,7 @@ public class EMFSinkTest {
 
     @Test(timeout = 3000L)
     public void testOpenClose() throws Exception {
-        EZMQSink sink = new EZMQSink(EZMQ_PORT);
+        EMFSink sink = new EMFSink(EMF_PORT);
         try {
             sink.open(null);
             Thread.sleep(50L);

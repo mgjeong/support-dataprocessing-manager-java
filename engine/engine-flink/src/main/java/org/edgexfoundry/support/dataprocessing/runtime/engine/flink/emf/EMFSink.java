@@ -17,11 +17,10 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
 
-
-import org.edgexfoundry.ezmq.EZMQAPI;
-import org.edgexfoundry.ezmq.EZMQCallback;
-import org.edgexfoundry.ezmq.EZMQErrorCode;
-import org.edgexfoundry.ezmq.EZMQPublisher;
+import org.edgexfoundry.emf.EMFAPI;
+import org.edgexfoundry.emf.EMFCallback;
+import org.edgexfoundry.emf.EMFErrorCode;
+import org.edgexfoundry.emf.EMFPublisher;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -34,13 +33,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EMFSink extends RichSinkFunction<DataSet> implements EZMQCallback {
+public class EMFSink extends RichSinkFunction<DataSet> implements EMFCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(EMFSink.class);
 
     private final int port;
 
-    private EZMQAPI emfApi = null;
-    private EZMQPublisher emfPublisher = null;
+    private EMFAPI emfApi = null;
+    private EMFPublisher emfPublisher = null;
 
     public EMFSink(int port) {
         this.port = port;
@@ -50,15 +49,15 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EZMQCallback {
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
-        this.emfApi = EZMQAPI.getInstance();
+        this.emfApi = EMFAPI.getInstance();
         this.emfApi.initialize();
-        LOGGER.info("EZMQ API initialized.");
+        LOGGER.info("EMF API initialized.");
 
-        this.emfPublisher = new EZMQPublisher(this.port, this);
-        EZMQErrorCode emfErrorCode = this.emfPublisher.start();
-        if (emfErrorCode != EZMQErrorCode.EZMQ_OK) {
+        this.emfPublisher = new EMFPublisher(this.port, this);
+        EMFErrorCode emfErrorCode = this.emfPublisher.start();
+        if (emfErrorCode != EMFErrorCode.EMF_OK) {
             throw new RuntimeException(
-                    String.format("Failed to start EZMQPublisher. [ErrorCode=%s]", emfErrorCode));
+                    String.format("Failed to start EMFPublisher. [ErrorCode=%s]", emfErrorCode));
         }
     }
 
@@ -76,12 +75,12 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EZMQCallback {
 
         if (this.emfPublisher != null) {
             this.emfPublisher.stop();
-            LOGGER.info("EZMQ Publisher stopped.");
+            LOGGER.info("EMF Publisher stopped.");
         }
 
         if (this.emfApi != null) {
             this.emfApi.terminate();
-            LOGGER.info("EZMQ API terminated.");
+            LOGGER.info("EMF API terminated.");
         }
     }
 
@@ -96,7 +95,7 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EZMQCallback {
         reading.setPushed(reading.getOrigin());
 
         readings.add(reading);
-        Event event = new Event("EZMQSink", readings);
+        Event event = new Event("EMFSink", readings);
         event.setCreated(0);
         event.setModified(0);
         event.setId("DPFW-01");
@@ -107,17 +106,17 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EZMQCallback {
     }
 
     @Override
-    public void onStartCB(EZMQErrorCode emfErrorCode) {
-        LOGGER.info("EZMQ publisher started. [ErrorCode={}]", emfErrorCode);
+    public void onStartCB(EMFErrorCode emfErrorCode) {
+        LOGGER.info("EMF publisher started. [ErrorCode={}]", emfErrorCode);
     }
 
     @Override
-    public void onStopCB(EZMQErrorCode emfErrorCode) {
-        LOGGER.info("EZMQ publisher stopped. [ErrorCode={}]", emfErrorCode);
+    public void onStopCB(EMFErrorCode emfErrorCode) {
+        LOGGER.info("EMF publisher stopped. [ErrorCode={}]", emfErrorCode);
     }
 
     @Override
-    public void onErrorCB(EZMQErrorCode emfErrorCode) {
-        LOGGER.info("EZMQ publisher error occurred. [ErrorCode={}]", emfErrorCode);
+    public void onErrorCB(EMFErrorCode emfErrorCode) {
+        LOGGER.info("EMF publisher error occurred. [ErrorCode={}]", emfErrorCode);
     }
 }
