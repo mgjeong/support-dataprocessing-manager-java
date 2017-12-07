@@ -28,12 +28,18 @@ public class DataFormat extends Format {
     private String topics = null;
 
     public DataFormat() {
-        this(null, null);
+        this(null, null, null);
     }
 
     public DataFormat(String dataType, String dataSource) {
         setDataType(dataType);
         setDataSource(dataSource);
+    }
+
+    public DataFormat(String dataType, String dataSource, String topics) {
+        setDataType(dataType);
+        setDataSource(dataSource);
+        setTopics(topics);
     }
 
     public String getDataType() {
