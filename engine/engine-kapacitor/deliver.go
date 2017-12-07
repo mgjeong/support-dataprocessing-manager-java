@@ -7,7 +7,7 @@ import (
 	"os"
 	"encoding/json"
 
-	"go/emf"
+	"github.com/mgjeong/messaging-zmq/go/emf"
 	"strings"
 	"strconv"
 	"time"
