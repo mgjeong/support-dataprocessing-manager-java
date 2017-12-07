@@ -10,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"net"
+	"encoding/json"
+	"fmt"
+	"regexp"
 )
 
 type injectHandler struct {
@@ -105,7 +108,7 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 					}
 					emfInstance = initializeEMF()
 					hostname = p.address
-					emfSub = addSource()
+					emfSub = addSource(p.topic)
 					init = false
 				}
 			}
@@ -123,7 +126,7 @@ func initializeEMF() *emf.EMFAPI {
 	return instance
 }
 
-func addSource() *emf.EMFSubscriber {
+func addSource(topic string) *emf.EMFSubscriber {
 	log.Println("DPRuntime Start to make source [", hostname, "] in PID ", os.Getpid())
 	target := strings.Split(hostname, ":")
 	port, err := strconv.Atoi(target[1])
@@ -140,7 +143,11 @@ func addSource() *emf.EMFSubscriber {
 	log.Println("DPRuntime subscriber started with error ", result)
 
 	// TODO: subscribing topics
-	result = subscriber.Subscribe()
+	if topic != "" {
+		result = subscriber.SubscribeForTopic(topic)
+	} else {
+		result = subscriber.Subscribe()
+	}
 	// TODO: error handling
 	log.Println("DPRuntime subscriber is working with error ", result)
 	return subscriber
@@ -151,20 +158,67 @@ func eventHandler(event emf.Event) {
 }
 
 func eventHandlerWithTopic(topic string, event emf.Event) {
-	msg := hostname
+	var msg string
+
+	// EMF always appends '/' at the end of a topic
+	// For now, last letter will be deleted if a topic ends with '/'
 	if topic != "" {
-		msg += ":" + topic
+		if topic[len(topic) - 1] == '/' {
+			topic = topic[:len(topic) - 1]
+		}
+
+		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+		if err == nil {
+			topic = reg.ReplaceAllString(topic, "")
+		}
+		msg += topic
 	}
+
 	msg += " "
 	readings := event.GetReading()
+	timeStamp := ""
 	for i := 0; i < len(readings); i++ {
 		// TODO: Assemble keys and values into influx line, and send via UDP
 		//log.Println("DPRuntime message: ", readings[i].GetValue())
-		msg += readings[i].GetName() + "=" + readings[i].GetValue() + " "
+		body, timeChecked := jsonIntoInfluxBody(readings[i].GetValue())
+		msg += body
+		if timeChecked != "" {
+			timeStamp = timeChecked
+		}
 	}
+	msg = msg[:len(msg)-1]
+
+	if timeStamp != "" {
+		msg += " " + timeStamp
+	}
+
 	log.Println("DPRuntime message: ", msg)
 
 	forwardEventToEngine(msg)
+}
+
+func jsonIntoInfluxBody(msg string) (string, string) {
+	var body string
+	data := make(map[string]interface{})
+	decoder := json.NewDecoder(strings.NewReader(msg))
+	decoder.UseNumber()
+	decoder.Decode(&data)
+	var timeStamp = ""
+	for key, value := range data {
+		var stringValue string
+		switch value.(type) {
+		case string:
+			stringValue = value.(string)
+			body += key + "=" + fmt.Sprintf("\"%s\",", value.(string))
+		case json.Number:
+			stringValue = value.(json.Number).String()
+			body += key + "=" + stringValue + ","
+		}
+		if key == "sTime" {
+			timeStamp = stringValue
+		}
+	}
+	return body, timeStamp
 }
 
 func forwardEventToEngine(msg string) {
