@@ -209,7 +209,9 @@ func (p *injectHandler) EndBatch(batch *agent.EndBatch) error {
 
 func (p *injectHandler) Stop() {
 	log.Println("DPRuntime Stopping UDF")
-	p.cancel()
+	if p.childContext != nil {
+		p.cancel()
+	}
 	close(p.agent.Responses)
 }
 
