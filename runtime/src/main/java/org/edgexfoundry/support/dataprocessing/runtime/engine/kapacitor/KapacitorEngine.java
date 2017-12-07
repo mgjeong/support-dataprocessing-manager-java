@@ -87,7 +87,7 @@ public class KapacitorEngine extends AbstractEngine {
             }
 
             String scriptTail = "";
-            for (DataFormat output: outputs) {
+            for (DataFormat output : outputs) {
                 scriptTail += generateScriptTail(output);
             }
 
@@ -102,24 +102,20 @@ public class KapacitorEngine extends AbstractEngine {
 
             LOGGER.info("Building Kapacitor jobId: {}", jobId);
 
-            String scriptHeader = "";
-            for (String header: headers.keySet()) {
-                scriptHeader += headers.get(header) + '\n';
+            String script = "";
+            for (String header : headers.keySet()) {
+                script += headers.get(header) + '\n';
             }
 
-
-            String script;
             if (scriptBody != null) {
-                scriptBody = scriptBody.replace("<", "\'").replace(">", "\'");
-                script = scriptHeader + '|' + scriptBody + scriptTail;
-            } else {
-                script = scriptHeader + scriptTail;
+                script += scriptBody.replace("<", "\'").replace(">", "\'") + '\n';
             }
 
+            script += scriptTail;
 
             LOGGER.info("Kapacitor script is following: {}", script);
             taskInfo.addProperty("script", script);
-            taskInfo.addProperty("status", "enabled");
+            taskInfo.addProperty("status", "disabled");
 
             // Post defined task to kapacitor
             this.httpClient.post(TASK_ROOT, taskInfo.toString());
@@ -149,39 +145,51 @@ public class KapacitorEngine extends AbstractEngine {
 
     private Map<String, String> generateScriptHeaders(DataFormat source) {
         String dataType = source.getDataType();
-        String dataSource = source.getDataSource();
-        String[] topics = null;
-        if (source.getTopics() != null) {
-            topics = source.getTopics().replaceAll("\\s", "").split(",");
-        }
+        String dataSource = source.getDataSource().replaceAll("\\s", "");
+
         if (!dataType.equalsIgnoreCase("EMF")) {
-            throw new RuntimeException("Unsupported input data type" + dataType);
+            throw new RuntimeException("Unsupported input data type; " + dataType);
         }
 
-        Map<String, String> scriptHeaders = new HashMap<>();
-        if (topics == null) {
-            String key = dataSource;
-            scriptHeaders.put(key, generateScriptHeaderByTopic(dataSource, null));
-        } else {
-            for (String topic : topics) {
-                String key = dataSource + topic;
-                scriptHeaders.put(key, generateScriptHeaderByTopic(dataSource, topic));
-            }
+        if (dataSource == null) {
+            throw new RuntimeException("Invalid data source; " + dataSource);
         }
+
+        String[] sourceSplits = dataSource.split(":", 3);
+        String[] topics = null;
+        if (sourceSplits.length == 3) {
+            topics = sourceSplits[2].split(",");
+        }
+
+        String sourceAddress = sourceSplits[0] + ':' + sourceSplits[1];
+
+        Map<String, String> scriptHeaders = new HashMap<>();
+
+        for (String topic : topics) {
+            String key = topic;
+            scriptHeaders.put(key, generateScriptHeaderByTopic(topic, sourceAddress, topic));
+        }
+
+        if (topics == null) {
+            scriptHeaders.put(sourceAddress, generateScriptHeaderByTopic(sourceAddress, sourceAddress, null));
+        }
+
+
 
         return scriptHeaders;
     }
 
-    private String generateScriptHeaderByTopic(String dataSource, String topic) {
-        String table;
-        String injection = String.format("@inject().source('emf').address(\'%s\')", dataSource);
+    private String generateScriptHeaderByTopic(String table, String sourceAddress, String topic) {
+        String validName = table.replaceAll("\\W", "");
+        String measurement = String.format("var %s = stream|from().measurement(\'%s\')", validName, validName);
+        String injection = String.format("@inject().source('emf').address(\'%s\')", sourceAddress);
+
         if (topic == null) {
-            table = String.format("stream|from().measurement(\'%s\')", dataSource);
-            return table + injection;
-        } else {
-            table = String.format("stream|from().measurement(\'%s\')", dataSource + topic);
-            return table + injection + String.format(".topic(\'%s\')", topic);
+            return measurement + injection;
         }
+
+        String subscription = String.format(".topic(\'%s\')", topic);
+        return measurement + injection + subscription;
     }
 
     private String generateScriptTail(DataFormat output) {
