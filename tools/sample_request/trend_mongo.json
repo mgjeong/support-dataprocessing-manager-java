@@ -12,7 +12,8 @@
       "output": [
         {
           "dataType": "MongoDB",
-          "dataSource": "localhost:27017"
+          "dataSource": "localhost:27017",
+          "name":"demo:merge"
         }
       ],
       "task": [
