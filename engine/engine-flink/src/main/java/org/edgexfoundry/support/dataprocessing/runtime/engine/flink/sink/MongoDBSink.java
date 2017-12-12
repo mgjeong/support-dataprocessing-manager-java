@@ -17,17 +17,20 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink;
 
+import com.mongodb.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
 import com.mongodb.util.JSON;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MongoDBSink extends RichSinkFunction<DataSet> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBSink.class);
@@ -37,9 +40,9 @@ public class MongoDBSink extends RichSinkFunction<DataSet> {
     private final String mDBName;
     private final String mTableName;
 
-    private Mongo mMongoDB;
-    private DB mDBInstance;
-    private DBCollection mDBCollection;
+    private MongoClient mClinet = null;
+    private MongoDatabase mDB = null;
+    private MongoCollection<Document> mTable = null;
 
     public MongoDBSink(String source, String name) {
 
@@ -58,24 +61,25 @@ public class MongoDBSink extends RichSinkFunction<DataSet> {
     public void invoke(DataSet dataSet) throws Exception {
 
         // You could loop through records like this:
+        List<Document> list = new ArrayList<>();
         for (DataSet.Record record : dataSet.getRecords()) {
             LOGGER.info("Writing to {}:{}. DataSet: {}", this.mIP,this.mPort, record.toString());
 
-            DBObject dbObject = (DBObject) JSON.parse(record.toString());
-            mDBCollection.insert(dbObject);
+            list.add(Document.parse(record.toString()));
         }
-
+        if(list.size() > 0) {
+            mTable.insertMany(list);
+        }
     }
 
     @Override
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
-        mMongoDB = new Mongo(mIP, this.mPort);
-        //mDBInstance = mMongoDB.getDB("demo");
-        //mDBCollection = mDBInstance.getCollection("merge");
-        mDBInstance = mMongoDB.getDB(this.mDBName);
-        mDBCollection = mDBInstance.getCollection(this.mTableName);
+        mClinet = new MongoClient(mIP, this.mPort);
+        mDB = mClinet.getDatabase(this.mDBName);
+        mTable = mDB.getCollection(this.mTableName);
+
         LOGGER.info("Initiate MongoDB Connection Intialization : "+this.mIP +" : " +this.mPort);
         LOGGER.info("DB Name {}, Table Name {} : ", this.mDBName, this.mTableName);
 
