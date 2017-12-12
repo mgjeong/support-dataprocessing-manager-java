@@ -29,12 +29,10 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobRe
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineFactory;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.batch.BatchProperties;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -166,7 +164,7 @@ public final class JobManager {
         }
     }
 
-    private JobResponseFormat createGroupJob(EngineType engineType, String groupId, JobGroupFormat request) {
+    private JobResponseFormat createGroupJob(String groupId, JobGroupFormat request) {
         if (request.getJobs() == null || request.getJobs().isEmpty()) {
             return new JobResponseFormat(
                     new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "no job info"));
@@ -186,20 +184,34 @@ public final class JobManager {
                         new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "no task value"));
             }
 
-            framework = EngineManager.getEngine(jobNode.getTargetHost(), engineType);
-            
-            JobResponseFormat newJobResponse = framework.createJob(generateJobId());
-            if (newJobResponse.getError().isError()) {
-                newJobResponse.getError().setErrorMessage("Fail to Create Job.");
-                return newJobResponse;
+
+            EngineType engineType = EngineType.None;
+            List<TaskFormat> taskFormat = jobNode.getTask();
+
+            if(0 < taskFormat.size()) {
+                if (null != taskFormat.get(0).getParams()) {
+                    if(true == taskFormat.get(0).getParams().containsKey("script")) {
+                        engineType = EngineType.Kapacitor;
+                    }
+                } else {
+                    engineType = EngineType.Flink;
+                }
             }
 
+            String jobId = generateJobId();
             ErrorFormat result = addJobToGroupWithJobId(engineType,
-                    request.getRuntimeHost(), groupId, newJobResponse.getJobId(), jobNode);
+                    request.getRuntimeHost(), groupId, jobId, jobNode);
             if (result.isError()) {
                 deleteJob(groupId);
                 return new JobResponseFormat(result);
             }
+
+//            JobResponseFormat newJobResponse = new JobResponseFormat().setJobId(jobId);
+//                    // framework.createJob(generateJobId());
+//            if (newJobResponse.getError().isError()) {
+//                newJobResponse.getError().setErrorMessage("Fail to Create Job.");
+//                return newJobResponse;
+//            }
         }
         return new JobResponseFormat(groupId);
     }
@@ -208,7 +220,7 @@ public final class JobManager {
 
         String groupId = generateJobId();
 
-        JobResponseFormat response = createGroupJob(engineType, groupId, request);
+        JobResponseFormat response = createGroupJob(groupId, request);
         if (response.getError().isError()) {
             response.getError().setErrorMessage("Fail to Create Job.");
             response.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
@@ -291,7 +303,7 @@ public final class JobManager {
 
         // TODO - need to discussion
         deleteJob(groupId);
-        return createGroupJob(engineType, groupId, request);
+        return createGroupJob(groupId, request);
     }
 
     public JobResponseFormat executeJob(String groupId) {

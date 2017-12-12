@@ -17,6 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 public enum EngineType {
+    None,
     Flink,
     Spark,
     Kapacitor

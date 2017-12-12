@@ -57,7 +57,7 @@ public class ScriptFactory {
                 throw new RuntimeException("For now, only one query type task is supported");
             }
 
-            Object scriptBodyObject = task.getParams().get("request");
+            Object scriptBodyObject = task.getParams().get("script");
             if (scriptBodyObject instanceof String) {
                 scriptBody += (String) scriptBodyObject + "\n";
             } else {
