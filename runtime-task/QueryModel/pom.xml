@@ -9,7 +9,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>QueryModel</artifactId>
+    <artifactId>query-model</artifactId>
 
-
+    <dependencies>
+        <!-- TASKMODEL -->
+        <dependency>
+            <groupId>org.edgexfoundry.support.dataprocessing.runtime</groupId>
+            <artifactId>task-model</artifactId>
+            <version>${version}</version>
+        </dependency>
+    </dependencies>
 </project>

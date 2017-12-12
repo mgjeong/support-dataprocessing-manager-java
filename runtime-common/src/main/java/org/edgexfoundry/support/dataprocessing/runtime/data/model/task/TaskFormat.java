@@ -22,8 +22,6 @@ public class TaskFormat extends Format {
     @ApiModelProperty(required = true)
     private List<String> outrecord;
     @ApiModelProperty(required = false)
-    private String script = null;
-    @ApiModelProperty(required = false)
     private String jar = null;
     @ApiModelProperty(required = false)
     private String className = null;
@@ -70,14 +68,6 @@ public class TaskFormat extends Format {
 
     public void setType(TaskType type) {
         this.type = type;
-    }
-
-    public String getScript() {
-        return script;
-    }
-
-    public void setScript(String script) {
-        this.script = script;
     }
 
     public List<String> getInrecord() {
