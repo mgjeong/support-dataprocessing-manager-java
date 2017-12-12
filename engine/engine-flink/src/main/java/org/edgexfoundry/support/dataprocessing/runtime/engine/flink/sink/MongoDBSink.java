@@ -34,16 +34,25 @@ public class MongoDBSink extends RichSinkFunction<DataSet> {
 
     private final String mIP;
     private final int mPort;
+    private final String mDBName;
+    private final String mTableName;
 
     private Mongo mMongoDB;
     private DB mDBInstance;
     private DBCollection mDBCollection;
 
-    public MongoDBSink(String ip, int port) {
+    public MongoDBSink(String source, String name) {
 
-        this.mIP = new String(ip);
-        this.mPort = port;
+        String[] dataSource = source.split(":");
+        String[] names = name.split(":");
+        this.mIP = new String(dataSource[0]);
+        this.mPort = Integer.parseInt(dataSource[1]);
+        this.mDBName = new String(names[0]);
+        this.mTableName = new String(names[1]);
+
+        LOGGER.info("NAME : {}", name);
     }
+
 
     @Override
     public void invoke(DataSet dataSet) throws Exception {
@@ -63,9 +72,12 @@ public class MongoDBSink extends RichSinkFunction<DataSet> {
         super.open(parameters);
 
         mMongoDB = new Mongo(mIP, this.mPort);
-        mDBInstance = mMongoDB.getDB("demo");
-        mDBCollection = mDBInstance.getCollection("merge");
+        //mDBInstance = mMongoDB.getDB("demo");
+        //mDBCollection = mDBInstance.getCollection("merge");
+        mDBInstance = mMongoDB.getDB(this.mDBName);
+        mDBCollection = mDBInstance.getCollection(this.mTableName);
         LOGGER.info("Initiate MongoDB Connection Intialization : "+this.mIP +" : " +this.mPort);
+        LOGGER.info("DB Name {}, Table Name {} : ", this.mDBName, this.mTableName);
 
     }
 

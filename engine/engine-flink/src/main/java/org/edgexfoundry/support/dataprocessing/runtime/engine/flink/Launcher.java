@@ -141,9 +141,7 @@ public class Launcher {
             }
             return stream.addSink(new FileOutputSink(outputFilePath));
         } else if (dataType.equals("MongoDB")) {
-            String[] dataSource = output.getDataSource().split(":");
-
-            return stream.addSink(new MongoDBSink(dataSource[0], Integer.parseInt(dataSource[1])))
+            return stream.addSink(new MongoDBSink(output.getDataSource(), output.getName()))
                     .setParallelism(1);
         } else {
             throw new RuntimeException("Unsupported output data type: " + dataType);
