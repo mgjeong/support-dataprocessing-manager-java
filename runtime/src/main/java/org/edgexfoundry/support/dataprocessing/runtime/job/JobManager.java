@@ -184,23 +184,24 @@ public final class JobManager {
                         new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "no task value"));
             }
 
+            String runtimeHost = jobNode.getRuntimeHost();
 
             EngineType engineType = EngineType.None;
             List<TaskFormat> taskFormat = jobNode.getTask();
 
             if(0 < taskFormat.size()) {
                 if (null != taskFormat.get(0).getParams()) {
-                    if(true == taskFormat.get(0).getParams().containsKey("script")) {
+                    if(true == taskFormat.get(0).getParams().containsKey("request")) {
                         engineType = EngineType.Kapacitor;
+                    } else {
+                        engineType = EngineType.Flink;
                     }
-                } else {
-                    engineType = EngineType.Flink;
                 }
             }
 
             String jobId = generateJobId();
             ErrorFormat result = addJobToGroupWithJobId(engineType,
-                    request.getRuntimeHost(), groupId, jobId, jobNode);
+                    runtimeHost, groupId, jobId, jobNode);
             if (result.isError()) {
                 deleteJob(groupId);
                 return new JobResponseFormat(result);
