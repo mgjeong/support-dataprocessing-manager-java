@@ -29,6 +29,9 @@ public class JobGroupFormat extends Format {
     @ApiModelProperty(required = false)
     private String groupId;
 
+    @ApiModelProperty(required = false)
+    private String runtimeHost = null;
+
     @ApiModelProperty(required = true)
     private List<JobInfoFormat> jobs;
 
@@ -60,6 +63,13 @@ public class JobGroupFormat extends Format {
 
     public void setJobs(List<JobInfoFormat> jobs) {
         this.jobs = jobs;
+    }
+
+    public String getRuntimeHost() {
+        return this.runtimeHost;
+    }
+    public void setRuntimeHost(String runtimeHost) {
+        this.runtimeHost = runtimeHost;
     }
 
 }
