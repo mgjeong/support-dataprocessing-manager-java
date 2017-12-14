@@ -125,18 +125,32 @@ public class ScriptFactory {
 
     private String generateScriptTail(DataFormat output) {
         String dataType = output.getDataType();
-        String dataSink = output.getDataSource();
-        String topics = output.getTopics();
+        String dataSink = output.getDataSource().replaceAll("\\s", "");
 
         if (!dataType.equalsIgnoreCase("EMF") && !dataType.equalsIgnoreCase("F")) {
             throw new RuntimeException("Unsupported output data type" + dataType);
         }
-
-        String scriptTail = String.format("@deliver().sink(\'%s\').address(\'%s\')", dataType, dataSink);
-        if (topics == null) {
-            return scriptTail;
-        } else {
-            return scriptTail + String.format(".topics(\'%s\')", topics);
+        String[] sinkSplits = dataSink.split(":", 3);
+        String[] topics = null;
+        if (sinkSplits.length == 3) {
+            topics = sinkSplits[2].split(",");
         }
+
+        String oneScriptTail = String.format("@deliver().sink(\'%s\').address(\'%s\')", dataType, dataSink);
+        if (topics == null) {
+            return oneScriptTail;
+        } else {
+            String scriptTail = "";
+            for (String topic: topics) {
+                scriptTail += generateScriptTailByTopic(dataType, dataSink, topic);
+            }
+            return scriptTail;
+        }
+    }
+
+    private String generateScriptTailByTopic(String dataType, String dataSink, String topic) {
+        String scriptTail = String.format("@deliver().sink(\'%s\').address(\'%s\')", dataType, dataSink);
+        scriptTail += String.format(".topic(\'%s\')", topic) + '\n';
+        return scriptTail;
     }
 }

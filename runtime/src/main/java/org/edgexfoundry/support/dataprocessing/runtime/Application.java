@@ -50,9 +50,9 @@ public class Application extends SpringBootServletInitializer {
     }
 
     public static void main(String[] args) throws Exception {
-        initialize();
-
         SpringApplication.run(Application.class, args);
+
+        initialize();
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override

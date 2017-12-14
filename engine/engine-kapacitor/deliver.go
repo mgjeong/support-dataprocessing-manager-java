@@ -16,6 +16,7 @@ import (
 type deliverHandler struct {
 	sink    string
 	address string
+	topic	string
 
 	targetFile *(os.File)
 	targetEMF *(emf.EMFPublisher)
@@ -35,6 +36,7 @@ func (f *deliverHandler) Info() (*agent.InfoResponse, error) {
 		Options: map[string]*agent.OptionInfo{
 			"sink":    {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"topic": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -47,12 +49,18 @@ func (f *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 		Error:   "",
 	}
 
+	f.sink = ""
+	f.address = ""
+	f.topic = ""
+
 	for _, opt := range r.Options {
 		switch opt.Name {
 		case "sink":
 			f.sink = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "address":
 			f.address = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
+		case "topic":
+			f.topic = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		}
 	}
 
@@ -171,7 +179,12 @@ func (f *deliverHandler) Point(p *agent.Point) error {
 	} else if f.sink == "emf" {
 		log.Println("DPRuntime Writing: ", string(jsonBytes))
 		var event = getEvent(jsonBytes)
-		result := f.targetEMF.Publish(event)
+		var result emf.EMFErrorCode
+		if f.topic == "" {
+			result = f.targetEMF.Publish(event)
+		} else {
+			result = f.targetEMF.PublishOnTopic(f.topic, event)
+		}
 		if result != 0 {
 			log.Println("DPRuntime error: failed to publish emf event")
 		}
