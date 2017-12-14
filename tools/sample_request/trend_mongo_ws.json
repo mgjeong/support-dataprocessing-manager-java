@@ -1,0 +1,101 @@
+{
+  "runtimeHost":"localhost:8082",
+  "jobs": [
+    {
+      "targetHost": "localhost:8081",
+      "input": [
+        {
+          "dataType": "ZMQ",
+          "dataSource": "127.0.0.1:5555:topic"
+        }
+      ],
+      "output": [
+        {
+          "dataType": "MongoDB",
+          "dataSource": "localhost:27017",
+          "name":"demo:merge"
+        },
+        {
+          "dataType": "WS",
+          "dataSource": "127.0.0.1:8083"
+        }
+      ],
+      "task": [
+        {
+          "name": "sma",
+          "params": {
+            "interval": {
+              "data": 3
+            }
+          },
+          "inrecord": ["/records/A", "/records/B"],
+          "outrecord": ["/records/*/MA_A","/records/*/MA_B"]
+        },
+        {
+          "name": "ema",
+          "params": {
+            "interval": {
+              "data": 5
+            }
+          },
+          "inrecord": ["/records/A", "/records/B"],
+          "outrecord": ["/records/*/EMA_A","/records/*/EMA_B"]
+        },
+        {
+          "name": "wma",
+          "params": {
+            "interval": {
+              "data": 3
+            },
+            "ma": {
+              "coefficients": [
+                0.5,
+                0.3,
+                0.2
+              ]
+            }
+          },
+          "inrecord": ["/records/A", "/records/B"],
+          "outrecord": ["/records/*/WMA_A","/records/*/WMA_B"]
+        },
+        {
+          "name": "arma",
+          "params": {
+            "interval": {
+              "data": 3
+            },
+            "ar": {
+              "coefficients": [
+                0.001,
+                0.001,
+                0.001,
+                0.0005,
+                0.0
+              ]
+            },
+            "lags": {
+              "coefficients": [
+                0.001,
+                0.001,
+                0.001,
+                0.0005,
+                0.0
+              ]
+            },
+            "ma": {
+              "coefficients": [
+                0.95,
+                0.04,
+                -0.01
+              ]
+            }
+          },
+          "inrecord": ["/records/A", "/records/B"],
+          "outrecord": ["/records/*/ARMA_A","/records/*/ARMA_B"]
+        }
+      ],
+      "state": "CREATE"
+    }
+  ]
+}
+

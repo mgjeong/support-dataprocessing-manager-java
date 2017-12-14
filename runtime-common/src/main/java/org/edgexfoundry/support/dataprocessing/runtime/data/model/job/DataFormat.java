@@ -24,6 +24,8 @@ public class DataFormat extends Format {
     private String dataType = null;
     @ApiModelProperty(required = true)
     private String dataSource = null;
+    @ApiModelProperty(required = false)
+    private String name = null;
 
     private String topics = null;
 
@@ -65,4 +67,9 @@ public class DataFormat extends Format {
     public void setTopics(String topics) {
         this.topics = topics;
     }
+
+    public void setName(String name) {this.name = name;}
+
+    public String getName() {return this.name;}
+
 }
