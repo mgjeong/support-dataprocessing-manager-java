@@ -192,9 +192,9 @@ public final class JobManager {
                 if (null != taskFormat.get(0).getParams()) {
                     if(true == taskFormat.get(0).getParams().containsKey("script")) {
                         engineType = EngineType.Kapacitor;
+                    } else {
+                        engineType = EngineType.Flink;
                     }
-                } else {
-                    engineType = EngineType.Flink;
                 }
             }
 
