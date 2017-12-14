@@ -1,3 +1,4 @@
+### IDE ###
 *.iml
 *.lst
 *.class
@@ -5,4 +6,17 @@ target/
 target/*
 .idea/
 .idea/*
-docker_files/resources/
+
+### Temporary resources for Docker ###
+docker_files/resources/*
+**/docker_files/resources/*
+
+
+### Binary Executables after builds ###
+engine/engine-kapacitor/inject
+engine/engine-kapacitor/deliver
+
+
+### VIM ###
+*.swp
+
