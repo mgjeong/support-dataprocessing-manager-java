@@ -56,7 +56,6 @@ public class HTTP implements Connection, Serializable {
     private JsonParser jsonParser = null;
 
     public HTTP() {
-
     }
 
     public HTTP initialize(String ip_port, String scheme) {
@@ -120,11 +119,15 @@ public class HTTP implements Connection, Serializable {
         HttpResponse response;
 
         if (isProxyAvailable()) {
-            response = this.client.execute(this.proxy, request);
+            response = getClient().execute(this.proxy, request);
         } else {
-            response = this.client.execute(request);
+            response = getClient().execute(request);
         }
         return response;
+    }
+
+    public HttpClient getClient() {
+        return this.client;
     }
 
     public JsonElement get(String path) {
