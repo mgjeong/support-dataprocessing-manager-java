@@ -11,15 +11,20 @@ import (
 	"strings"
 	"strconv"
 	"time"
+	"gopkg.in/mgo.v2"
 )
 
 type deliverHandler struct {
 	sink    string
 	address string
 	topic	string
+	name	string
 
-	targetFile *(os.File)
-	targetEMF *(emf.EMFPublisher)
+	targetFile *os.File
+	targetEMF *emf.EMFPublisher
+
+	targetSession *mgo.Session
+	targetCollection *mgo.Collection
 
 	agent *agent.Agent
 }
@@ -37,6 +42,7 @@ func (f *deliverHandler) Info() (*agent.InfoResponse, error) {
 			"sink":    {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"topic": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"name": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -52,6 +58,7 @@ func (f *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 	f.sink = ""
 	f.address = ""
 	f.topic = ""
+	f.name = ""
 
 	for _, opt := range r.Options {
 		switch opt.Name {
@@ -61,6 +68,8 @@ func (f *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 			f.address = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "topic":
 			f.topic = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
+		case "name":
+			f.name = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		}
 	}
 
@@ -114,6 +123,20 @@ func (f *deliverHandler) addSink() error {
 			log.Println("DPRuntime failed to start emf publisher")
 			return errors.New("error: failed to start emf publisher")
 		}
+	case "mongodb":
+		log.Println("DPRuntime mongoDB sink")
+		var err error
+		f.targetSession, err = mgo.Dial(f.address)
+		if err != nil {
+			return errors.New("error: failed to connect MongoDB")
+		}
+
+		if f.name == "" {
+			return errors.New("error: DB and collection names must be provided")
+		}
+
+		dbSplits := strings.Split(f.name, ":")
+		f.targetCollection = f.targetSession.DB(dbSplits[0]).C(dbSplits[1])
 	default:
 		log.Println("DPRuntime wrong sink type")
 		return errors.New("error: unsupported sink type")
@@ -188,6 +211,12 @@ func (f *deliverHandler) Point(p *agent.Point) error {
 		if result != 0 {
 			log.Println("DPRuntime error: failed to publish emf event")
 		}
+	} else if f.sink == "mongodb" {
+		log.Println("DPRuntime Writing: ", string(jsonBytes))
+		err = f.targetCollection.Insert(output)
+		if err != nil {
+			return errors.New("error: fail to write into MongoDB")
+		}
 	}
 
 	f.agent.Responses <- &agent.Response{
@@ -252,6 +281,8 @@ func (f *deliverHandler) Stop() {
 		f.targetFile.Close()
 	} else if f.sink == "emf" {
 		f.targetEMF.Stop()
+	} else if f.sink == "mongodb" {
+		f.targetSession.Close()
 	}
 	close(f.agent.Responses)
 }
