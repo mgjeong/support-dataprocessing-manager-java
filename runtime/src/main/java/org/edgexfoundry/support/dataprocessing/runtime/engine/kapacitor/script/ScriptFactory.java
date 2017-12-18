@@ -124,16 +124,31 @@ public class ScriptFactory {
     }
 
     private String generateScriptTail(DataFormat output) {
-        String dataType = output.getDataType();
+        String dataType = output.getDataType().toLowerCase();
         String dataSink = output.getDataSource().replaceAll("\\s", "");
 
-        if (!dataType.equalsIgnoreCase("EMF") && !dataType.equalsIgnoreCase("F")) {
+        if (!dataType.equals("emf") && !dataType.equals("f") && !dataType.equals("mongodb")) {
             throw new RuntimeException("Unsupported output data type" + dataType);
         }
         String[] sinkSplits = dataSink.split(":", 3);
         String[] topics = null;
+
+        String[] names = null;
+
         if (sinkSplits.length == 3) {
             topics = sinkSplits[2].split(",");
+        }
+
+        if (output.getName() != null) {
+            names = output.getName().trim().split(",");
+        }
+
+        if (names != null) {
+            String result = "";
+            for (String name : names) {
+                result += generateScriptTailByTopic(dataType, dataSink, name);
+            }
+            return result;
         }
 
         String oneScriptTail = String.format("@deliver().sink(\'%s\').address(\'%s\')", dataType, dataSink);
@@ -141,7 +156,7 @@ public class ScriptFactory {
             return oneScriptTail;
         } else {
             String scriptTail = "";
-            for (String topic: topics) {
+            for (String topic : topics) {
                 scriptTail += generateScriptTailByTopic(dataType, dataSink, topic);
             }
             return scriptTail;

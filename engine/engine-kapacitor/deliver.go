@@ -18,7 +18,6 @@ type deliverHandler struct {
 	sink    string
 	address string
 	topic	string
-	name	string
 
 	targetFile *os.File
 	targetEMF *emf.EMFPublisher
@@ -42,7 +41,6 @@ func (f *deliverHandler) Info() (*agent.InfoResponse, error) {
 			"sink":    {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"topic": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
-			"name": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -58,7 +56,6 @@ func (f *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 	f.sink = ""
 	f.address = ""
 	f.topic = ""
-	f.name = ""
 
 	for _, opt := range r.Options {
 		switch opt.Name {
@@ -68,8 +65,6 @@ func (f *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 			f.address = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "topic":
 			f.topic = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
-		case "name":
-			f.name = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		}
 	}
 
@@ -126,16 +121,22 @@ func (f *deliverHandler) addSink() error {
 	case "mongodb":
 		log.Println("DPRuntime mongoDB sink")
 		var err error
-		f.targetSession, err = mgo.Dial(f.address)
+		// Kapacitor starts to receive data regardless of mongoDB connected
+		// If session fails, this Kapacitor task will be stopped
+		// This should be fixed not to start and reported to Runtime in the first place
+		f.targetSession, err = mgo.DialWithTimeout(f.address, 5*time.Second)
 		if err != nil {
 			return errors.New("error: failed to connect MongoDB")
 		}
 
-		if f.name == "" {
+		if f.topic == "" {
 			return errors.New("error: DB and collection names must be provided")
 		}
 
-		dbSplits := strings.Split(f.name, ":")
+		dbSplits := strings.Split(f.topic, ":")
+		if len(dbSplits) != 2 {
+			return errors.New("error: DB and collection must be specified as DB:COLLECTION")
+		}
 		f.targetCollection = f.targetSession.DB(dbSplits[0]).C(dbSplits[1])
 	default:
 		log.Println("DPRuntime wrong sink type")
@@ -212,7 +213,7 @@ func (f *deliverHandler) Point(p *agent.Point) error {
 			log.Println("DPRuntime error: failed to publish emf event")
 		}
 	} else if f.sink == "mongodb" {
-		log.Println("DPRuntime Writing: ", string(jsonBytes))
+		log.Println("DPRuntime Writing into MongoDB")
 		err = f.targetCollection.Insert(output)
 		if err != nil {
 			return errors.New("error: fail to write into MongoDB")
@@ -280,9 +281,13 @@ func (f *deliverHandler) Stop() {
 	if f.sink == "f" {
 		f.targetFile.Close()
 	} else if f.sink == "emf" {
-		f.targetEMF.Stop()
+		if f.targetEMF != nil {
+			f.targetEMF.Stop()
+		}
 	} else if f.sink == "mongodb" {
-		f.targetSession.Close()
+		if f.targetSession != nil {
+			f.targetSession.Close()
+		}
 	}
 	close(f.agent.Responses)
 }
