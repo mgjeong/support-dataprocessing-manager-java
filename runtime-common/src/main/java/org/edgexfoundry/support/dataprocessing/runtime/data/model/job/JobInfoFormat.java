@@ -43,7 +43,6 @@ public class JobInfoFormat extends Format {
     @ApiModelProperty(required = false)
     private String engineType = null;
 
-
     public JobInfoFormat() {
         this(new ArrayList<DataFormat>(),
                 new ArrayList<DataFormat>(),
