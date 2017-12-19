@@ -13,6 +13,8 @@
         <module>TaskModel</module>
         <module>Regression</module>
         <module>SVMModel</module>
+        <module>MovingAverage</module>
+        <module>QueryModel</module>
     </modules>
 
     <modelVersion>4.0.0</modelVersion>

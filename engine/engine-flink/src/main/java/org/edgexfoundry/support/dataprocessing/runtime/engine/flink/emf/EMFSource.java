@@ -19,14 +19,16 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.edgexfoundry.emf.EMFAPI;
+import org.edgexfoundry.emf.EMFErrorCode;
+import org.edgexfoundry.emf.EMFSubscriber;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.edgexfoundry.domain.core.Event;
 import org.edgexfoundry.domain.core.Reading;
-import org.edgexfoundry.emf.EMFAPI;
-import org.edgexfoundry.emf.EMFErrorCode;
-import org.edgexfoundry.emf.EMFSubscriber;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

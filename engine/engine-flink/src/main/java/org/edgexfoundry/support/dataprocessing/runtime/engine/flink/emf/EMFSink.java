@@ -17,16 +17,15 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
 
-
+import org.edgexfoundry.emf.EMFAPI;
+import org.edgexfoundry.emf.EMFCallback;
+import org.edgexfoundry.emf.EMFErrorCode;
+import org.edgexfoundry.emf.EMFPublisher;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.edgexfoundry.domain.core.Event;
 import org.edgexfoundry.domain.core.Reading;
-import org.edgexfoundry.emf.EMFAPI;
-import org.edgexfoundry.emf.EMFCallback;
-import org.edgexfoundry.emf.EMFErrorCode;
-import org.edgexfoundry.emf.EMFPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
