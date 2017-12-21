@@ -34,10 +34,10 @@ public final class JobTableManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobTableManager.class);
     private static JobTableManager instance = null;
     private static final String JOBTABLENAME = "job";
-    private static DBConnector dbCon = null;
+    private static SqliteConnector dbCon = null;
 
     private JobTableManager() {
-        dbCon = DBConnector.getInstance();
+        dbCon = SqliteConnector.getInstance();
     }
 
     public void close() {
@@ -70,18 +70,18 @@ public final class JobTableManager {
 
     //create "job" table
     private void createJobTable() throws Exception {
-        DBConnector.TableDesc td = new DBConnector.TableDesc(JOBTABLENAME);
+        SqliteConnector.TableDesc td = new SqliteConnector.TableDesc(JOBTABLENAME);
 
-        td.addColum(Entry.engineType.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.jid.name(), new DBConnector.ColumnDesc("TEXT", "PRIMARY KEY NOT NULL"));
-        td.addColum(Entry.gid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.state.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.input.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.output.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.taskinfo.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.engineid.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.targetHost.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.runtimeHost.name(), new DBConnector.ColumnDesc("TEXT", ""));
+        td.addColum(Entry.engineType.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.jid.name(), new SqliteConnector.ColumnDesc("TEXT", "PRIMARY KEY NOT NULL"));
+        td.addColum(Entry.gid.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.state.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.input.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.output.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.taskinfo.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.engineid.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.targetHost.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.runtimeHost.name(), new SqliteConnector.ColumnDesc("TEXT", ""));
         dbCon.createTable(td);
     }
 
@@ -92,7 +92,7 @@ public final class JobTableManager {
                           String runtimeHost)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
+        if (SqliteConnector.Util.validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
             throw new InvalidParameterException();
         }
 
@@ -122,7 +122,7 @@ public final class JobTableManager {
                           String output, String taskInfo, String engineId)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(jobId, gId, state, input, output, engineId)) {
+        if (SqliteConnector.Util.validateParams(jobId, gId, state, input, output, engineId)) {
             throw new InvalidParameterException();
         }
 
@@ -142,7 +142,7 @@ public final class JobTableManager {
 
     //Update state column by jid
     public void updateState(String jobId, String state) throws SQLException, InvalidParameterException {
-        if (DBConnector.Util.validateParams(jobId, state)) {
+        if (SqliteConnector.Util.validateParams(jobId, state)) {
             throw new InvalidParameterException();
         }
 
@@ -157,7 +157,7 @@ public final class JobTableManager {
     public void updatePayload(String jobId, String input, String output, String taskinfo)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(jobId, input, output, taskinfo)) {
+        if (SqliteConnector.Util.validateParams(jobId, input, output, taskinfo)) {
             throw new InvalidParameterException();
         }
 
@@ -171,7 +171,7 @@ public final class JobTableManager {
     //update engineid column by ID
     public void updateEngineId(String jobId, String engineId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId/*, engineId*/)) {
+        if (SqliteConnector.Util.validateParams(jobId/*, engineId*/)) {
             throw new InvalidParameterException();
         }
 
@@ -184,7 +184,7 @@ public final class JobTableManager {
     //update gid column by jid
     public void updateGroupId(String jobId, String gId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId, gId)) {
+        if (SqliteConnector.Util.validateParams(jobId, gId)) {
             throw new InvalidParameterException();
         }
 
@@ -197,7 +197,7 @@ public final class JobTableManager {
     //Select state column value by jid
     public List<Map<String, String>> getStateById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (SqliteConnector.Util.validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -210,7 +210,7 @@ public final class JobTableManager {
     //select Payload( input, output, taskinfo ) column value by ID
     public List<Map<String, String>> getPayloadById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (SqliteConnector.Util.validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -225,7 +225,7 @@ public final class JobTableManager {
     //Select engineid column value by jid
     public List<Map<String, String>> getEngineIdById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (SqliteConnector.Util.validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -238,7 +238,7 @@ public final class JobTableManager {
     //Select gid column value by jid
     public List<Map<String, String>> getGroupIdById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (SqliteConnector.Util.validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -251,7 +251,7 @@ public final class JobTableManager {
     //select all columns by jid
     public List<Map<String, String>> getRowById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (SqliteConnector.Util.validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
@@ -276,7 +276,7 @@ public final class JobTableManager {
     //delete a job to the table "Job"
     public void deleteJobById(String jobId) throws SQLException {
 
-        if (DBConnector.Util.validateParams(jobId)) {
+        if (SqliteConnector.Util.validateParams(jobId)) {
             throw new InvalidParameterException();
         }
 
