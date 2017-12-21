@@ -27,12 +27,19 @@ ENV KAPA_PATH /kapacitor
 ENV PATH $PATH:$KAPA_PATH
 
 RUN go get -u github.com/influxdata/kapacitor/udf/agent
+COPY docker_files/resources/src/gopkg.in/ ${GOPATH}/src/gopkg.in
 RUN mkdir -p $UDF_PATH
 
-ADD inject.go $UDF_PATH
-ADD deliver.go $UDF_PATH
-RUN go build ${UDF_PATH}/inject.go
-RUN go build ${UDF_PATH}/deliver.go
+ADD src/deliver $GOPATH/src/deliver
+ADD src/inject $GOPATH/src/inject
+RUN ls $GOPATH/src/
+WORKDIR $GOPATH
+COPY docker_files/resources/setldd.sh ./
+RUN go build src/inject/inject.go
+RUN go build src/deliver/deliver.go
+RUN mkdir -p /dependencies
+RUN ./setldd.sh inject /dependencies/
+RUN ./setldd.sh deliver /dependencies/
 
 FROM alpine:3.6
 
@@ -42,12 +49,8 @@ ENV https_proxy 'https://10.112.1.184:8080'
 RUN apk add --no-cache bash
 
 # Copy EMF-related libraries
-COPY --from=buildenv /lib/ld-musl-*.so.* /lib/
-COPY --from=buildenv /usr/lib/libzmq.so.* /usr/lib/
-COPY --from=buildenv /lib/ld-musl-*.so.* /lib/
-COPY --from=buildenv /usr/lib/libsodium.so.* /usr/lib/
-COPY --from=buildenv /usr/lib/libstdc++.so.* /usr/lib/
-COPY --from=buildenv /usr/lib/libgcc_s.so.* /usr/lib/
+COPY --from=buildenv /dependencies/* /dependencies/
+RUN mv -f /dependencies/* /usr/lib/
 
 # Set configurations
 ENV UDF_PATH /runtime/ha/go
