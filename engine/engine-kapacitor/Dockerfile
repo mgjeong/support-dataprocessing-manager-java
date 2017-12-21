@@ -1,11 +1,5 @@
 FROM golang:1.9.2-alpine3.6 AS buildenv
 
-# SEC-specific settings KYUNGRAE KIM
-ENV http_proxy 'http://10.112.1.184:8080'
-ENV https_proxy 'https://10.112.1.184:8080'
-
-ADD docker_files/resources/SRnD+Web+Proxy.crt /
-RUN mv /SRnD+Web+Proxy.crt /etc/ssl/certs/
 RUN update-ca-certificates
 
 # Starting to build docker image
@@ -43,9 +37,6 @@ RUN ./setldd.sh deliver /dependencies/
 
 FROM alpine:3.6
 
-ENV http_proxy 'http://10.112.1.184:8080'
-ENV https_proxy 'https://10.112.1.184:8080'
-
 RUN apk add --no-cache bash
 
 # Copy EMF-related libraries
@@ -56,7 +47,6 @@ RUN mv -f /dependencies/* /usr/lib/
 ENV UDF_PATH /runtime/ha/go
 ENV KAPA_PATH /kapacitor
 ENV PATH $PATH:$KAPA_PATH
-
 RUN mkdir -p $UDF_PATH
 RUN mkdir -p $KAPA_PATH
 
