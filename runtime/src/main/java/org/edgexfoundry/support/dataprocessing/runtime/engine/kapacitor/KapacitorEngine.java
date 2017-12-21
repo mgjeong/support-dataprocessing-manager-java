@@ -15,7 +15,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskForma
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.ScriptFactory;
-import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +35,7 @@ public class KapacitorEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat createJob(String jobId) {
-
         LOGGER.info("Kapacitor job {} is created", jobId);
-
         return createJob().setJobId(jobId);
     }
 
