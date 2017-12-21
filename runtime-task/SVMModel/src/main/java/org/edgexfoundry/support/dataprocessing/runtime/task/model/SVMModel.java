@@ -76,11 +76,7 @@ public class SVMModel extends AbstractTaskModel {
      * Get default parameter values for the reference
      */
     public TaskModelParam getDefaultParam() {
-        double[][] arrSupportVectors = {
-                {1.1, 2.2, 3.3},
-                {1.1, 2.2, 3.3},
-                {1.1, 2.2, 3.3},
-        };
+        double[][] arrSupportVectors = { {1.1, 2.2, 3.3}, {1.1, 2.2, 3.3}, {1.1, 2.2, 3.3} };
         double[][] trainedCoef = {
                 {1.1037055147699631E-4, 1.1037055147699631E-4, -1.1037055147699631E-4, -1.1037055147699631E-4}
         };

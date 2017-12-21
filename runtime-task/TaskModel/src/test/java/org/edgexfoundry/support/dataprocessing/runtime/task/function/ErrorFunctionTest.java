@@ -26,8 +26,8 @@ public class ErrorFunctionTest {
         double[] prediction = {1.0, 2.0, 3.0};
         double[] observation = {1.1, 2.1, 2.9};
 
-        double[] predictionErr = {1.0, 2.0};
-        double[] observationErr = {1.1, 2.1};
+        double[] predictionErr = {1.0, 2.0, 3.0};
+        double[] observationErr = {1.1, 2.1, 3.1};
 
         double error = 0.0;
 
@@ -43,12 +43,12 @@ public class ErrorFunctionTest {
 
         Assert.assertEquals(error, 0.10000000000000009, 0);
 
-//        error = ErrorFunction.calculate(prediction, observationErr, ErrorFunction.MEASURE.MSE);
-//
-//        Assert.assertEquals(error, -1.0, 0);
+        error = ErrorFunction.calculate(prediction, observationErr, ErrorFunction.MEASURE.ME);
 
-//        error = ErrorFunction.calculate(predictionErr, observation, ErrorFunction.MEASURE.RMSE);
-//
-//        Assert.assertEquals(error, -1.0, 0);
+        Assert.assertEquals(error, 0.10000000000000009, 0);
+
+        error = ErrorFunction.calculate(predictionErr, observation, ErrorFunction.MEASURE.MAE);
+
+        Assert.assertEquals(error, 0.10000000000000009, 0);
     }
 }
