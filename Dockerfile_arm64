@@ -23,8 +23,8 @@ RUN go get -u -v github.com/influxdata/kapacitor/udf/agent
 COPY docker_files/resources/src/gopkg.in/ ${GOPATH}/src/gopkg.in
 RUN mkdir -p $UDF_PATH
 
-ADD src/deliver $GOPATH/src/deliver
-ADD src/inject $GOPATH/src/inject
+ADD engine/engine-kapacitor/src/deliver $GOPATH/src/deliver
+ADD engine/engine-kapacitor/src/inject $GOPATH/src/inject
 RUN ls $GOPATH/src/
 WORKDIR $GOPATH
 COPY docker_files/resources/setldd.sh ./
