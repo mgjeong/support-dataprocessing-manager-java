@@ -11,14 +11,19 @@ import (
 	"strings"
 	"strconv"
 	"time"
+	"gopkg.in/mgo.v2"
 )
 
 type deliverHandler struct {
 	sink    string
 	address string
+	topic	string
 
-	targetFile *(os.File)
-	targetEMF *(emf.EMFPublisher)
+	targetFile *os.File
+	targetEMF *emf.EMFPublisher
+
+	targetSession *mgo.Session
+	targetCollection *mgo.Collection
 
 	agent *agent.Agent
 }
@@ -35,6 +40,7 @@ func (f *deliverHandler) Info() (*agent.InfoResponse, error) {
 		Options: map[string]*agent.OptionInfo{
 			"sink":    {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"topic": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -47,12 +53,18 @@ func (f *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 		Error:   "",
 	}
 
+	f.sink = ""
+	f.address = ""
+	f.topic = ""
+
 	for _, opt := range r.Options {
 		switch opt.Name {
 		case "sink":
 			f.sink = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "address":
 			f.address = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
+		case "topic":
+			f.topic = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		}
 	}
 
@@ -106,6 +118,26 @@ func (f *deliverHandler) addSink() error {
 			log.Println("DPRuntime failed to start emf publisher")
 			return errors.New("error: failed to start emf publisher")
 		}
+	case "mongodb":
+		log.Println("DPRuntime mongoDB sink")
+		var err error
+		// Kapacitor starts to receive data regardless of mongoDB connected
+		// If session fails, this Kapacitor task will be stopped
+		// This should be fixed not to start and reported to Runtime in the first place
+		f.targetSession, err = mgo.DialWithTimeout(f.address, 5*time.Second)
+		if err != nil {
+			return errors.New("error: failed to connect MongoDB")
+		}
+
+		if f.topic == "" {
+			return errors.New("error: DB and collection names must be provided")
+		}
+
+		dbSplits := strings.Split(f.topic, ":")
+		if len(dbSplits) != 2 {
+			return errors.New("error: DB and collection must be specified as DB:COLLECTION")
+		}
+		f.targetCollection = f.targetSession.DB(dbSplits[0]).C(dbSplits[1])
 	default:
 		log.Println("DPRuntime wrong sink type")
 		return errors.New("error: unsupported sink type")
@@ -171,9 +203,20 @@ func (f *deliverHandler) Point(p *agent.Point) error {
 	} else if f.sink == "emf" {
 		log.Println("DPRuntime Writing: ", string(jsonBytes))
 		var event = getEvent(jsonBytes)
-		result := f.targetEMF.Publish(event)
+		var result emf.EMFErrorCode
+		if f.topic == "" {
+			result = f.targetEMF.Publish(event)
+		} else {
+			result = f.targetEMF.PublishOnTopic(f.topic, event)
+		}
 		if result != 0 {
 			log.Println("DPRuntime error: failed to publish emf event")
+		}
+	} else if f.sink == "mongodb" {
+		log.Println("DPRuntime Writing into MongoDB")
+		err = f.targetCollection.Insert(output)
+		if err != nil {
+			return errors.New("error: fail to write into MongoDB")
 		}
 	}
 
@@ -238,7 +281,13 @@ func (f *deliverHandler) Stop() {
 	if f.sink == "f" {
 		f.targetFile.Close()
 	} else if f.sink == "emf" {
-		f.targetEMF.Stop()
+		if f.targetEMF != nil {
+			f.targetEMF.Stop()
+		}
+	} else if f.sink == "mongodb" {
+		if f.targetSession != nil {
+			f.targetSession.Close()
+		}
 	}
 	close(f.agent.Responses)
 }
