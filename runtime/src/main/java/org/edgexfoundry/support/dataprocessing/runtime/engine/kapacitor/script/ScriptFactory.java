@@ -126,6 +126,7 @@ public class ScriptFactory {
       topics = sinkSplits[2].split(",");
     }
 
+    String sinkAddress = sinkSplits[0] + ':' + sinkSplits[1];
     if (output.getName() != null) {
       names = output.getName().trim().split(",");
     }
@@ -133,17 +134,17 @@ public class ScriptFactory {
     if (names != null) {
       String result = "";
       for (String name : names) {
-        result += generateScriptTailByTopic(dataType, dataSink, name);
+        result += generateScriptTailByTopic(dataType, sinkAddress, name);
       }
       return result;
     }
 
     if (topics == null) {
-      return generateScriptHeaderByTopic(dataType, dataSink, null);
+      return generateScriptHeaderByTopic(dataType, sinkAddress, null);
     } else {
       String scriptTail = "";
       for (String topic : topics) {
-        scriptTail += generateScriptTailByTopic(dataType, dataSink, topic);
+        scriptTail += generateScriptTailByTopic(dataType, sinkAddress, topic);
       }
       return scriptTail;
     }
