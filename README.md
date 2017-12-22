@@ -136,7 +136,7 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
     - Sample App will be provided later
   - How to receive result from executing Data Processing job
     - You will need to create a sample app which listens the stream thru one of the protocol
-      which engine-flink supports (Flink : ezMQ/file/webSocket, Kapacitor : exMQ)
+      which engine-flink supports (Flink : ezMQ/file/webSocket, Kapacitor : ezMQ)
     - Sample App will be provided later
 - Ports Information
   - Runtime : 8082 (It is required for the "runtimeHost" value in request message)
