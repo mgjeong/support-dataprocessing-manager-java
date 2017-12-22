@@ -9,16 +9,16 @@ This Runtime is currently under active development.
 ### Prerequisites ###
 - Java 8
 ```shell
-sudo add-apt-repository ppa:webupd8team/java
-sudo apt-get update
-sudo apt-get install oracle-java8-installer
+$ sudo add-apt-repository ppa:webupd8team/java
+$ sudo apt-get update
+$ sudo apt-get install oracle-java8-installer
 ```
 - Maven
 ```shell
-cd /opt/
-wget http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
-sudo tar -xvzf apache-maven-3.3.9-bin.tar.gz
-sudo mv apache-maven-3.3.9 maven
+$ cd /opt/
+$ wget http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+$ sudo tar -xvzf apache-maven-3.3.9-bin.tar.gz
+$ sudo mv apache-maven-3.3.9 maven
 ```
 
 - Apache Flink
@@ -46,7 +46,7 @@ Remember, you must configure proxies for git and maven accordingly if necessary.
 
 - Setting up proxy for git
 ```shell
-git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
+$ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
 ```
 - [Setting up proxy for maven](https://maven.apache.org/guides/mini/guide-proxies.html)
 
@@ -55,13 +55,13 @@ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
 - Build Methods
    - Using MVN
     ```shell
-    mvn clean package -DskipTests
+    $ mvn clean package -DskipTests
     ```
 
     - Using Build Script
     ```shell
-    cd tool/
-    ./build_local
+    $ cd tool/
+    $ ./build_local
     ```
 - Built Binaries
   - Data Processing Runtime is composed of four submodules.
@@ -97,15 +97,13 @@ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   - If necessary, change directory ownership to user
   `chown -R user:user /runtime`
 
-- Execute Apache Flink & Kapacitor ()
-  - [Start Flink](#Apache Flink)
-  - [Start Kapacitor](#Kapacitor)
+- Execute Apache Flink & Kapacitor
 
 - Execute Runtime
-```shell
-cd runtime/target/
-java -jar ./runtime-0.1.0-SNAPSHOT.jar
-```
+    ```shell
+    $ cd runtime/target/
+    $ java -jar ./runtime-0.1.0-SNAPSHOT.jar
+    ```
 
 ### Test Runtime ###
 - Now you should be able to make RESTful requests to http://localhost:8082/analytics
