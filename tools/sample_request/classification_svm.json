@@ -1,6 +1,8 @@
 {
+  "runtimeHost":"localhost:8082",
   "jobs": [
     {
+      "targetHost": "localhost:8081",
       "input": [
         {
           "dataType": "ZMQ",

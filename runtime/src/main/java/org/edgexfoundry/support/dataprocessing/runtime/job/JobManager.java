@@ -129,7 +129,7 @@ public final class JobManager {
             JobInfoFormat jobInfo = new JobInfoFormat(input, output, task, state, targetHost, runtimeHost);
             addJobToGroupWithJobId(EngineType.valueOf(engineType.trim()), runtimeHost,
                     groupId, jobId, jobInfo);
-        }
+         }
     }
 
     private void initJobList() {
@@ -139,7 +139,7 @@ public final class JobManager {
 
             String groupId = keys.next();
             try {
-                if (0 >= jobTable.getRowById(groupId).size())
+                if(0 >= jobTable.getRowById(groupId).size())
                     break;
 
                 Map<String, String> map = jobTable.getRowById(groupId).get(0);
@@ -258,7 +258,7 @@ public final class JobManager {
             String id = keys.next();
 
             List<JobInfoFormat> jobList = getJobList(id);
-            for (JobInfoFormat jobInfo : jobList) {
+            for(JobInfoFormat jobInfo : jobList) {
                 if (jobInfo.getJobId().compareTo(jobId) == 0) {
                     jobResponse = jobInfo;
                     break;
@@ -407,7 +407,7 @@ public final class JobManager {
             List<JobInfoFormat> jobList = getJobList(groupId);
 
             framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
-                    EngineType.valueOf(jobList.get(0).getEngineType()));
+                EngineType.valueOf(jobList.get(0).getEngineType()));
 
             for (JobInfoFormat job : jobList) {
                 if (job.getState() == JobState.RUNNING) {
@@ -436,10 +436,10 @@ public final class JobManager {
             List<JobInfoFormat> jobList = getJobList(groupId);
 
             framework = EngineManager.getEngine(jobList.get(0).getTargetHost(),
-                    EngineType.valueOf(jobList.get(0).getEngineType()));
+                            EngineType.valueOf(jobList.get(0).getEngineType()));
 
             for (JobInfoFormat job : jobList) {
-                if (0 == job.getEngineType().compareTo(EngineType.Kapacitor.name())) {
+                if(0 == job.getEngineType().compareTo(EngineType.Kapacitor.name())) {
                     if (job.getState() == JobState.RUNNING) {
                         framework.stop(job.getJobId());
                     }
