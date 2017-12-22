@@ -39,6 +39,7 @@ public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscri
 
     private final String host;
     private final int port;
+    private final String topics;
 
     private EMFAPI emfApi = null;
     private EMFSubscriber emfSubscriber = null;
@@ -51,6 +52,13 @@ public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscri
     public EMFSource(String host, int port) {
         this.host = host;
         this.port = port;
+        this.topics = null;
+    }
+
+    public EMFSource(String host, int port, String topics) {
+        this.host = host;
+        this.port = port;
+        this.topics = topics;
     }
 
     @Override
@@ -65,17 +73,30 @@ public class EMFSource extends RichSourceFunction<DataSet> implements EMFSubscri
 
         this.emfSubscriber = new EMFSubscriber(this.host, this.port, this);
         EMFErrorCode emfErrorCode = this.emfSubscriber.start();
+
         if (emfErrorCode != EMFErrorCode.EMF_OK) {
             throw new RuntimeException(
                     String.format("Failed to start EMF subscriber. [ErrorCode=%s]", emfErrorCode));
         }
-        emfErrorCode = this.emfSubscriber.subscribe();
-        if (emfErrorCode != EMFErrorCode.EMF_OK) {
-            throw new RuntimeException(
-                    String.format("Failed to start EMF subscriber. [ErrorCode=%s]", emfErrorCode));
+
+        if (this.topics != null) {
+            String[] topicList = topics.replaceAll("\\s", "").split(",");
+            for (String topic : topicList) {
+                emfErrorCode = this.emfSubscriber.subscribe(topic);
+                if (emfErrorCode != EMFErrorCode.EMF_OK) {
+                    throw new RuntimeException(
+                            String.format("Failed to start EMF subscriber. [ErrorCode=%s]", emfErrorCode));
+                }
+            }
+        } else {
+            emfErrorCode = this.emfSubscriber.subscribe();
+            if (emfErrorCode != EMFErrorCode.EMF_OK) {
+                throw new RuntimeException(
+                        String.format("Failed to start EMF subscriber. [ErrorCode=%s]", emfErrorCode));
+            }
         }
         LOGGER.info("EMF Subscriber started. [host={}/port={}]",
-                new Object[] {this.host, this.port});
+                new Object[]{this.host, this.port});
     }
 
     @Override

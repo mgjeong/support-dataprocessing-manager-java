@@ -19,21 +19,21 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(DBConnector.class)
+@PrepareForTest(SqliteConnector.class)
 public class TaskTableManagerTest {
     @InjectMocks
     private static TaskTableManager taskTableManager = null;
 
     @Mock
-    private static DBConnector dbConn = null;
+    private static SqliteConnector dbConn = null;
 
     private static List<Map<String, String>> mockDB;
 
     @BeforeClass
     public static void setupEnvironment() throws Exception {
-        mockStatic(DBConnector.class);
-        dbConn = mock(DBConnector.class);
-        when(DBConnector.getInstance()).thenReturn(dbConn);
+        mockStatic(SqliteConnector.class);
+        dbConn = mock(SqliteConnector.class);
+        when(SqliteConnector.getInstance()).thenReturn(dbConn);
         taskTableManager = TaskTableManager.getInstance();
     }
 

@@ -34,11 +34,11 @@ public final class TaskTableManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskTableManager.class);
 
     private static TaskTableManager instance = null;
-    private static DBConnector dbCon = null;
+    private static SqliteConnector dbCon = null;
     private static final String TASKTABLENAME = "tasks";
 
     private TaskTableManager() {
-        dbCon = DBConnector.getInstance();
+        dbCon = SqliteConnector.getInstance();
     }
 
     public void close() {
@@ -62,13 +62,13 @@ public final class TaskTableManager {
     private void createTaskTable() throws Exception {
 
         // Build Table Description to create table.
-        DBConnector.TableDesc td = new DBConnector.TableDesc(TASKTABLENAME);
-        td.addColum(Entry.type.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.name.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.param.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.path.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.classname.name(), new DBConnector.ColumnDesc("TEXT", "NOT NULL"));
-        td.addColum(Entry.removable.name(), new DBConnector.ColumnDesc("INTEGER", "NOT NULL"));
+        SqliteConnector.TableDesc td = new SqliteConnector.TableDesc(TASKTABLENAME);
+        td.addColum(Entry.type.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.name.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.param.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.path.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.classname.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
+        td.addColum(Entry.removable.name(), new SqliteConnector.ColumnDesc("INTEGER", "NOT NULL"));
 
         td.setPrimaryKeys(String.format("PRIMARY KEY (%s, %s)", Entry.type.name(), Entry.name.name()));
 
@@ -80,7 +80,7 @@ public final class TaskTableManager {
                            String jarPath, String className, int removable)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType, taskName, taskParam, jarPath, className)
+        if (SqliteConnector.Util.validateParams(taskType, taskName, taskParam, jarPath, className)
                 || (!(removable == 0 || removable == 1))) {
             throw new InvalidParameterException();
         }
@@ -121,7 +121,7 @@ public final class TaskTableManager {
             throws SQLException, InvalidParameterException {
         // Build Query for Insert row.
 
-        if (DBConnector.Util.validateParams(cols)) {
+        if (SqliteConnector.Util.validateParams(cols)) {
             throw new InvalidParameterException();
         }
 
@@ -143,7 +143,7 @@ public final class TaskTableManager {
     public List<Map<String, String>> getTaskByType(String taskType)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType)) {
+        if (SqliteConnector.Util.validateParams(taskType)) {
             throw new InvalidParameterException();
         }
 
@@ -161,7 +161,7 @@ public final class TaskTableManager {
     public List<Map<String, String>> getTaskByName(String taskName)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskName)) {
+        if (SqliteConnector.Util.validateParams(taskName)) {
             throw new InvalidParameterException();
         }
         // Build Query for get a row.
@@ -177,7 +177,7 @@ public final class TaskTableManager {
     public List<Map<String, String>> getTaskByTypeAndName(String taskType, String taskName)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType, taskName)) {
+        if (SqliteConnector.Util.validateParams(taskType, taskName)) {
             throw new InvalidParameterException();
         }
 
@@ -195,7 +195,7 @@ public final class TaskTableManager {
     public List<Map<String, String>> getTaskByPath(String path)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(path)) {
+        if (SqliteConnector.Util.validateParams(path)) {
             throw new InvalidParameterException();
         }
 
@@ -212,7 +212,7 @@ public final class TaskTableManager {
     public int getJarReferenceCount(String path)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(path)) {
+        if (SqliteConnector.Util.validateParams(path)) {
             throw new InvalidParameterException();
         }
 
@@ -228,7 +228,7 @@ public final class TaskTableManager {
     public int getJarReferenceCount(String taskType, String taskName)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType, taskName)) {
+        if (SqliteConnector.Util.validateParams(taskType, taskName)) {
             throw new InvalidParameterException();
         }
 
@@ -246,7 +246,7 @@ public final class TaskTableManager {
     public String getJarPathByTypeAndName(String taskType, String taskName)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType, taskName)) {
+        if (SqliteConnector.Util.validateParams(taskType, taskName)) {
             throw new InvalidParameterException();
         }
 
@@ -262,7 +262,7 @@ public final class TaskTableManager {
 
     public void deleteTaskByPath(String jarPath)
             throws SQLException, InvalidParameterException {
-        if (DBConnector.Util.validateParams(jarPath)) {
+        if (SqliteConnector.Util.validateParams(jarPath)) {
             throw new InvalidParameterException();
         }
         String query = String.format("DELETE FROM %s WHERE %s='%s';", TASKTABLENAME,
@@ -285,7 +285,7 @@ public final class TaskTableManager {
     public void deleteTaskByTypeAndName(String taskType, String taskName)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType, taskName)) {
+        if (SqliteConnector.Util.validateParams(taskType, taskName)) {
             throw new InvalidParameterException();
         }
 
@@ -303,7 +303,7 @@ public final class TaskTableManager {
     public void deleteTasksByTypeAndName(String taskType, String taskName)
             throws SQLException, InvalidParameterException {
 
-        if (DBConnector.Util.validateParams(taskType, taskName)) {
+        if (SqliteConnector.Util.validateParams(taskType, taskName)) {
             throw new InvalidParameterException();
         }
 

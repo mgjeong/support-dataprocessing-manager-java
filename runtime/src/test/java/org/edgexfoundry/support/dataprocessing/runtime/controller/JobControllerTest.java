@@ -27,7 +27,10 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskForma
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -44,9 +47,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -66,9 +67,6 @@ public class JobControllerTest {
 
     @Mock
     private static JobManager jobManager;
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     private static final String JSON_JOB_CREATE = "{\"jobs\":[{\"input\":[{\"dataType\":\"ZMQ\","
             + "\"dataSource\":\"10.113.64.225:5555:topic\"}],"

@@ -1,6 +1,8 @@
 {
+  "runtimeHost":"localhost:8082",
   "jobs": [
     {
+      "targetHost":"localhost:8081",
       "input": [
         {
           "dataType": "ZMQ",
@@ -11,7 +13,7 @@
         {
           "dataType": "WS",
           "dataSource": "127.0.0.1:8083"
-        }1
+        }
       ],
       "task": [
         {

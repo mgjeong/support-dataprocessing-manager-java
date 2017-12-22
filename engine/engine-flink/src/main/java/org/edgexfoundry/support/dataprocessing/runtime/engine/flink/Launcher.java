@@ -149,8 +149,8 @@ public class Launcher {
     }
 
     private DataStream<DataSet> addSource(StreamExecutionEnvironment env, DataFormat input) {
-        String dataType = input.getDataType();
-        if (dataType.equals("ZMQ")) {
+        String dataType = input.getDataType().toLowerCase();
+        if (dataType.equals("zmq")) {
             String[] dataSource = input.getDataSource().split(":");
             ZMQConnectionConfig zmqConnectionConfig = new ZMQConnectionConfig.Builder()
                     .setHost(dataSource[0].trim())
@@ -160,11 +160,16 @@ public class Launcher {
 
             return env.addSource(new ZMQSource<>(zmqConnectionConfig,
                     dataSource[2], new DataSetSchema())).setParallelism(1);
-        } else if (dataType.equals("EMF")) {
-            String[] dataSource = input.getDataSource().split(":");
+        } else if (dataType.equals("emf")) {
+            String[] dataSource = input.getDataSource().split(":", 3);
             String host = dataSource[0].trim();
             int port = Integer.parseInt(dataSource[1].trim());
-            return env.addSource(new EMFSource(host, port)).setParallelism(1);
+            if (dataSource.length == 3) {
+                String topic = dataSource[2].trim();
+                return env.addSource(new EMFSource(host, port, topic)).setParallelism(1);
+            } else {
+                return env.addSource(new EMFSource(host, port)).setParallelism(1);
+            }
         } else {
             throw new RuntimeException("Unsupported input data type: " + dataType);
         }
@@ -173,7 +178,7 @@ public class Launcher {
 
     private JobInfoFormat getJobInfo(String jobId) {
 
-        if(null != httpClient) {
+        if (null != httpClient) {
             try {
                 String rawJson = httpClient.get("/analytics/v1/job/info/" + jobId).toString();
 
@@ -198,7 +203,7 @@ public class Launcher {
             LOGGER.info("JobID passed: " + jobId);
             String host = params.get("host");
             LOGGER.info("Host passed: " + host);
-            if(null == host) {
+            if (null == host) {
                 host = "localhost:8082";
             }
 
