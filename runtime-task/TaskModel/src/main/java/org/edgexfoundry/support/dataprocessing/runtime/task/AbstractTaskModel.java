@@ -22,9 +22,10 @@ public abstract class AbstractTaskModel implements TaskModel {
     private List<String> inRecordKeys;
     private List<String> outRecordKeys;
 
-    public AbstractTaskModel() {
-        // This default constructor (with no argument) is required for dynamic instantiation from TaskFactory.
-    }
+    /**
+     * This default constructor (with no argument) is required for dynamic instantiation from TaskFactory.
+     */
+    public AbstractTaskModel() { }
 
     @Override
     public void setInRecordKeys(List<String> inRecordKeys) {
@@ -40,16 +41,6 @@ public abstract class AbstractTaskModel implements TaskModel {
     public DataSet calculate(DataSet in) {
         return calculate(in, this.inRecordKeys, this.outRecordKeys);
 
-        // This could be an alternative.
-        /*List<Object> input = new ArrayList<>();
-        for (String key : this.inRecordKeys) {
-            input.add(in.getValue(key, Object.class));
-        }
-        Map<String, Object> output = calculate(input, this.outRecordKeys);
-        for (String key : this.outRecordKeys) {
-            in.setValue(key, output.get(key));
-        }
-        return in;*/
     }
 
     public abstract DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys);

@@ -147,4 +147,159 @@ public class CommonFunctionTest {
         Assert.assertEquals(z, 5, 0);
 
     }
+
+    @Test
+    public void ArithmeticAddTest() {
+
+        Number x = 1;
+        Number y = -1;
+
+        Number z = null;
+        try {
+
+            z =  (Number)CommonFunction.add(x.intValue(),y.intValue());
+
+            Assert.assertEquals(z.intValue(), 0,0);
+
+            z =  (Number)CommonFunction.add(x.longValue(),y.longValue());
+
+            Assert.assertEquals(z.longValue(), 0,0);
+
+            z =  (Number)CommonFunction.add(x.floatValue(),y.floatValue());
+
+            Assert.assertEquals(z.floatValue(), 0.0,0);
+
+            z =  (Number)CommonFunction.add(x.doubleValue(),y.doubleValue());
+
+            Assert.assertEquals(z.doubleValue(), 0.0,0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ArithmeticSubTest() {
+
+        Number x = 1;
+        Number y = -1;
+
+        Number z = null;
+        try {
+
+            z =  (Number)CommonFunction.sub(x.intValue(),y.intValue());
+
+            Assert.assertEquals(z.intValue(), 2,0);
+
+            z =  (Number)CommonFunction.sub(x.longValue(),y.longValue());
+
+            Assert.assertEquals(z.longValue(), 2,0);
+
+            z =  (Number)CommonFunction.sub(x.floatValue(),y.floatValue());
+
+            Assert.assertEquals(z.floatValue(), 2.0,0);
+
+            z =  (Number)CommonFunction.sub(x.doubleValue(),y.doubleValue());
+
+            Assert.assertEquals(z.doubleValue(), 2.0,0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ArithmeticMulTest() {
+
+        Number x = 1;
+        Number y = -1;
+
+        Number z = null;
+        try {
+
+            z =  (Number)CommonFunction.mul(x.intValue(),y.intValue());
+
+            Assert.assertEquals(z.intValue(), -1,0);
+
+            z =  (Number)CommonFunction.mul(x.longValue(),y.longValue());
+
+            Assert.assertEquals(z.longValue(), -1,0);
+
+            z =  (Number)CommonFunction.mul(x.floatValue(),y.floatValue());
+
+            Assert.assertEquals(z.floatValue(), -1.0,0);
+
+            z =  (Number)CommonFunction.mul(x.doubleValue(),y.doubleValue());
+
+            Assert.assertEquals(z.doubleValue(), -1.0,0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ArithmeticDivTest() {
+
+        Number x = 1;
+        Number y = -1;
+
+        Number z = null;
+        try {
+
+            z =  (Number)CommonFunction.div(x.intValue(),y.intValue());
+
+            Assert.assertEquals(z.intValue(), -1,0);
+
+            z =  (Number)CommonFunction.div(x.longValue(),y.longValue());
+
+            Assert.assertEquals(z.longValue(), -1,0);
+
+            z =  (Number)CommonFunction.div(x.floatValue(),y.floatValue());
+
+            Assert.assertEquals(z.floatValue(), -1.0,0);
+
+            z =  (Number)CommonFunction.div(x.doubleValue(),y.doubleValue());
+
+            Assert.assertEquals(z.doubleValue(), -1.0,0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ArithmeticModest() {
+
+        Number x = 2;
+        Number y = 1;
+
+        Number z = null;
+        try {
+
+            z =  (Number)CommonFunction.mod(x.intValue(),y.intValue());
+
+            Assert.assertEquals(z.intValue(), 0,0);
+
+            z =  (Number)CommonFunction.mod(x.longValue(),y.longValue());
+
+            Assert.assertEquals(z.longValue(), 0,0);
+
+            z =  (Number)CommonFunction.mod(x.floatValue(),y.floatValue());
+
+            Assert.assertEquals(z.floatValue(), 0.0,0);
+
+            z =  (Number)CommonFunction.mod(x.doubleValue(),y.doubleValue());
+
+            Assert.assertEquals(z.doubleValue(), 0.0,0);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 }

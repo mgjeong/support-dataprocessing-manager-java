@@ -12,7 +12,7 @@
 		"task": [{			
 			"name": "query",
             "param": {
-					"script": "CNCAE4A21N2|join(CNCAE4A21N3).as(<A>, <B>).tolerance(50ms)|delete().field(<B.ProcessTime>).field(<B.DEV_IP>).field(<B.delay>).field(<B.ret>)"
+					"request": "CNCAE4A21N2|join(CNCAE4A21N3).as(<A>, <B>).tolerance(50ms)|delete().field(<B.ProcessTime>).field(<B.DEV_IP>).field(<B.delay>).field(<B.ret>)"
 			}
 		}],
 		"inrecord": [],

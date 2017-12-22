@@ -20,3 +20,4 @@ engine/engine-kapacitor/deliver
 ### VIM ###
 *.swp
 
+resources/
