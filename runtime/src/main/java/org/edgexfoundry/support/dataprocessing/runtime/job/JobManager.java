@@ -188,13 +188,11 @@ public final class JobManager {
             EngineType engineType = EngineType.None;
             List<TaskFormat> taskFormat = jobNode.getTask();
 
-            if(0 < taskFormat.size()) {
-                if (null != taskFormat.get(0).getParams()) {
-                    if(true == taskFormat.get(0).getParams().containsKey("script")) {
-                        engineType = EngineType.Kapacitor;
-                    } else {
-                        engineType = EngineType.Flink;
-                    }
+            if (0 < taskFormat.size()) {
+                if (null != taskFormat.get(0).getParams() && true == taskFormat.get(0).getParams().containsKey("request")) {
+                    engineType = EngineType.Kapacitor;
+                } else {
+                    engineType = EngineType.Flink;
                 }
             }
 

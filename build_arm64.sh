@@ -27,8 +27,15 @@ rm kapacitor.tar.gz
 ln -s "kapacitor-${KAPACITOR_VERSION}"*/ kapacitor
 is_extracted ${output_path}/kapacitor/usr/bin/kapacitord
 
-echo -ne "Setting necessary configurations and libraries..."
+echo -ne "Setting necessary configurations..."
 export GOPATH=${output_path}
 go get -u go.uber.org/zap
+go get -u gopkg.in/mgo.v2
 cp ${rsc_path}/kapacitor.conf ${output_path}/
-is_extracted ${output_path}/src/go.uber.org/zap/Makefile
+is_extracted ${output_path}/kapacitor.conf
+
+echo -ne "Setting neccessary files..."
+cp ${rsc_path}/setldd.sh ${output_path}/
+is_extracted ${output_path}/setldd.sh
+
+cp /usr/bin/qemu-arm-static ${output_path}/
