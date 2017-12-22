@@ -11,19 +11,18 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sqlite.SQLiteErrorCode;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.support.membermodification.MemberModifier.field;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(DriverManager.class)
+@PrepareForTest({DriverManager.class, SqliteConnector.class})
 public class SqliteConnectorTest {
 
   @Before
@@ -34,12 +33,26 @@ public class SqliteConnectorTest {
   @Test
   public void getInstanceTest() throws SQLException {
 
-    PowerMockito.mockStatic(DriverManager.class, Mockito.RETURNS_DEEP_STUBS);
+    Connection connection = Mockito.mock(Connection.class);
+    Statement statement = Mockito.mock(Statement.class);
+    ResultSet resultSet = Mockito.mock(ResultSet.class);
+    ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
+
+    mockStatic(DriverManager.class);
+
+    try {
+      when(DriverManager.getConnection(anyString())).thenReturn(connection);
+      when(connection.createStatement()).thenReturn(statement);
+      when(statement.executeQuery(any())).thenReturn(resultSet);
+      when(resultSet.getMetaData()).thenReturn(metaData);
+      when(metaData.getColumnCount()).thenReturn(0);
+    }  catch (SQLException e) {
+      e.printStackTrace();
+      Assert.fail();
+    }
 
     SqliteConnector sqliteConnector = SqliteConnector.getInstance();
     Assert.assertNotNull(sqliteConnector);
-
-    sqliteConnector.close();
   }
 
   @Test
@@ -51,23 +64,26 @@ public class SqliteConnectorTest {
 
     Connection connection = Mockito.mock(Connection.class);
     Statement statement = Mockito.mock(Statement.class);
+    ResultSet resultSet = Mockito.mock(ResultSet.class);
+    ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
 
-    SqliteConnector sqliteConnector = SqliteConnector.getInstance();
-    Assert.assertNotNull(sqliteConnector);
+    mockStatic(DriverManager.class);
 
     try {
-
+      when(DriverManager.getConnection(anyString())).thenReturn(connection);
       when(connection.createStatement()).thenReturn(statement);
+      when(statement.executeQuery(any())).thenReturn(resultSet);
+      when(resultSet.getMetaData()).thenReturn(metaData);
+      when(metaData.getColumnCount()).thenReturn(0);
+
       doThrow(new SQLException("", "", SQLiteErrorCode.SQLITE_BUSY.code)).when(statement).executeUpdate(anyString());
-
-      field(SqliteConnector.class, "conn")
-        .set(sqliteConnector, connection);
-
     }  catch (SQLException e) {
       e.printStackTrace();
       Assert.fail();
     }
 
+    SqliteConnector sqliteConnector = SqliteConnector.getInstance();
+    Assert.assertNotNull(sqliteConnector);
 
     try {
       sqliteConnector.createTable(td);
