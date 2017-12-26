@@ -131,6 +131,8 @@ func (d *deliverHandler) EndBatch(*agent.EndBatch) error {
 // No other methods will be called.
 func (d *deliverHandler) Stop() {
 	log.Println("Closing sink")
-	d.sink.Close()
+	if d.sink != nil {
+		d.sink.Close()
+	}
 	close(d.agent.Responses)
 }
