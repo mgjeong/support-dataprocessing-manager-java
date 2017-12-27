@@ -80,10 +80,10 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
        - Features : runtime-task or Custom task (jar) loader
     4. Runtime-task
        - Libraries
-         - [Task Model](runtime-task/TaskModel/readme.md) : task-model-0.1.0-SNAPSHOT.jar
+         - Task Model : task-model-0.1.0-SNAPSHOT.jar
          - [Regression Model](runtime-task/Regression/readme.md) : regression-0.1.0-SNAPSHOT.jar
          - [SVM Model](runtime-task/SVMModel/readme.md) : svm-0.1.0-SNAPSHOT.jar
-         - [Query Model](runtime-task/QueryModel/readme.md) : query-model-0.1.0-SNAPSHOT.jar
+         - Query Model : query-model-0.1.0-SNAPSHOT.jar
        - Features : Data pre-processing & analytic task
   - The Data Processing Runtime is divided into submodules to minimize dependency relations.
     - Dependencies
@@ -98,7 +98,6 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   `chown -R user:user /runtime`
 
 - Execute Apache Flink & Kapacitor
-  - Refer the "Prerequisites" above.
 
 - Execute Runtime
     ```shell
@@ -117,20 +116,20 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
       4. Paste the contents into "json box of the Parameter slot" and click "Try it out!"
       5. Check the response : Success(200) or Fail(400)
     - Data Processing Job Execution
-      6. Copy the "jobId" from the Response Body
-      7. Goto POST /v1/job/{id}/execute & extend the menu
-      8. Paste the "jobId" into "id box of the Parameter slot" and click "Try it out!"
-      9. Check the response : Success(200) or Fail(400)
+      1. Copy the "jobId" from the Response Body
+      2. Goto POST /v1/job/{id}/execute & extend the menu
+      3. Paste the "jobId" into "id box of the Parameter slot" and click "Try it out!"
+      4. Check the response : Success(200) or Fail(400)
     - Data Processing job Stop
-      10. Copy the "jobId" from the Response Body
-      11. Goto POST /v1/job/{id}/stop & extend the menu
-      12. Paste the "jobId" into "id box of the Parameter slot" and click "Try it out!"
-      13. Check the response : Success(200) or Fail(400)
+      1. Copy the "jobId" from the Response Body
+      2. Goto POST /v1/job/{id}/stop & extend the menu
+      3. Paste the "jobId" into "id box of the Parameter slot" and click "Try it out!"
+      4. Check the response : Success(200) or Fail(400)
     - Data Processing job Delete
-      14. Copy the "jobId" from the Response Body
-      15. Goto DELETE /v1/job/{id} & extend the menu
-      16. Paste the "jobId" into "id box of the Parameter slot" and click "Try it out!"
-      17. Check the response : Success(200) or Fail(400)
+      1. Copy the "jobId" from the Response Body
+      2. Goto DELETE /v1/job/{id} & extend the menu
+      3. Paste the "jobId" into "id box of the Parameter slot" and click "Try it out!"
+      4. Check the response : Success(200) or Fail(400)
   - How to stream data to executing Data Processing job
     - You will need to create a sample app which streams the data thru one of the protocol
       which engine supports (Flink : zmq/ezMQ, Kapacitor : ezMQ)
