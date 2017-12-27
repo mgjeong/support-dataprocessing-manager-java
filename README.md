@@ -98,6 +98,7 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   `chown -R user:user /runtime`
 
 - Execute Apache Flink & Kapacitor
+  - Refer the "Prerequisites" above.
 
 - Execute Runtime
     ```shell
