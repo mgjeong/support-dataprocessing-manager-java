@@ -2,50 +2,50 @@ package sink
 
 import (
 	"log"
-	"github.com/mgjeong/messaging-zmq/go/emf"
 	"strings"
 	"strconv"
 	"errors"
 	"encoding/json"
 	"time"
 	"os"
+	"github.com/mgjeong/protocol-ezmq-go/ezmq"
 )
 
-type MQSink struct {
-	targetEMF *emf.EMFPublisher
-	topic     string
+type EZMQSink struct {
+	targetEZMQ *ezmq.EZMQPublisher
+	topic      string
 }
 
-func (m *MQSink) AddSink(address, topic string) error {
-	log.Println("Initializing emf sink for", address)
+func (m *EZMQSink) AddSink(address, topic string) error {
+	log.Println("Initializing ezmq sink for", address)
 	target := strings.Split(address, ":")
-	emf.GetInstance().Initialize()
-	startCB := func(code emf.EMFErrorCode) { log.Println("EMF starting by callback") }
-	stopCB := func(code emf.EMFErrorCode) { log.Println("EMF stopping by callback") }
-	errorCB := func(code emf.EMFErrorCode) { log.Println("EMF error by callback") }
+	ezmq.GetInstance().Initialize()
+	startCB := func(code ezmq.EZMQErrorCode) { log.Println("EZMQ starting by callback") }
+	stopCB := func(code ezmq.EZMQErrorCode) { log.Println("EZMQ stopping by callback") }
+	errorCB := func(code ezmq.EZMQErrorCode) { log.Println("EZMQ error by callback") }
 	port, err := strconv.Atoi(target[1])
 	if err != nil {
-		return errors.New("error: wrong port number for emf")
+		return errors.New("error: wrong port number for ezmq")
 	}
-	m.targetEMF = emf.GetEMFPublisher(port, startCB, stopCB, errorCB)
+	m.targetEZMQ = ezmq.GetEZMQPublisher(port, startCB, stopCB, errorCB)
 	m.topic = topic
-	result := m.targetEMF.Start()
+	result := m.targetEZMQ.Start()
 
 	if result != 0 {
-		return errors.New("error: failed to start emf publisher")
+		return errors.New("error: failed to start ezmq publisher")
 	}
 	return nil
 }
 
-func (m *MQSink) Flush(record *map[string]interface{}) error {
+func (m *EZMQSink) Flush(record *map[string]interface{}) error {
 	jsonBytes, err := json.Marshal(record)
 	log.Println("Writing: ", string(jsonBytes))
 	var event = getEvent(jsonBytes)
-	var result emf.EMFErrorCode
+	var result ezmq.EZMQErrorCode
 	if m.topic == "" {
-		result = m.targetEMF.Publish(event)
+		result = m.targetEZMQ.Publish(event)
 	} else {
-		result = m.targetEMF.PublishOnTopic(m.topic, event)
+		result = m.targetEZMQ.PublishOnTopic(m.topic, event)
 	}
 	if result != 0 {
 		err = errors.New("failed to publish the record")
@@ -54,8 +54,8 @@ func (m *MQSink) Flush(record *map[string]interface{}) error {
 	return err
 }
 
-func getEvent(data []byte) emf.Event {
-	var event emf.Event
+func getEvent(data []byte) ezmq.Event {
+	var event ezmq.Event
 
 	var id string = "DPR-kapacitor"
 	var now int64 = time.Now().UnixNano()
@@ -72,7 +72,7 @@ func getEvent(data []byte) emf.Event {
 	event.Pushed = &pushed
 	event.Device = &device
 
-	var reading = &emf.Reading{}
+	var reading = &ezmq.Reading{}
 	var rId string = "DPR-kapacitor"
 	var rCreated int64 = 0
 	var rModified int64 = 0
@@ -90,13 +90,13 @@ func getEvent(data []byte) emf.Event {
 	reading.Name = &rName
 	reading.Value = &rValue
 
-	event.Reading = make([]*emf.Reading, 1)
+	event.Reading = make([]*ezmq.Reading, 1)
 	event.Reading[0] = reading
 	return event
 }
 
-func (m *MQSink) Close() {
-	if m.targetEMF != nil {
-		m.targetEMF.Stop()
+func (m *EZMQSink) Close() {
+	if m.targetEZMQ != nil {
+		m.targetEZMQ.Stop()
 	}
 }

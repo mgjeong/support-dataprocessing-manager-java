@@ -52,8 +52,8 @@ func (d *deliverHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error)
 	}
 
 	switch d.sinkType {
-	case "emf":
-		d.sink = new(sink.MQSink)
+	case "ezmq":
+		d.sink = new(sink.EZMQSink)
 	case "mongodb":
 		d.sink = new(sink.MongoDBSink)
 	case "f":
