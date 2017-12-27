@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
 import org.slf4j.Logger;
@@ -26,56 +27,52 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 public class JarLoader {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
-    private URLClassLoader urlClassLoader = null;
-    private ClassLoader classLoader = null;
+  private URLClassLoader urlClassLoader = null;
+  private ClassLoader classLoader = null;
 
-    public JarLoader(String jarPath, ClassLoader classLoader) throws Exception {
-        if (null == jarPath) {
-            return;
-        }
-
-        this.classLoader = classLoader;
-
-        loadJar(jarPath);
+  public JarLoader(String jarPath, ClassLoader classLoader) throws Exception {
+    if (null == jarPath) {
+      return;
     }
 
-    protected void finalize() throws IOException {
-        unloadJar();
-        urlClassLoader = null;
+    this.classLoader = classLoader;
+
+    loadJar(jarPath);
+  }
+
+  /**
+   * @param className This should be included the package name.
+   *                  likes "org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel"
+   * @return
+   */
+  public Class getClassInstance(String className) throws ClassNotFoundException, NoClassDefFoundError {
+    LOGGER.info("Attempting to load " + className);
+    Class clsInstance = urlClassLoader.loadClass(className);
+    return clsInstance;
+  }
+
+  public void loadJar(String jarPath) throws Exception {
+
+    File file = new File(jarPath);
+
+    if (!file.exists() || file.length() == 0) {
+      throw new RuntimeException("Jar file is not valid. " + jarPath);
     }
+    //urlClassLoader = new URLClassLoader(new URL[] {file.toURL()}, ClassLoader.getSystemClassLoader());
+    //this.urlClassLoader = new URLClassLoader(new URL[] {file.toURI().toURL()}, this.getClass().getClassLoader());
+    this.urlClassLoader = new URLClassLoader(new URL[]{file.toURI().toURL()}, this.classLoader);
 
-    /**
-     * @param className This should be included the package name.
-     *                  likes "org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel"
-     * @return
-     */
-    public Class getClassInstance(String className) throws ClassNotFoundException, NoClassDefFoundError {
-        LOGGER.info("Attempting to load " + className);
-        Class clsInstance = urlClassLoader.loadClass(className);
-        return clsInstance;
-    }
+    Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+    method.setAccessible(true);
+    method.invoke(this.classLoader, new Object[]{file.toURI().toURL()});
 
-    public void loadJar(String jarPath) throws Exception {
+    LOGGER.info("URL ClassLoader loaded: " + jarPath);
+  }
 
-        File file = new File(jarPath);
-
-        if (!file.exists() || file.length() == 0) {
-            throw new RuntimeException("Jar file is not valid. " + jarPath);
-        }
-        //urlClassLoader = new URLClassLoader(new URL[] {file.toURL()}, ClassLoader.getSystemClassLoader());
-        //this.urlClassLoader = new URLClassLoader(new URL[] {file.toURI().toURL()}, this.getClass().getClassLoader());
-        this.urlClassLoader = new URLClassLoader(new URL[] {file.toURI().toURL()}, this.classLoader);
-        Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-        method.setAccessible(true);
-        method.invoke(this.classLoader, new Object[] {file.toURI().toURL()});
-
-        LOGGER.info("URL ClassLoader loaded: " + jarPath);
-    }
-
-    public void unloadJar() throws IOException {
-        urlClassLoader.close();
-    }
+  public void unloadJar() throws IOException {
+    urlClassLoader.close();
+  }
 
 }
