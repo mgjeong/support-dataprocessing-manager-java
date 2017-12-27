@@ -1,11 +1,17 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.util.List;
+import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.ScriptFactory;
@@ -15,7 +21,6 @@ import org.slf4j.LoggerFactory;
 public class KapacitorEngine extends AbstractEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(KapacitorEngine.class);
     private static final String TASK_ROOT = "/kapacitor/v1/tasks";
-    private static JobTableManager jobTableManager = null;
     private HTTP httpClient = null;
 
     public KapacitorEngine(String hostname, int port) {
@@ -30,9 +35,7 @@ public class KapacitorEngine extends AbstractEngine {
 
     @Override
     public JobResponseFormat createJob(String jobId) {
-
         LOGGER.info("Kapacitor job {} is created", jobId);
-
         return createJob().setJobId(jobId);
     }
 
@@ -44,13 +47,32 @@ public class KapacitorEngine extends AbstractEngine {
         taskInfo.addProperty("status", "disabled");
         JsonArray dbrps = new JsonArray();
         JsonObject dbrp = new JsonObject();
+
+        // Custom database and retention policy is set for now
         dbrp.addProperty("db", "dpruntime");
         dbrp.addProperty("rp", "autogen");
         dbrps.add(dbrp);
         taskInfo.add("dbrps", dbrps);
 
         try {
-            String script = new ScriptFactory(jobId).getScript();
+            JobTableManager jobTableManager = JobTableManager.getInstance();
+            Map<String, String> job = jobTableManager.getPayloadById(jobId).get(0);
+            ObjectMapper mapper = new ObjectMapper();
+            List<DataFormat> inputs =
+                mapper.readValue(
+                    job.get(JobTableManager.Entry.input.name()), new TypeReference<List<DataFormat>>() {});
+            List<DataFormat> outputs =
+                mapper.readValue(
+                    job.get(JobTableManager.Entry.output.name()), new TypeReference<List<DataFormat>>() {});
+            List<TaskFormat> tasks =
+                mapper.readValue(
+                    job.get(JobTableManager.Entry.taskinfo.name()),
+                    new TypeReference<List<TaskFormat>>() {});
+            ScriptFactory scriptFactory = new ScriptFactory();
+            scriptFactory.setInputs(inputs);
+            scriptFactory.setOutputs(outputs);
+            scriptFactory.setTasks(tasks);
+            String script = scriptFactory.getScript();
 
             LOGGER.info("Kapacitor script is following: {}", script);
             taskInfo.addProperty("script", script);

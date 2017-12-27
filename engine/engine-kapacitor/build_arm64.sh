@@ -15,8 +15,8 @@ ln -s "kapacitor-${KAPACITOR_VERSION}"*/ kapacitor
 echo "Setting necessary configurations and libraries..."
 export GOPATH=${output_path}
 go get -u go.uber.org/zap
+go get -u gopkg.in/mgo.v2
 cp ${rsc_path}/kapacitor.conf ${output_path}/
+cp ${rsc_path}/setldd.sh ${output_path}/
 
-# Temporarily, a certificate is required for proxy
-sudo cp /root/SRnD+Web+Proxy.crt ${output_path}/
 cp /usr/bin/qemu-arm-static ${output_path}/

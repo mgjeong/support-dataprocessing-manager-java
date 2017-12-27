@@ -16,10 +16,6 @@
 ###############################################################################
 FROM openjdk:8-jdk-alpine
 
-# SEC-specific settings KYUNGRAE KIM
-ENV http_proxy http://10.112.1.184:8080
-ENV https_proxy https://10.112.1.184:8080
-
 # Install requirements
 RUN apk add --no-cache bash snappy
 

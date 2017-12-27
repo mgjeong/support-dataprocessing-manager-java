@@ -1,22 +1,23 @@
-package main
+package injectHandler
 
 import (
-	"github.com/influxdata/kapacitor/udf/agent"
 	"log"
-	"os"
-	"context"
 	"errors"
-	"github.com/mgjeong/messaging-zmq/go/emf"
-	"strconv"
-	"strings"
+	"context"
 	"net"
-	"encoding/json"
+	"os"
+	"strings"
+	"strconv"
 	"fmt"
-	"regexp"
+	"github.com/influxdata/kapacitor/udf/agent"
+	"github.com/mgjeong/messaging-zmq/go/emf"
+	"encoding/json"
+	"time"
+	"sync"
 )
 
 type injectHandler struct {
-	source string
+	source  string
 	address string
 	topic   string
 
@@ -27,9 +28,9 @@ type injectHandler struct {
 }
 
 var conn *net.UDPConn
-var hostname string
+var table string
 
-func newInjectHandler(agent *agent.Agent) *injectHandler {
+func NewInjectHandler(agent *agent.Agent) *injectHandler {
 	return &injectHandler{agent: agent}
 }
 
@@ -38,9 +39,10 @@ func (p *injectHandler) Info() (*agent.InfoResponse, error) {
 		Wants:    agent.EdgeType_STREAM,
 		Provides: agent.EdgeType_STREAM,
 		Options: map[string]*agent.OptionInfo{
-			"source": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"source":  {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"address": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 			"topic":   {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+			"into":    {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		},
 	}
 	return info, nil
@@ -60,28 +62,57 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 			p.address = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "topic":
 			p.topic = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
+		case "into":
+			table = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		}
 	}
 
 	if p.address == "" {
-		init.Success = false
-		init.Error += " must supply source address"
+		return nil, errors.New("address must be specified")
 	}
 
 	if p.source == "" {
-		init.Success = false
-		init.Error += " must specify table name"
+		return nil, errors.New("source must be specified")
 	}
 
-	log.Println("DPRuntime Wait to make source in PID ", os.Getpid())
+	if table == "" {
+		return nil, errors.New("target table must be specified")
+	}
+
+	log.Println("Waiting to make source in PID ", os.Getpid())
 	p.childContext, p.cancel = context.WithCancel(context.Background())
+
+	var initError error = nil
+	var waitingInit sync.WaitGroup
+	waitingInit.Add(1)
 
 	go func(ctx context.Context) {
 		// TODO: Read UDP port dynamically
+		defer waitingInit.Done()
 		const udpPort = "9100"
 		var emfInstance *emf.EMFAPI = nil
 		var emfSub *emf.EMFSubscriber
-		init := true
+		var udpAddr *net.UDPAddr
+		udpAddr, initError = net.ResolveUDPAddr("udp", "localhost:"+udpPort)
+		if initError != nil {
+			return
+		}
+		conn, initError = net.DialUDP("udp", nil, udpAddr)
+		if initError != nil {
+			return
+		}
+		defer conn.Close()
+
+		emfInstance = initializeEMF()
+		emfSub, initError = addSource(p.topic, p.address)
+		if initError != nil {
+			return
+		}
+		defer emfSub.Stop()
+
+		log.Println("Ready to transfer message into kapacitor")
+		waitingInit.Done()
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -95,28 +126,17 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 				}
 				return
 			default:
-				if init {
-					udpAddr, err := net.ResolveUDPAddr("udp", "localhost:"+udpPort)
-					if err != nil {
-						// TODO: error handling
-						log.Println("DPRuntime: fail to resolve UDP address")
-					}
-					conn, err = net.DialUDP("udp", nil, udpAddr)
-					if err != nil {
-						// TODO: error handling
-						log.Println("DPRuntime: fail to make udp connection")
-					}
-					emfInstance = initializeEMF()
-					hostname = p.address
-					emfSub = addSource(p.topic)
-					init = false
-				}
+				time.Sleep(100 * time.Microsecond)
 			}
 		}
 	}(p.childContext)
 
-	// TODO: Handle errors during setting EMF subscriber
-	return init, nil
+	if timedWait(&waitingInit, time.Minute) {
+		return nil, errors.New("failed to initialize")
+	}
+
+	log.Println("Ready to inject from", p.address)
+	return init, initError
 }
 
 func initializeEMF() *emf.EMFAPI {
@@ -126,64 +146,44 @@ func initializeEMF() *emf.EMFAPI {
 	return instance
 }
 
-func addSource(topic string) *emf.EMFSubscriber {
-	log.Println("DPRuntime Start to make source [", hostname, "] in PID ", os.Getpid())
+func addSource(topic string, hostname string) (*emf.EMFSubscriber, error) {
+	log.Println("Start to make source [", hostname, "] in PID ", os.Getpid())
 	target := strings.Split(hostname, ":")
 	port, err := strconv.Atoi(target[1])
-	subCB := func(event emf.Event) { eventHandler(event) }
-	subTopicCB := func(topic string, event emf.Event) { eventHandlerWithTopic(topic, event) }
 	if err != nil {
-		// TODO: error handling
-		log.Println("DPRuntime wrong port number")
+		return nil, errors.New("invalid port number")
 	}
+
+	subCB := func(event emf.Event) { eventHandler(event) }
+	subTopicCB := func(topic string, event emf.Event) { eventHandler(event) }
 
 	subscriber := emf.GetEMFSubscriber(target[0], port, subCB, subTopicCB)
 	result := subscriber.Start()
-	// TODO: error handling
-	log.Println("DPRuntime subscriber started with error ", result)
+	if result != emf.EMF_OK {
+		return nil, errors.New("failed to subscription")
+	}
 
-	// TODO: subscribing topics
 	if topic != "" {
 		result = subscriber.SubscribeForTopic(topic)
 	} else {
 		result = subscriber.Subscribe()
 	}
-	// TODO: error handling
-	log.Println("DPRuntime subscriber is working with error ", result)
-	return subscriber
+
+	log.Println("subscriber is working with error ", result)
+	return subscriber, nil
 }
 
 func eventHandler(event emf.Event) {
-	eventHandlerWithTopic("", event)
-}
-
-func eventHandlerWithTopic(topic string, event emf.Event) {
 	var msg string
 
-	// EMF always appends '/' at the end of a topic
-	// For now, last letter will be deleted if a topic ends with '/'
-	if topic != "" {
-		if topic[len(topic) - 1] == '/' {
-			topic = topic[:len(topic) - 1]
-		}
-
-		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
-		if err == nil {
-			topic = reg.ReplaceAllString(topic, "")
-		}
-		msg += topic
-	}
-
-	msg += " "
+	msg = table + " "
 	readings := event.GetReading()
 	timeStamp := ""
 	for i := 0; i < len(readings); i++ {
-		// TODO: Assemble keys and values into influx line, and send via UDP
-		//log.Println("DPRuntime message: ", readings[i].GetValue())
-		body, timeChecked := jsonIntoInfluxBody(readings[i].GetValue())
+		body, timeStamped := jsonIntoInfluxBody(readings[i].GetValue())
 		msg += body
-		if timeChecked != "" {
-			timeStamp = timeChecked
+		if timeStamped != "" {
+			timeStamp = timeStamped
 		}
 	}
 	msg = msg[:len(msg)-1]
@@ -192,9 +192,9 @@ func eventHandlerWithTopic(topic string, event emf.Event) {
 		msg += " " + timeStamp
 	}
 
-	log.Println("DPRuntime message: ", msg)
+	log.Println("message: ", msg)
 
-	forwardEventToEngine(msg)
+	forwardEventToKapacitor(msg)
 }
 
 func jsonIntoInfluxBody(msg string) (string, string) {
@@ -214,18 +214,19 @@ func jsonIntoInfluxBody(msg string) (string, string) {
 			stringValue = value.(json.Number).String()
 			body += key + "=" + stringValue + ","
 		}
-		if key == "sTime" {
+
+		// Custom conditional statements for timestamp
+		if key == "sTime" || key == "timestamp" {
 			timeStamp = stringValue
 		}
 	}
 	return body, timeStamp
 }
 
-func forwardEventToEngine(msg string) {
-	// TODO: error handling
+func forwardEventToKapacitor(msg string) {
 	_, err := conn.Write([]byte(msg))
 	if err != nil {
-		log.Println("DPRuntime failed to forward msg via UDP")
+		errors.New("failed to forward msg via UDP")
 	}
 }
 
@@ -234,7 +235,8 @@ func (p *injectHandler) Snapshot() (*agent.SnapshotResponse, error) {
 }
 
 func (p *injectHandler) Restore(req *agent.RestoreRequest) (*agent.RestoreResponse, error) {
-	// TODO: implement
+	// Currently, all the information necessary is set when Init() is called
+	// Therefore, bypass this function
 	return &agent.RestoreResponse{
 		Success: true,
 	}, nil
@@ -244,16 +246,12 @@ func (p *injectHandler) BeginBatch(batch *agent.BeginBatch) error {
 	return errors.New("batching is not supported")
 }
 
-var count int64 = 0
-
 func (p *injectHandler) Point(point *agent.Point) error {
 	p.agent.Responses <- &agent.Response{
 		Message: &agent.Response_Point{
 			Point: point,
 		},
 	}
-	log.Println("Pointing ", count)
-	count = count + 1
 	return nil
 }
 
@@ -262,22 +260,9 @@ func (p *injectHandler) EndBatch(batch *agent.EndBatch) error {
 }
 
 func (p *injectHandler) Stop() {
-	log.Println("DPRuntime Stopping UDF")
+	log.Println("Stopping UDF")
 	if p.childContext != nil {
 		p.cancel()
 	}
 	close(p.agent.Responses)
-}
-
-func main() {
-	thisAgent := agent.New(os.Stdin, os.Stdout)
-	thisHandler := newInjectHandler(thisAgent)
-	thisAgent.Handler = thisHandler
-
-	log.Println("Starting agent")
-	thisAgent.Start()
-	err := thisAgent.Wait()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
