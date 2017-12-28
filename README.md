@@ -5,7 +5,7 @@ Data Processing Manager manages the data processing engines(s) for IoT.
   - Register/Execute/Stop/Update/Delete data processing job(s) into engines
   - Monitor the status of engines and their jobs
  
-### Prerequisites ###
+## Prerequisites ##
 - Remember, you must configure proxies if necessary.
   - Setting up proxy for git
 ```shell
@@ -21,41 +21,36 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   - [Setting up proxy for maven](https://maven.apache.org/guides/mini/guide-proxies.html)
 - Apache Flink
   - Version : 1.3
-  - [How to build and execute Apache Flink Docker Image](engine/engine-flink/README.md)
+  - [How to build Apache Flink Docker Image](engine/engine-flink/README.md)
   - [For more information, please visit Apache Flink website.](https://flink.apache.org)
 - Kapacitor
   - Version : 1.3
-  - [How to build and execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)
+  - [How to build Kapacitor Docker Image](engine/engine-kapacitor/README.md)
   - [For more information, please visit Kapacitor website.](https://docs.influxdata.com/kapacitor/v1.4/introduction/installation/)
   
 
-### How to build  ###
-#### Using Build Script ####
+## How to build  ##
+#### 1. Executable binary ####
 ```shell
 $ ./build.sh
 ```
-    
-####  Using MVN #### 
-```shell
-$ mvn clean package -DskipTests
-```
 
-#### Binaries ####
+##### Binaries #####
 - Data Processing Manager is composed of four submodules.
-  1. Manager
+  - Manager
      - Executable : manager-0.1.0-SNAPSHOT.jar
      - Includes : RESTful APIs
      - Features : Abstracts interfaces for those open-source data processing engines
-  2. Manager-common
+  - Manager-common
      - Library : manager-common-0.1.0-SNAPSHOT.jar
      - Features : runtime-task or Custom task (jar) loader
-  3. Engine
+  - Engine
      - Library : engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar
      - Features : Flink-App. which will execute data processing task(s).
                   Data ingest (zmq) & deliver(zmq, file, websocket) functionality included
      - Note : The UDF(User defined Function) for the Kapacitor will be merged into Kapacitor binary
               Therefore, no binary for the Kapacitor will be created.
-  4. Runtime-task
+  - Runtime-task
      - Libraries
        - Task Model : task-model-0.1.0-SNAPSHOT.jar
        - [Regression Model](runtime-task/Regression/readme.md) : regression-0.1.0-SNAPSHOT.jar
@@ -67,28 +62,34 @@ $ mvn clean package -DskipTests
     - `Manager`,`Engine-Flink` ---- dependent on ---> `Manager-common` module.
     - `Manager-common`         ---- dependent on ---> `Runtime-task/task-model` module.
 
-### How to run  ###
 
-#### 1. Run ####
-1. Create a shared resource directory for runtime and Apache Flink
+#### 2. Docker Image ####
+(TBD)
+
+## How to run  ##
+#### 1. Prerequisites ####
+1. Create a shared resource directory for Manager and Engine(Apache Flink)
   - Create `/runtime/ha` directory in system
   - If necessary, change directory ownership to user
   `chown -R user:user /runtime`
 2. Execute Apache Flink & Kapacitor
-  - [How to build and execute Apache Flink Docker Image](engine/engine-flink/README.md)
-  - [How to build and execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)  
-3. Execute Manager
-    ```shell
-    $ cd runtime/target/
-    $ java -jar ./runtime-0.1.0-SNAPSHOT.jar
-    ```
+  - [How to execute Apache Flink Docker Image](engine/engine-flink/README.md)
+  - [How to execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)  
+  
+#### 2. Executable binary ####
+```shell
+$ run.sh    
+```
 
-#### 2. Test ####
+#### 3. Docker Image ####
+(TBD)
+
+#### 4. Test ####
 - Now you should be able to make RESTful requests to http://localhost:8082/analytics
 - Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui.html
   - Usecase : Data Processing with Algorithm (ex: regression)
     - Data Processing Job Registration
-      1. Open & Copy the contents inside the "regression_sample.json" in tools/sample_request directory
+      1. Open and Copy the contents inside the "regression_sample.json" in tools/sample_request directory
       2. Access Swagger (localhost:8082/analytics/swagger-ui.html) with browser
       3. Goto POST /v1/job & extend the menu
       4. Paste the contents into "json box of the Parameter slot" and click "Try it out!"
