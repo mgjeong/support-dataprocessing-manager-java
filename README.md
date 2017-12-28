@@ -1,114 +1,92 @@
-Data Processing Runtime
+Data Processing Manager
 ================================
 
-Data Processing Runtime, as name suggests, is a data processing Runtime for IoT.
+Data Processing Manager manages the data processing engines(s) for IoT.
+  - Register/Execute/Stop/Update/Delete data processing job(s) into engines
+  - Monitor the status of engines and their jobs
  
-This Runtime is currently under active development.
-
-## Developing Runtime ##
 ### Prerequisites ###
-- Java 8
-```shell
-$ sudo add-apt-repository ppa:webupd8team/java
-$ sudo apt-get update
-$ sudo apt-get install oracle-java8-installer
-```
-- Maven
-```shell
-$ cd /opt/
-$ wget http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
-$ sudo tar -xvzf apache-maven-3.3.9-bin.tar.gz
-$ sudo mv apache-maven-3.3.9 maven
-```
-
-- Apache Flink
-  - Version : 1.3
-  - [How to execute Apache Flink Docker Image](engine/engine-flink/README.md)
-  - Please visit [Apache Flink webiste](https://flink.apache.org) for detailed instructions on how to build and run Apache Flink.
-
-    Snippet below should give you a grasp of how to build and execute the Apache Flink from source.
-    ```shell
-    $ wget http://archive.apache.org/dist/flink/flink-1.3.0/flink-1.3.0-src.tgz
-    $ tar -xvf ./flink-1.3.0-src.tgz ./
-    $ cd flink-1.3.0-src
-    $ mvn clean package -DskipTests
-    $ cd build-target
-    $ ./bin/start-cluster.sh # Execute Apache Flink
-    ```
-    For more information, please visit [Apache Flink website.](https://flink.apache.org)
-
-- Kapacitor
-  - Version : 1.3
-  - [How to execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)
-  - For more information, please visit [Kapacitor website.](https://docs.influxdata.com/kapacitor/v1.4/introduction/installation/)
-
-Remember, you must configure proxies for git and maven accordingly if necessary.
-
-- Setting up proxy for git
+- Remember, you must configure proxies if necessary.
+  - Setting up proxy for git
 ```shell
 $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
 ```
-- [Setting up proxy for maven](https://maven.apache.org/guides/mini/guide-proxies.html)
+- JDK
+  - Version : 1.8
+  - [How to install](https://docs.oracle.com/javase/8/docs/technotes/guides/install/linux_jdk.html)
+- Maven
+  - Version : 3.5.2
+  - [Where to download](https://maven.apache.org/download.cgi)
+  - [How to install](https://maven.apache.org/install.html)
+  - [Setting up proxy for maven](https://maven.apache.org/guides/mini/guide-proxies.html)
+- Apache Flink
+  - Version : 1.3
+  - [How to build and execute Apache Flink Docker Image](engine/engine-flink/README.md)
+  - [For more information, please visit Apache Flink website.](https://flink.apache.org)
+- Kapacitor
+  - Version : 1.3
+  - [How to build and execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)
+  - [For more information, please visit Kapacitor website.](https://docs.influxdata.com/kapacitor/v1.4/introduction/installation/)
+  
 
+### How to build  ###
+#### Using Build Script ####
+```shell
+$ ./build.sh
+```
+    
+####  Using MVN #### 
+```shell
+$ mvn clean package -DskipTests
+```
 
-### Build Runtime ###
-- Build Methods
-   - Using MVN
-    ```shell
-    $ mvn clean package -DskipTests
-    ```
+#### Binaries ####
+- Data Processing Manager is composed of four submodules.
+  1. Manager
+     - Executable : manager-0.1.0-SNAPSHOT.jar
+     - Includes : RESTful APIs
+     - Features : Abstracts interfaces for those open-source data processing engines
+  2. Manager-common
+     - Library : manager-common-0.1.0-SNAPSHOT.jar
+     - Features : runtime-task or Custom task (jar) loader
+  3. Engine
+     - Library : engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+     - Features : Flink-App. which will execute data processing task(s).
+                  Data ingest (zmq) & deliver(zmq, file, websocket) functionality included
+     - Note : The UDF(User defined Function) for the Kapacitor will be merged into Kapacitor binary
+              Therefore, no binary for the Kapacitor will be created.
+  4. Runtime-task
+     - Libraries
+       - Task Model : task-model-0.1.0-SNAPSHOT.jar
+       - [Regression Model](runtime-task/Regression/readme.md) : regression-0.1.0-SNAPSHOT.jar
+       - [SVM Model](runtime-task/SVMModel/readme.md) : svm-0.1.0-SNAPSHOT.jar
+       - Query Model : query-model-0.1.0-SNAPSHOT.jar
+     - Features : Data pre-processing & analytic task
+- The Data Processing Runtime is divided into submodules to minimize dependency relations.
+  - Dependencies
+    - `Manager`,`Engine-Flink` ---- dependent on ---> `Manager-common` module.
+    - `Manager-common`         ---- dependent on ---> `Runtime-task/task-model` module.
 
-   - Using Build Script
-    ```shell
-    $ cd tool/
-    $ ./build_local
-    ```
-- Built Binaries
-  - Data Processing Runtime is composed of four submodules.
-    1. Runtime
-       - Executable : runtime-0.1.0-SNAPSHOT.jar
-       - Includes : RESTful APIs
-       - Features : Abstracts interfaces for those open-source data processing engines
-    2. Engine
-       - Library : engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar
-       - Features : Flink-App. which will execute runtime task(s).
-                    Data ingest (zmq) & deliver(zmq, file, websocket) functionality included
-       - Note : Kapacitor related codes is UDF(User defined Function) which will be merged into Kapacitor binary
-                Therefore, no binary for the Kapacitor will be created.
-    3. Runtime-common
-       - Library : runtime-common-0.1.0-SNAPSHOT.jar
-       - Features : runtime-task or Custom task (jar) loader
-    4. Runtime-task
-       - Libraries
-         - Task Model : task-model-0.1.0-SNAPSHOT.jar
-         - [Regression Model](runtime-task/Regression/readme.md) : regression-0.1.0-SNAPSHOT.jar
-         - [SVM Model](runtime-task/SVMModel/readme.md) : svm-0.1.0-SNAPSHOT.jar
-         - Query Model : query-model-0.1.0-SNAPSHOT.jar
-       - Features : Data pre-processing & analytic task
-  - The Data Processing Runtime is divided into submodules to minimize dependency relations.
-    - Dependencies
-      - `Runtime`,`Engine-Flink` ---- dependent on ---> `Runtime-common` module.
-      - `Runtime-common`         ---- dependent on ---> `Runtime-task/task-model` module.
+### How to run  ###
 
-### Execute Runtime ###
-
-- Create a shared resource directory for runtime and Apache Flink
+#### 1. Run ####
+1. Create a shared resource directory for runtime and Apache Flink
   - Create `/runtime/ha` directory in system
   - If necessary, change directory ownership to user
   `chown -R user:user /runtime`
-
-- Execute Apache Flink & Kapacitor
-
-- Execute Runtime
+2. Execute Apache Flink & Kapacitor
+  - [How to build and execute Apache Flink Docker Image](engine/engine-flink/README.md)
+  - [How to build and execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)  
+3. Execute Manager
     ```shell
     $ cd runtime/target/
     $ java -jar ./runtime-0.1.0-SNAPSHOT.jar
     ```
 
-### Test Runtime ###
+#### 2. Test ####
 - Now you should be able to make RESTful requests to http://localhost:8082/analytics
 - Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui.html
-  - Data Processing with Algorithm (ex: regression)
+  - Usecase : Data Processing with Algorithm (ex: regression)
     - Data Processing Job Registration
       1. Open & Copy the contents inside the "regression_sample.json" in tools/sample_request directory
       2. Access Swagger (localhost:8082/analytics/swagger-ui.html) with browser
@@ -139,6 +117,6 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
       which engine-flink supports (Flink : ezMQ/file/webSocket, Kapacitor : ezMQ)
     - Sample App will be provided later
 - Ports Information
-  - Runtime : 8082 (It is required for the "runtimeHost" value in request message)
+  - Manager : 8082 (It is required for the "runtimeHost" value in request message)
   - Flink : 8081 (or User defined port #, it is required for the "targetHost" value in request message)
   - Kapacitor : 9092 (or User defined port #, it is required for the "targetHost" value in request message)
