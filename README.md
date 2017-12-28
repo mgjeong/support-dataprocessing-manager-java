@@ -80,7 +80,7 @@ support-dataprocessing-manager   latest     fcbbd4c401c2    SS seconds ago    XX
 Note that, you can find other Dockerfiles, **Dockerfile_arm** and **Dockerfile_arm64**, which can be used to dockerize for ARM and ARM64 machines, respectively.
 
 ## How to run  ##
-#### 1. Prerequisites ####
+#### Prerequisites ####
 a. Create a shared resource directory for Manager and Engine(Apache Flink)
   - Create `/runtime/ha` directory in system
   - If necessary, change directory ownership to user `chown -R user:user /runtime`
@@ -89,17 +89,17 @@ b. Execute Apache Flink & Kapacitor
   - [How to execute Apache Flink Docker Image](engine/engine-flink/README.md)
   - [How to execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)  
 
-#### 2. Executable binary ####
+#### With Executable binary ####
 ```shell
 $ run.sh    
 ```
 
-#### 3. Docker Image ####
+#### With Docker Image ####
 ```shell
 $ sudo docker run -it -p 8082:8082 support-dataprocessing-manager
 ```
 
-#### 4. Test ####
+#### Test ####
 - Now you should be able to make RESTful requests to http://localhost:8082/analytics
 - Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui.html
   - Usecase : Data Processing with Algorithm (ex: regression)
