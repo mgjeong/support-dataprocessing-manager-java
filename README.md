@@ -69,13 +69,13 @@ Note that, you can find other build scripts, **build_arm.sh** and **build_arm64*
 #### 2. Docker Image ####
 Next, you can create it to a Docker image.
 ```shell
-$ sudo docker build -t support-processing-manager -f Dockerfile .
+$ sudo docker build -t support-dataprocessing-manager -f Dockerfile .
 ```
 If it succeeds, you can see the built image as follows:
 ```shell
 $ sudo docker images
-REPOSITORY                            TAG        IMAGE ID            CREATED              SIZE
-support-processing-manager   latest     fcbbd4c401c2    SS seconds ago    XXX MB
+REPOSITORY                   TAG        IMAGE ID        CREATED           SIZE
+support-dataprocessing-manager   latest     fcbbd4c401c2    SS seconds ago    XXX MB
 ```
 Note that, you can find other Dockerfiles, **Dockerfile_arm** and **Dockerfile_arm64**, which can be used to dockerize for ARM and ARM64 machines, respectively.
 
@@ -96,7 +96,7 @@ $ run.sh
 
 #### 3. Docker Image ####
 ```shell
-$ sudo docker run -it -p 8082:8082 support-processing-manager
+$ sudo docker run -it -p 8082:8082 support-dataprocessing-manager
 ```
 
 #### 4. Test ####
