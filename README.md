@@ -30,9 +30,6 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
 - docker-ce
   - Version: 17.09
   - [How to install](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
-- go compiler
-  - Version: 1.8 or above
-  - [How to install](https://golang.org/dl/)
 
 ## How to build  ##
 #### 1. Executable binary ####
