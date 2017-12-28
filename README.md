@@ -27,15 +27,21 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   - Version : 1.3
   - [How to build Kapacitor Docker Image](engine/engine-kapacitor/README.md)
   - [For more information, please visit Kapacitor website.](https://docs.influxdata.com/kapacitor/v1.4/introduction/installation/)
-  
+- docker-ce
+  - Version: 17.09
+  - [How to install](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
+- go compiler
+  - Version: 1.8 or above
+  - [How to install](https://golang.org/dl/)
 
 ## How to build  ##
 #### 1. Executable binary ####
 ```shell
 $ ./build.sh
 ```
+Note that, you can find other build scripts, **build_arm.sh** and **build_arm64**, which can be used to build the codes for ARM and ARM64 machines, respectively.
 
-##### Binaries #####
+###### Binaries ######
 - Data Processing Manager is composed of four submodules.
   - Manager
      - Executable : manager-0.1.0-SNAPSHOT.jar
@@ -64,25 +70,37 @@ $ ./build.sh
 
 
 #### 2. Docker Image ####
-(TBD)
+Next, you can create it to a Docker image.
+```shell
+$ sudo docker build -t support-processing-manager -f Dockerfile .
+```
+If it succeeds, you can see the built image as follows:
+```shell
+$ sudo docker images
+REPOSITORY                            TAG        IMAGE ID            CREATED              SIZE
+support-processing-manager   latest     fcbbd4c401c2    SS seconds ago    XXX MB
+```
+Note that, you can find other Dockerfiles, **Dockerfile_arm** and **Dockerfile_arm64**, which can be used to dockerize for ARM and ARM64 machines, respectively.
 
 ## How to run  ##
 #### 1. Prerequisites ####
-1. Create a shared resource directory for Manager and Engine(Apache Flink)
+a. Create a shared resource directory for Manager and Engine(Apache Flink)
   - Create `/runtime/ha` directory in system
-  - If necessary, change directory ownership to user
-  `chown -R user:user /runtime`
-2. Execute Apache Flink & Kapacitor
+  - If necessary, change directory ownership to user `chown -R user:user /runtime`
+
+b. Execute Apache Flink & Kapacitor
   - [How to execute Apache Flink Docker Image](engine/engine-flink/README.md)
   - [How to execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)  
-  
+
 #### 2. Executable binary ####
 ```shell
 $ run.sh    
 ```
 
 #### 3. Docker Image ####
-(TBD)
+```shell
+$ sudo docker run -it -p 8082:8082 support-processing-manager
+```
 
 #### 4. Test ####
 - Now you should be able to make RESTful requests to http://localhost:8082/analytics

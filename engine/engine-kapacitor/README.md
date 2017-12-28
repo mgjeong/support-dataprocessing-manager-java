@@ -2,7 +2,7 @@ Engine Kapacitor
 ===============
 
 Kapacitor can be connected to Data Processing Manager as a data query engine.
-User-defined functions (UDFs) are required for utilizing kapacitor with data processing runtime.
+User-defined functions (UDFs) are required for utilizing Kapacitor with data processing manager.
 
 ## Prerequisites ##
 
