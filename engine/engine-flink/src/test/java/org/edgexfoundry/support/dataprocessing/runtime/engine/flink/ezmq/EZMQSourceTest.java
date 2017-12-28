@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq;
 /*
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.edgexfoundry.domain.core.Event;
@@ -28,9 +28,9 @@ import org.mockito.MockitoAnnotations;
 import static org.mockito.Mockito.mock;
 */
 
-public class EMFSourceTest {
-    private static final String EMF_HOST = "localhost";
-    private static final int EMF_PORT = 5599;
+public class EZMQSourceTest {
+    private static final String EZMQ_HOST = "localhost";
+    private static final int EZMQ_PORT = 5599;
 
     //FIXLATER:
     /*
@@ -41,7 +41,7 @@ public class EMFSourceTest {
 
 //    @Test
 //    public void testEmfErrorCode() throws Exception{
-//        EMFSource sourceA = new EMFSource(EMF_HOST, -1, EMFMessageType.PROTOBUF_MSG);
+//        EZMQSource sourceA = new EZMQSource(EZMQ_HOST, -1, EZMQMessageType.PROTOBUF_MSG);
 //
 //        try{
 //            sourceA.open(null);
@@ -52,7 +52,7 @@ public class EMFSourceTest {
 
     //FIXLATER: @Test(timeout = 3000L)
     public void testEmfMessageCB() throws Exception {
-        EMFSource source = new EMFSource(EMF_HOST, EMF_PORT);
+        EZMQSource source = new EZMQSource(EZMQ_HOST, EZMQ_PORT);
         Thread temp = null;
         try {
             source.open(null);
@@ -86,7 +86,7 @@ public class EMFSourceTest {
 
     @Test(timeout = 3000L)
     public void testOpenClose() throws Exception {
-        EMFSource source = new EMFSource(EMF_HOST, EMF_PORT);
+        EZMQSource source = new EZMQSource(EZMQ_HOST, EZMQ_PORT);
         try {
             source.open(null);
             Thread.sleep(50L);
@@ -98,8 +98,8 @@ public class EMFSourceTest {
 
 //    @Test
 //    public void testOpenTwice() throws Exception {
-//        EMFSourceThread sourceA = new EMFSourceThread();
-//        EMFSourceThread sourceB = new EMFSourceThread();
+//        EZMQSourceThread sourceA = new EZMQSourceThread();
+//        EZMQSourceThread sourceB = new EZMQSourceThread();
 //        try {
 //            sourceA.open();
 //            sourceB.open();

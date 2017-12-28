@@ -15,12 +15,12 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.emf;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq;
 
-import org.edgexfoundry.emf.EMFAPI;
-import org.edgexfoundry.emf.EMFCallback;
-import org.edgexfoundry.emf.EMFErrorCode;
-import org.edgexfoundry.emf.EMFPublisher;
+import org.edgexfoundry.ezmq.EZMQAPI;
+import org.edgexfoundry.ezmq.EZMQCallback;
+import org.edgexfoundry.ezmq.EZMQErrorCode;
+import org.edgexfoundry.ezmq.EZMQPublisher;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -33,15 +33,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EMFSink extends RichSinkFunction<DataSet> implements EMFCallback {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EMFSink.class);
+public class EZMQSink extends RichSinkFunction<DataSet> implements EZMQCallback {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EZMQSink.class);
 
     private final int port;
 
-    private EMFAPI emfApi = null;
-    private EMFPublisher emfPublisher = null;
+    private EZMQAPI ezmqApi = null;
+    private EZMQPublisher ezmqPublisher = null;
 
-    public EMFSink(int port) {
+    public EZMQSink(int port) {
         this.port = port;
     }
 
@@ -49,23 +49,23 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EMFCallback {
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
-        this.emfApi = EMFAPI.getInstance();
-        this.emfApi.initialize();
-        LOGGER.info("EMF API initialized.");
+        this.ezmqApi = EZMQAPI.getInstance();
+        this.ezmqApi.initialize();
+        LOGGER.info("EZMQ API initialized.");
 
-        this.emfPublisher = new EMFPublisher(this.port, this);
-        EMFErrorCode emfErrorCode = this.emfPublisher.start();
-        if (emfErrorCode != EMFErrorCode.EMF_OK) {
+        this.ezmqPublisher = new EZMQPublisher(this.port, this);
+        EZMQErrorCode ezmqErrorCode = this.ezmqPublisher.start();
+        if (ezmqErrorCode != EZMQErrorCode.EZMQ_OK) {
             throw new RuntimeException(
-                    String.format("Failed to start EMFPublisher. [ErrorCode=%s]", emfErrorCode));
+                    String.format("Failed to start EZMQPublisher. [ErrorCode=%s]", ezmqErrorCode));
         }
     }
 
     @Override
     public void invoke(DataSet dataSet) throws Exception {
-        if (this.emfPublisher != null) {
+        if (this.ezmqPublisher != null) {
             Event event = makeEvent(dataSet);
-            this.emfPublisher.publish(event);
+            this.ezmqPublisher.publish(event);
         }
     }
 
@@ -73,14 +73,14 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EMFCallback {
     public void close() throws Exception {
         super.close();
 
-        if (this.emfPublisher != null) {
-            this.emfPublisher.stop();
-            LOGGER.info("EMF Publisher stopped.");
+        if (this.ezmqPublisher != null) {
+            this.ezmqPublisher.stop();
+            LOGGER.info("EZMQ Publisher stopped.");
         }
 
-        if (this.emfApi != null) {
-            this.emfApi.terminate();
-            LOGGER.info("EMF API terminated.");
+        if (this.ezmqApi != null) {
+            this.ezmqApi.terminate();
+            LOGGER.info("EZMQ API terminated.");
         }
     }
 
@@ -95,7 +95,7 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EMFCallback {
         reading.setPushed(reading.getOrigin());
 
         readings.add(reading);
-        Event event = new Event("EMFSink", readings);
+        Event event = new Event("EZMQSink", readings);
         event.setCreated(0);
         event.setModified(0);
         event.setId("DPFW-01");
@@ -106,17 +106,17 @@ public class EMFSink extends RichSinkFunction<DataSet> implements EMFCallback {
     }
 
     @Override
-    public void onStartCB(EMFErrorCode emfErrorCode) {
-        LOGGER.info("EMF publisher started. [ErrorCode={}]", emfErrorCode);
+    public void onStartCB(EZMQErrorCode ezmqErrorCode) {
+        LOGGER.info("EZMQ publisher started. [ErrorCode={}]", ezmqErrorCode);
     }
 
     @Override
-    public void onStopCB(EMFErrorCode emfErrorCode) {
-        LOGGER.info("EMF publisher stopped. [ErrorCode={}]", emfErrorCode);
+    public void onStopCB(EZMQErrorCode ezmqErrorCode) {
+        LOGGER.info("EZMQ publisher stopped. [ErrorCode={}]", ezmqErrorCode);
     }
 
     @Override
-    public void onErrorCB(EMFErrorCode emfErrorCode) {
-        LOGGER.info("EMF publisher error occurred. [ErrorCode={}]", emfErrorCode);
+    public void onErrorCB(EZMQErrorCode ezmqErrorCode) {
+        LOGGER.info("EZMQ publisher error occurred. [ErrorCode={}]", ezmqErrorCode);
     }
 }

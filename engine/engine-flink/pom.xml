@@ -83,8 +83,8 @@
 
         <!-- Message FW -->
         <dependency>
-            <groupId>org.edgexfoundry.emf</groupId>
-            <artifactId>edgex-emf</artifactId>
+            <groupId>org.edgexfoundry.ezmq</groupId>
+            <artifactId>edgex-ezmq</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <!--
             <scope>system</scope>
