@@ -1,10 +1,10 @@
 Engine Kapacitor
 ===============
 
-Kapacitor can be connected to Data Processing Runtime as a data query engine.
+Kapacitor can be connected to Data Processing Manager as a data query engine.
 User-defined functions (UDFs) are required for utilizing kapacitor with data processing runtime.
 
-### 1. Deploying locally ###
+## Prerequisites ##
 
 ```
 $ cd engine/engine-kapacitor
@@ -13,7 +13,7 @@ $ GOPATH=$GOPATH:$(pwd) go build src/deliver/deliver.go
 $ cp inject {CUSTOM_PATH}
 $ cp deliver {CUSTOM_PATH}
 ```
-and add following configurations for Kapacitor
+And add following configurations for Kapacitor
 ```
 [[udp]]
   enabled = true
@@ -31,7 +31,7 @@ and add following configurations for Kapacitor
 ```
 <br>
 
-### 2. Deploying as a Docker container ###
+## How to build and Run ##
 Scripts are provided to build docker image containing Kapacitor with UDFs 
 - x64
 ```
