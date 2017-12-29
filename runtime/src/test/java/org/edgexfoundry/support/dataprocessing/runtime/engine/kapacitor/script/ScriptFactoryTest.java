@@ -13,7 +13,7 @@ public class ScriptFactoryTest {
   private static final int IOLENGTH = 2;
   private static final int TASKLENGTH = 1;
   private static final String TYPEABNORMAL = "random";
-  private static final String TYPENORMAL = "EmF";
+  private static final String TYPENORMAL = "ezmq";
   private static final String ADDRESS = "localhost:55555:topic";
   private static final String TASKVALID = "query";
   private static final String TASKINVALID = "awful";

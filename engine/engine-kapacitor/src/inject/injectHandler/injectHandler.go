@@ -3,17 +3,14 @@ package injectHandler
 import (
 	"log"
 	"errors"
-	"context"
 	"net"
 	"os"
 	"strings"
 	"strconv"
 	"fmt"
 	"github.com/influxdata/kapacitor/udf/agent"
-	"github.com/mgjeong/messaging-zmq/go/emf"
+	"github.com/mgjeong/protocol-ezmq-go/ezmq"
 	"encoding/json"
-	"time"
-	"sync"
 )
 
 type injectHandler struct {
@@ -21,8 +18,7 @@ type injectHandler struct {
 	address string
 	topic   string
 
-	childContext context.Context
-	cancel       context.CancelFunc
+	ezmqSub *ezmq.EZMQSubscriber
 
 	agent *agent.Agent
 }
@@ -80,91 +76,56 @@ func (p *injectHandler) Init(r *agent.InitRequest) (*agent.InitResponse, error) 
 	}
 
 	log.Println("Waiting to make source in PID ", os.Getpid())
-	p.childContext, p.cancel = context.WithCancel(context.Background())
 
-	var initError error = nil
-	var waitingInit sync.WaitGroup
-	waitingInit.Add(1)
+	const udpPort = "9100"
+	udpAddr, initError := net.ResolveUDPAddr("udp", "localhost:" + udpPort)
+	if initError != nil {
+		return nil, initError
+	}
+	conn, initError = net.DialUDP("udp", nil, udpAddr)
+	if initError != nil {
+		return nil, initError
+	}
 
-	go func(ctx context.Context) {
-		// TODO: Read UDP port dynamically
-		defer waitingInit.Done()
-		const udpPort = "9100"
-		var emfInstance *emf.EMFAPI = nil
-		var emfSub *emf.EMFSubscriber
-		var udpAddr *net.UDPAddr
-		udpAddr, initError = net.ResolveUDPAddr("udp", "localhost:"+udpPort)
-		if initError != nil {
-			return
-		}
-		conn, initError = net.DialUDP("udp", nil, udpAddr)
-		if initError != nil {
-			return
-		}
-		defer conn.Close()
+	if p.initializeEZMQ() == nil {
+		return nil, initError
+	}
 
-		emfInstance = initializeEMF()
-		emfSub, initError = addSource(p.topic, p.address)
-		if initError != nil {
-			return
-		}
-		defer emfSub.Stop()
-
-		log.Println("Ready to transfer message into kapacitor")
-		waitingInit.Done()
-
-		for {
-			select {
-			case <-ctx.Done():
-				if conn != nil {
-					log.Println("Closing UDP connection")
-					conn.Close()
-				}
-				if emfInstance != nil {
-					log.Println("Terminating EMF")
-					emfSub.Stop()
-				}
-				return
-			default:
-				time.Sleep(100 * time.Microsecond)
-			}
-		}
-	}(p.childContext)
-
-	if timedWait(&waitingInit, time.Minute) {
-		return nil, errors.New("failed to initialize")
+	p.ezmqSub, initError = p.addSource()
+	if initError != nil {
+		return nil, initError
 	}
 
 	log.Println("Ready to inject from", p.address)
 	return init, initError
 }
 
-func initializeEMF() *emf.EMFAPI {
-	instance := emf.GetInstance()
+func (p *injectHandler) initializeEZMQ() *ezmq.EZMQAPI {
+	instance := ezmq.GetInstance()
 	result := instance.Initialize()
-	log.Println("Initializing EMF, error code: ", result)
+	log.Println("Initializing EZMQ, error code: ", result)
 	return instance
 }
 
-func addSource(topic string, hostname string) (*emf.EMFSubscriber, error) {
-	log.Println("Start to make source [", hostname, "] in PID ", os.Getpid())
-	target := strings.Split(hostname, ":")
+func (p *injectHandler) addSource() (*ezmq.EZMQSubscriber, error) {
+	log.Println("Start to make source [", p.address, "] in PID ", os.Getpid())
+	target := strings.Split(p.address, ":")
 	port, err := strconv.Atoi(target[1])
 	if err != nil {
 		return nil, errors.New("invalid port number")
 	}
 
-	subCB := func(event emf.Event) { eventHandler(event) }
-	subTopicCB := func(topic string, event emf.Event) { eventHandler(event) }
+	subCB := func(event ezmq.Event) { eventHandler(event) }
+	subTopicCB := func(topic string, event ezmq.Event) { eventHandler(event) }
 
-	subscriber := emf.GetEMFSubscriber(target[0], port, subCB, subTopicCB)
+	subscriber := ezmq.GetEZMQSubscriber(target[0], port, subCB, subTopicCB)
 	result := subscriber.Start()
-	if result != emf.EMF_OK {
+	if result != ezmq.EZMQ_OK {
 		return nil, errors.New("failed to subscription")
 	}
 
-	if topic != "" {
-		result = subscriber.SubscribeForTopic(topic)
+	if p.topic != "" {
+		result = subscriber.SubscribeForTopic(p.topic)
 	} else {
 		result = subscriber.Subscribe()
 	}
@@ -173,7 +134,7 @@ func addSource(topic string, hostname string) (*emf.EMFSubscriber, error) {
 	return subscriber, nil
 }
 
-func eventHandler(event emf.Event) {
+func eventHandler(event ezmq.Event) {
 	var msg string
 
 	msg = table + " "
@@ -192,7 +153,7 @@ func eventHandler(event emf.Event) {
 		msg += " " + timeStamp
 	}
 
-	log.Println("message: ", msg)
+	log.Println(os.Getpid(), "message: ", msg)
 
 	forwardEventToKapacitor(msg)
 }
@@ -260,9 +221,12 @@ func (p *injectHandler) EndBatch(batch *agent.EndBatch) error {
 }
 
 func (p *injectHandler) Stop() {
-	log.Println("Stopping UDF")
-	if p.childContext != nil {
-		p.cancel()
+	log.Println("Stopping UDF: PID", os.Getpid())
+	if p.ezmqSub != nil {
+		p.ezmqSub.Stop()
+	}
+	if conn != nil {
+		conn.Close()
 	}
 	close(p.agent.Responses)
 }
