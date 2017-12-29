@@ -66,7 +66,7 @@ public class ScriptFactory {
     String dataType = source.getDataType().toLowerCase();
     String dataSource = source.getDataSource().replaceAll("\\s", "");
 
-    if (!dataType.equals("emf")) {
+    if (!dataType.equals("ezmq")) {
       throw new RuntimeException("Unsupported input data type; " + dataType);
     }
     if (dataSource == null) {
@@ -99,7 +99,7 @@ public class ScriptFactory {
     String validName = table.replaceAll("\\W", "");
     String measurement =
         String.format("var %s = stream|from().measurement(\'%s\')", validName, validName);
-    String injection = String.format("@inject().source('emf').address(\'%s\')", sourceAddress);
+    String injection = String.format("@inject().source('ezmq').address(\'%s\')", sourceAddress);
     injection += String.format(".into(\'%s\')", validName);
 
     if (topic == null) {
@@ -114,7 +114,7 @@ public class ScriptFactory {
     String dataType = output.getDataType().toLowerCase();
     String dataSink = output.getDataSource().replaceAll("\\s", "");
 
-    if (!dataType.equals("emf") && !dataType.equals("f") && !dataType.equals("mongodb")) {
+    if (!dataType.equals("ezmq") && !dataType.equals("f") && !dataType.equals("mongodb")) {
       throw new RuntimeException("Unsupported output data type" + dataType);
     }
     String[] sinkSplits = dataSink.split(":", 3);
