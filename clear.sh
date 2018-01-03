@@ -1,9 +1,9 @@
 #!/bin/bash
 # This is to clear files used for docker image
 #FLINK_NAME="./flink.tgz"
-FW_NAME="./runtime.jar"
+FW_NAME="./manager.jar"
 ENGINE_NAME="./engine-flink.jar"
-COMMON_NAME="./runtime-common.jar"
+COMMON_NAME="./manager-common.jar"
 STORAGE_NAME="./temp_storage_data"
 #if [ -f $FLINK_NAME ]; then
 #	rm $FLINK_NAME

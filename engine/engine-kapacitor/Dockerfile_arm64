@@ -17,7 +17,7 @@ COPY docker_files/resources/src/go.uber.org ${GOPATH}/src/go.uber.org
 RUN go build go.uber.org/zap
 RUN go install go.uber.org/zap
 
-RUN go get github.com/mgjeong/messaging-zmq/go/emf
+RUN go get github.com/mgjeong/protocol-ezmq-go/ezmq
 ENV UDF_PATH /runtime/ha/go
 ENV KAPA_PATH /kapacitor
 ENV PATH $PATH:$KAPA_PATH

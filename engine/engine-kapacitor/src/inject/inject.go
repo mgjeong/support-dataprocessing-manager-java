@@ -12,11 +12,11 @@ func main() {
 	thisHandler := injectHandler.NewInjectHandler(thisAgent)
 	thisAgent.Handler = thisHandler
 
-	log.Println("Starting agent", os.Getgid(), os.Getpid())
+	log.Println("Starting injecting agent: PID", os.Getpid())
 	thisAgent.Start()
 	err := thisAgent.Wait()
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Finishing agent", os.Getgid(), os.Getpid())
+	log.Println("Finishing injecting agent: PID", os.Getpid())
 }
