@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
@@ -32,20 +33,30 @@ public final class TopologyTableManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(TopologyTableManager.class);
 
   /**
-   * key: topology id value: topology
+   * key: topology id, value: topology
    */
   private Map<Long, Topology> topologies;
 
   /**
-   * key: topology id value: editor metadata
+   * key: topology id, value: editor metadata
    */
   private Map<Long, TopologyEditorMetadata> topologyEditorMetadataMap;
   private List<TopologyComponentBundle> topologyComponentBundles;
 
   /**
-   * key: user id value: editor toolbar
+   * key: user id, value: editor toolbar
    */
   private Map<Long, TopologyEditorToolbar> topologyEditorToolbarMap;
+
+  /**
+   * key: topology id_version id_component id, value: component
+   */
+  private Map<String, TopologyComponent> topologyComponentMap;
+
+  /**
+   * key: namespace id, value: namespace
+   */
+  private Map<Long, Namespace> namespaceMap;
 
   /**
    * Temporary. Used to mimic database auto-increment counter
@@ -61,9 +72,33 @@ public final class TopologyTableManager {
     this.topologies = new HashMap<>();
     this.topologyEditorMetadataMap = new HashMap<>();
     this.topologyEditorToolbarMap = new HashMap<>();
+    this.topologyComponentMap = new HashMap<>();
+    this.namespaceMap = new HashMap<>();
 
     this.topologyComponentBundles = new ArrayList<>();
     mockComponentBundles();
+    mockNamespaces();
+  }
+
+  private void mockNamespaces() {
+    Namespace.Info firstInfo = new Namespace.Info();
+    firstInfo.setId(1L);
+    firstInfo.setDescription("First namespace");
+    firstInfo.setName("Dover");
+    firstInfo.setStreamingEngine("STORM");
+    firstInfo.setTimeSeriesDB(null);
+    firstInfo.setTimestamp(System.currentTimeMillis());
+
+    Namespace.ServiceClusterMap firstMap = new Namespace.ServiceClusterMap();
+    firstMap.setClusterId(1L);
+    firstMap.setNamespaceId(1L);
+    firstMap.setServiceName("STORM");
+
+    // enrich
+    Namespace first = new Namespace();
+    first.setNamespace(firstInfo);
+    first.addMapping(firstMap);
+    this.namespaceMap.put(firstInfo.getId(), first);
   }
 
   private void mockComponentBundles() {
@@ -76,6 +111,7 @@ public final class TopologyTableManager {
     dpfwSource.setStreamingEngine("STORM");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("");
+    dpfwSource.setTransformationClass("");
 
     ComponentUISpecification componentUISpecification = new ComponentUISpecification();
     addUIFIeld(componentUISpecification, "Data Type", "dataType", "Enter data type");
@@ -105,7 +141,7 @@ public final class TopologyTableManager {
     addUIFIeld(componentUISpecification, "inrecord", "inrecord", "Enter inrecord");
     addUIFIeld(componentUISpecification, "outrecord", "outrecord", "Enter outrecord");
     regression.setTopologyComponentUISpecification(componentUISpecification);
-    regression.setFieldHintProviderClass(null);
+    regression.setFieldHintProviderClass("");
     regression.setTransformationClass("");
     regression.setBuiltin(true);
     regression.setMavenDeps("");
@@ -127,7 +163,7 @@ public final class TopologyTableManager {
     addUIFIeld(componentUISpecification, "Data Sink", "dataSink", "Enter data sink");
     dpfwSink.setTopologyComponentUISpecification(componentUISpecification);
 
-    dpfwSink.setFieldHintProviderClass(null);
+    dpfwSink.setFieldHintProviderClass("");
     dpfwSink.setTransformationClass("");
     dpfwSink.setBuiltin(true);
     dpfwSink.setMavenDeps("");
@@ -175,14 +211,14 @@ public final class TopologyTableManager {
 
   private void addUIFIeld(ComponentUISpecification componentUISpecification, String uiName,
       String fieldName, String tooltip) {
-    ComponentUISpecification.UIField weights = new ComponentUISpecification.UIField();
-    weights.setUiName(uiName);
-    weights.setFieldName(fieldName);
-    weights.setUserInput(true);
-    weights.setTooltip(tooltip);
-    weights.setOptional(false);
-    weights.setType("string");
-    componentUISpecification.addUIField(weights);
+    ComponentUISpecification.UIField field = new ComponentUISpecification.UIField();
+    field.setUiName(uiName);
+    field.setFieldName(fieldName);
+    field.setUserInput(true);
+    field.setTooltip(tooltip);
+    field.setOptional(false);
+    field.setType("string");
+    componentUISpecification.addUIField(field);
   }
 
   public Collection<Topology> listTopologies() {
@@ -212,20 +248,54 @@ public final class TopologyTableManager {
     return topologyEditorMetadata;
   }
 
+  public TopologyEditorMetadata addOrUpdateTopologyEditorMetadata(Long topologyId,
+      TopologyEditorMetadata metaData) {
+    metaData.setTimestamp(System.currentTimeMillis());
+    this.topologyEditorMetadataMap.put(topologyId, metaData);
+    return metaData;
+  }
+
   public Topology getTopology(Long topologyId) {
     return this.topologies.get(topologyId);
   }
 
   public Collection<TopologySource> listSources(Long topologyId, Long versionId) {
-    return new HashSet<>();
+    Collection<TopologySource> sources = new ArrayList<>();
+    for (TopologyComponent component : this.topologyComponentMap.values()) {
+      if (!(component instanceof TopologySource)) {
+        continue;
+      }
+      if (component.getTopologyId() == topologyId) {
+        sources.add((TopologySource) component);
+      }
+    }
+    return sources;
   }
 
   public Collection<TopologyProcessor> listProcessors(Long topologyId, Long versionId) {
-    return new HashSet<>();
+    Collection<TopologyProcessor> processors = new ArrayList<>();
+    for (TopologyComponent component : this.topologyComponentMap.values()) {
+      if (!(component instanceof TopologyProcessor)) {
+        continue;
+      }
+      if (component.getTopologyId() == topologyId) {
+        processors.add((TopologyProcessor) component);
+      }
+    }
+    return processors;
   }
 
   public Collection<TopologySink> listSinks(Long topologyId, Long versionId) {
-    return new HashSet<>();
+    Collection<TopologySink> sinks = new ArrayList<>();
+    for (TopologyComponent component : this.topologyComponentMap.values()) {
+      if (!(component instanceof TopologySink)) {
+        continue;
+      }
+      if (component.getTopologyId() == topologyId) {
+        sinks.add((TopologySink) component);
+      }
+    }
+    return sinks;
   }
 
   public Collection<TopologyEdge> listEdges(Long topologyId, Long versionId) {
@@ -251,24 +321,7 @@ public final class TopologyTableManager {
   }
 
   public Collection<Namespace> listNamespaces() {
-    List<Namespace> namespaces = new ArrayList<>();
-    Namespace.Info firstInfo = new Namespace.Info();
-    firstInfo.setId(1L);
-    firstInfo.setDescription("First namespace");
-    firstInfo.setName("Dover");
-    firstInfo.setStreamingEngine("STORM");
-    firstInfo.setTimeSeriesDB(null);
-    firstInfo.setTimestamp(System.currentTimeMillis());
-
-    Namespace.ServiceClusterMap firstMap = new Namespace.ServiceClusterMap();
-    firstMap.setClusterId(1L);
-    firstMap.setNamespaceId(1L);
-    firstMap.setServiceName("STORM");
-
-    // enrich
-    Namespace first = new Namespace();
-    first.setNamespace(firstInfo);
-    return Collections.unmodifiableCollection(namespaces);
+    return this.namespaceMap.values();
   }
 
 
@@ -312,4 +365,66 @@ public final class TopologyTableManager {
     this.topologyEditorToolbarMap.put(toolbar.getUserId(), toolbar);
     return toolbar;
   }
+
+  public TopologySource addOrUpdateTopologySource(Long topologyId, Long sourceId,
+      TopologySource topologySource) {
+    topologySource.setId(sourceId);
+    topologySource.setVersionId(1L);
+    topologySource.setTopologyId(topologyId);
+    topologySource.setReconfigure(false);
+    topologySource.setTimestamp(System.currentTimeMillis());
+
+    this.topologyComponentMap
+        .put(makeTopologyComponentKey(topologyId, 1L, sourceId), topologySource);
+    return topologySource;
+  }
+
+  public TopologySource addTopologySource(Long topologyId, Long versionId,
+      TopologySource topologySource) {
+    if (topologySource.getId() == null) {
+      topologySource.setId(TEMP_IDX++);
+    }
+    topologySource.setVersionId(versionId);
+    topologySource.setTopologyId(topologyId);
+    topologySource.setOutputStreams(new ArrayList<>());
+    topologySource.setTimestamp(System.currentTimeMillis());
+    String key = makeTopologyComponentKey(topologyId, versionId, topologySource.getId());
+    this.topologyComponentMap.put(key, topologySource);
+    return topologySource;
+  }
+
+  public TopologyProcessor addTopologyProcessor(Long topologyId, Long versionId,
+      TopologyProcessor topologyProcessor) {
+    if (topologyProcessor.getId() == null) {
+      topologyProcessor.setId(TEMP_IDX++);
+    }
+    topologyProcessor.setVersionId(versionId);
+    topologyProcessor.setTopologyId(topologyId);
+    topologyProcessor.setOutputStreams(new ArrayList<>());
+    String key = makeTopologyComponentKey(topologyId, versionId, topologyProcessor.getId());
+    this.topologyComponentMap.put(key, topologyProcessor);
+    return topologyProcessor;
+  }
+
+  public TopologySink addTopologySink(Long topologyId, Long versionId,
+      TopologySink topologySink) {
+    if (topologySink.getId() == null) {
+      topologySink.setId(TEMP_IDX++);
+    }
+    topologySink.setVersionId(versionId);
+    topologySink.setTopologyId(topologyId);
+    String key = makeTopologyComponentKey(topologyId, versionId, topologySink.getId());
+    this.topologyComponentMap.put(key, topologySink);
+    return topologySink;
+  }
+
+  private String makeTopologyComponentKey(Long topologyId, Long versionId, Long componentId) {
+    return topologyId + "_" + versionId + "_" + componentId;
+  }
+
+  public TopologyComponent getTopologyComponent(Long topologyId, Long versionId, Long componentId) {
+    return this.topologyComponentMap
+        .get(makeTopologyComponentKey(topologyId, versionId, componentId));
+  }
+
 }

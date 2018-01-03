@@ -12,7 +12,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorTyp
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyDetailed;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
@@ -161,6 +163,16 @@ public class TopologyController {
     return respond(createdTopologyEditorMetadata, HttpStatus.OK);
   }
 
+  @ApiOperation(value = "Add or update topologyeditor metadata", notes = "Adds or updates metdata required to edit a topology.")
+  @RequestMapping(value = "/system/topologyeditormetadata/{topologyId}", method = RequestMethod.PUT)
+  public ResponseEntity addOrUpdateTopologyEditorMetaData(
+      @PathVariable("topologyId") Long topologyId,
+      @RequestBody TopologyEditorMetadata metaData
+  ) {
+    metaData = this.topologyTableManager.addOrUpdateTopologyEditorMetadata(topologyId, metaData);
+    return respond(metaData, HttpStatus.OK);
+  }
+
   @ApiOperation(value = "Get topology sources", notes = "Returns a list of sources in use in a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/sources", method = RequestMethod.GET)
   public ResponseEntity listTopologySources(@PathVariable("topologyId") Long topologyId) {
@@ -268,6 +280,52 @@ public class TopologyController {
       @RequestBody TopologyEditorToolbar toolbar) {
     toolbar = this.topologyTableManager.addOrUpdateTopologyEditorToolbar(toolbar);
     return respondEntity(toolbar, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Add topology source", notes = "Adds a source to a topology.")
+  @RequestMapping(value = "/topologies/{topologyId}/sources", method = RequestMethod.POST)
+  public ResponseEntity addTopologySource(@PathVariable("topologyId") Long topologyId,
+      @RequestBody TopologySource topologySource) {
+    topologySource = this.topologyTableManager.addTopologySource(topologyId, 1L, topologySource);
+    return respond(topologySource, HttpStatus.CREATED);
+  }
+
+  @ApiOperation(value = "Get topology source by id", notes = "Returns topology source by id.")
+  @RequestMapping(value = "/topologies/{topologyId}/sources/{sourceId}", method = RequestMethod.GET)
+  public ResponseEntity getTopologySourceById(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("sourceId") Long sourceId) {
+    TopologySource source = (TopologySource) this.topologyTableManager
+        .getTopologyComponent(topologyId, 1L, sourceId);
+    return respond(source, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Get topology source by id and version", notes = "Returns topology source by id and its version")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/sources/{sourceId}")
+  public ResponseEntity getTopologySourceByIdAndVersion(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("versionId") Long versionId,
+      @PathVariable("sourceId") Long sourceId) {
+    TopologyComponent component = this.topologyTableManager
+        .getTopologyComponent(topologyId, versionId, sourceId);
+    return respond(component, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Update topology source", notes = "Updates a topology source.")
+  @RequestMapping(value = "/topologies/{topologyId}/sources/{sourceId}", method = RequestMethod.PUT)
+  public ResponseEntity addOrUpdateTopologySource(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("sourceId") Long sourceId,
+      @RequestBody TopologySource topologySource) {
+    topologySource = this.topologyTableManager
+        .addOrUpdateTopologySource(topologyId, sourceId, topologySource);
+    return respond(topologySource, HttpStatus.CREATED);
+  }
+
+
+  @ApiOperation(value = "Get field hints", notes = "Returns field hints of a component.")
+  @RequestMapping(value = "/streams/componentbundles/{component}/{id}/hints/namespaces/{namespaceId}", method = RequestMethod.GET)
+  public ResponseEntity getFieldHints(
+      @PathVariable("component") TopologyComponentType componentType,
+      @PathVariable("id") Long id, @PathVariable("namespaceId") Long namespaceId) {
+    return respondEntity("{}", HttpStatus.OK);
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {
