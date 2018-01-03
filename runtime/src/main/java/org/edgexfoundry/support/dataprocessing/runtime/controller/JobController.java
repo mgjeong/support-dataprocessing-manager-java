@@ -37,7 +37,7 @@ import java.util.Locale;
 @CrossOrigin(origins = "*")
 @RestController
 @Api(tags = "Job Manager", description = "API List for Job Managing")
-@RequestMapping(value = "/v1/job")
+@RequestMapping(value = "/analytics/v1/job")
 public class JobController {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobController.class);
     private JobManager jobManager = null;

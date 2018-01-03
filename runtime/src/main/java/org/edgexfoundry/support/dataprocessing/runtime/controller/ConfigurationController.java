@@ -23,7 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping(value = "/v1/conf")
+@RequestMapping(value = "/analytics/v1/conf")
 public class ConfigurationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationController.class);
 

@@ -1,0 +1,90 @@
+2017-12-26 08:06:04,398 WARN  org.apache.hadoop.util.NativeCodeLoader                       - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2017-12-26 08:06:04,676 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - --------------------------------------------------------------------------------
+2017-12-26 08:06:04,676 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  Starting TaskManager (Version: 1.3.2, Rev:0399bee, Date:03.08.2017 @ 10:23:11 UTC)
+2017-12-26 08:06:04,676 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  Current user: junsunglim
+2017-12-26 08:06:04,676 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  JVM: Java HotSpot(TM) 64-Bit Server VM - Oracle Corporation - 1.8/25.151-b12
+2017-12-26 08:06:04,676 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  Maximum heap size: 512 MiBytes
+2017-12-26 08:06:04,676 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  JAVA_HOME: /usr/lib/jvm/java-8-oracle
+2017-12-26 08:06:04,678 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  Hadoop version: 2.7.2
+2017-12-26 08:06:04,678 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  JVM Options:
+2017-12-26 08:06:04,678 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -XX:+UseG1GC
+2017-12-26 08:06:04,678 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -Xms512M
+2017-12-26 08:06:04,678 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -Xmx512M
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -XX:MaxDirectMemorySize=8388607T
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -Dlog.file=/data/workspace/support-dataprocessing-runtime/se/flink/log/flink-junsunglim-taskmanager-0-JS-ubuntu.log
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -Dlog4j.configuration=file:/data/workspace/support-dataprocessing-runtime/se/flink/conf/log4j.properties
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     -Dlogback.configurationFile=file:/data/workspace/support-dataprocessing-runtime/se/flink/conf/logback.xml
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  Program Arguments:
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     --configDir
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -     /data/workspace/support-dataprocessing-runtime/se/flink/conf
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              -  Classpath: /data/workspace/support-dataprocessing-runtime/se/flink/lib/flink-python_2.11-1.3.2.jar:/data/workspace/support-dataprocessing-runtime/se/flink/lib/flink-shaded-hadoop2-uber-1.3.2.jar:/data/workspace/support-dataprocessing-runtime/se/flink/lib/log4j-1.2.17.jar:/data/workspace/support-dataprocessing-runtime/se/flink/lib/slf4j-log4j12-1.7.7.jar:/data/workspace/support-dataprocessing-runtime/se/flink/lib/flink-dist_2.11-1.3.2.jar:::
+2017-12-26 08:06:04,679 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - --------------------------------------------------------------------------------
+2017-12-26 08:06:04,686 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Registered UNIX signal handlers for [TERM, HUP, INT]
+2017-12-26 08:06:04,699 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Maximum number of open file descriptors is 1048576
+2017-12-26 08:06:04,773 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Loading configuration from /data/workspace/support-dataprocessing-runtime/se/flink/conf
+2017-12-26 08:06:04,778 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.rpc.address, localhost
+2017-12-26 08:06:04,778 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.rpc.port, 6123
+2017-12-26 08:06:04,778 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.heap.mb, 512
+2017-12-26 08:06:04,778 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: taskmanager.heap.mb, 512
+2017-12-26 08:06:04,778 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: taskmanager.numberOfTaskSlots, 20
+2017-12-26 08:06:04,778 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: taskmanager.memory.preallocate, false
+2017-12-26 08:06:04,779 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: parallelism.default, 1
+2017-12-26 08:06:04,779 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.web.port, 8081
+2017-12-26 08:06:04,814 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.rpc.address, localhost
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.rpc.port, 6123
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.heap.mb, 512
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: taskmanager.heap.mb, 512
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: taskmanager.numberOfTaskSlots, 20
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: taskmanager.memory.preallocate, false
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: parallelism.default, 1
+2017-12-26 08:06:04,815 INFO  org.apache.flink.configuration.GlobalConfiguration            - Loading configuration property: jobmanager.web.port, 8081
+2017-12-26 08:06:04,923 INFO  org.apache.flink.runtime.security.modules.HadoopModule        - Hadoop user set to junsunglim (auth:SIMPLE)
+2017-12-26 08:06:05,010 INFO  org.apache.flink.runtime.util.LeaderRetrievalUtils            - Trying to select the network interface and address to use by connecting to the leading JobManager.
+2017-12-26 08:06:05,010 INFO  org.apache.flink.runtime.util.LeaderRetrievalUtils            - TaskManager will try to connect for 10000 milliseconds before falling back to heuristics
+2017-12-26 08:06:05,012 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Retrieved new target address localhost/127.0.0.1:6123.
+2017-12-26 08:06:05,782 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Trying to connect to address localhost/127.0.0.1:6123
+2017-12-26 08:06:05,782 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address 'JS-ubuntu/127.0.1.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,783 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/127.0.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,783 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/172.18.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,783 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/172.17.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,783 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/fe80:0:0:0:544d:66d2:5923:4265%enp4s0': Network is unreachable (connect failed)
+2017-12-26 08:06:05,784 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/10.113.65.160': Connection refused (Connection refused)
+2017-12-26 08:06:05,784 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/0:0:0:0:0:0:0:1%lo': Network is unreachable (connect failed)
+2017-12-26 08:06:05,784 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/127.0.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,784 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/172.18.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,785 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/172.17.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:05,785 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/fe80:0:0:0:544d:66d2:5923:4265%enp4s0': Network is unreachable (connect failed)
+2017-12-26 08:06:05,785 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/10.113.65.160': Connection refused (Connection refused)
+2017-12-26 08:06:05,785 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/0:0:0:0:0:0:0:1%lo': Network is unreachable (connect failed)
+2017-12-26 08:06:05,785 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Failed to connect from address '/127.0.0.1': Connection refused (Connection refused)
+2017-12-26 08:06:06,586 INFO  org.apache.flink.runtime.net.ConnectionUtils                  - Trying to connect to address localhost/127.0.0.1:6123
+2017-12-26 08:06:06,586 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - TaskManager will use hostname/address 'JS-ubuntu' (127.0.1.1) for communication.
+2017-12-26 08:06:06,607 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Starting TaskManager
+2017-12-26 08:06:06,607 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Starting TaskManager actor system at JS-ubuntu:0.
+2017-12-26 08:06:07,084 INFO  akka.event.slf4j.Slf4jLogger                                  - Slf4jLogger started
+2017-12-26 08:06:07,172 INFO  Remoting                                                      - Starting remoting
+2017-12-26 08:06:07,553 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Starting TaskManager actor
+2017-12-26 08:06:07,562 INFO  Remoting                                                      - Remoting started; listening on addresses :[akka.tcp://flink@JS-ubuntu:45231]
+2017-12-26 08:06:07,587 INFO  org.apache.flink.runtime.io.network.netty.NettyConfig         - NettyConfig [server address: JS-ubuntu/127.0.1.1, server port: 0, ssl enabled: false, memory segment size (bytes): 32768, transport type: NIO, number of server threads: 20 (manual), number of client threads: 20 (manual), server connect backlog: 0 (use Netty's default), client connect timeout (sec): 120, send/receive buffer size (bytes): 0 (use Netty's default)]
+2017-12-26 08:06:07,592 INFO  org.apache.flink.runtime.taskexecutor.TaskManagerConfiguration  - Messages have a max timeout of 10000 ms
+2017-12-26 08:06:07,596 INFO  org.apache.flink.runtime.taskexecutor.TaskManagerServices     - Temporary file directory '/tmp': total 37 GB, usable 16 GB (43.24% usable)
+2017-12-26 08:06:07,637 INFO  org.apache.flink.runtime.io.network.buffer.NetworkBufferPool  - Allocated 64 MB for network buffer pool (number of memory segments: 2048, bytes per segment: 32768).
+2017-12-26 08:06:07,775 INFO  org.apache.flink.runtime.io.network.NetworkEnvironment        - Starting the network environment and its components.
+2017-12-26 08:06:07,785 INFO  org.apache.flink.runtime.io.network.netty.NettyClient         - Successful initialization (took 5 ms).
+2017-12-26 08:06:07,827 INFO  org.apache.flink.runtime.io.network.netty.NettyServer         - Successful initialization (took 42 ms). Listening on SocketAddress /127.0.1.1:39107.
+2017-12-26 08:06:07,886 INFO  org.apache.flink.runtime.taskexecutor.TaskManagerServices     - Limiting managed memory to 0.7 of the currently free heap space (305 MB), memory will be allocated lazily.
+2017-12-26 08:06:07,889 INFO  org.apache.flink.runtime.io.disk.iomanager.IOManager          - I/O manager uses directory /tmp/flink-io-504287a0-db4b-4344-998a-941ece2b49e1 for spill files.
+2017-12-26 08:06:07,907 INFO  org.apache.flink.runtime.metrics.MetricRegistry               - No metrics reporter configured, no metrics will be exposed/reported.
+2017-12-26 08:06:07,977 INFO  org.apache.flink.runtime.filecache.FileCache                  - User file cache uses directory /tmp/flink-dist-cache-bf14bd87-5da3-455a-ac05-6520751b854d
+2017-12-26 08:06:07,988 INFO  org.apache.flink.runtime.filecache.FileCache                  - User file cache uses directory /tmp/flink-dist-cache-cd06dd37-6acf-40bc-91dd-ed3df7af4a0b
+2017-12-26 08:06:07,997 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Starting TaskManager actor at akka://flink/user/taskmanager#825093843.
+2017-12-26 08:06:07,997 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - TaskManager data connection information: f1a2ecb4dbd70905f6a0962fd4bd65d5 @ JS-ubuntu (dataPort=39107)
+2017-12-26 08:06:07,998 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - TaskManager has 20 task slot(s).
+2017-12-26 08:06:07,999 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Memory usage stats: [HEAP: 79/512/512 MB, NON HEAP: 33/34/-1 MB (used/committed/max)]
+2017-12-26 08:06:08,003 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Trying to register at JobManager akka.tcp://flink@localhost:6123/user/jobmanager (attempt 1, timeout: 500 milliseconds)
+2017-12-26 08:06:08,477 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Successful registration at JobManager (akka.tcp://flink@localhost:6123/user/jobmanager), starting network stack and library cache.
+2017-12-26 08:06:08,479 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - Determined BLOB server address to be localhost/127.0.0.1:36615. Starting BLOB cache.
+2017-12-26 08:06:08,480 INFO  org.apache.flink.runtime.blob.BlobCache                       - Created BLOB cache storage directory /tmp/blobStore-4406c049-cbed-44d0-8a4b-eea216d67c8a
+2017-12-28 18:02:23,568 INFO  org.apache.flink.runtime.taskmanager.TaskManager              - RECEIVED SIGNAL 15: SIGTERM. Shutting down as requested.
+2017-12-28 18:02:23,877 INFO  org.apache.flink.runtime.blob.BlobCache                       - Shutting down BlobCache
+2017-12-28 18:02:24,473 INFO  org.apache.flink.runtime.io.disk.iomanager.IOManager          - I/O manager removed spill file directory /tmp/flink-io-504287a0-db4b-4344-998a-941ece2b49e1
