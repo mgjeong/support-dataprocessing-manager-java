@@ -84,38 +84,4 @@ public class JarLoaderTest {
       e.printStackTrace();
     }
   }
-
-//  @Test
-//  public void createInstanceTest() throws Exception {
-//
-//    mockStatic(URL.class, Mockito.RETURNS_DEEP_STUBS);
-//    mockStatic(File.class);
-//    mockStatic(URLClassLoader.class, Mockito.RETURNS_DEEP_STUBS);
-//
-//    URL url = mock(URL.class);
-//    URI uri = mock(URI.class);
-//    File file = mock(File.class);
-//    Method method = mock(Method.class);
-//    Class<TaskModel> clazz = mock((Class < TaskModel>).getClass());
-//    URLClassLoader classLoader = mock(URLClassLoader.class, Mockito.RETURNS_DEEP_STUBS);
-//
-//    whenNew(URL.class).withAnyArguments().thenReturn(url);
-//    whenNew(File.class).withAnyArguments().thenReturn(file);
-//    whenNew(URLClassLoader.class).withAnyArguments().thenReturn(classLoader);
-//
-//    when(file.exists()).thenReturn(true);
-//    when(file.length()).thenReturn((long) 1);
-//    when(file.toURI()).thenReturn(uri);
-//    when(uri.toURL()).thenReturn(url);
-//    when(classLoader.loadClass(anyString())).thenReturn(clazz);
-//
-//    try {
-//      JarLoader jarloader = new JarLoader("Test.jar", classLoader);
-//      Assert.assertNotNull(jarloader);
-//      jarloader.getClassInstance(
-//        "org.edgexfoundry.support.dataprocessing.runtime.util.test");
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//  }
 }
