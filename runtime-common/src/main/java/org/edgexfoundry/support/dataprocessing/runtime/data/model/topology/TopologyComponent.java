@@ -99,6 +99,8 @@ public class TopologyComponent extends Format {
   @JsonInclude(Include.NON_NULL)
   static class Config {
 
+    private Map<String, Object> properties = new HashMap<>();
+
     public Config() {
 
     }
@@ -110,8 +112,5 @@ public class TopologyComponent extends Format {
     public void setProperties(Map<String, Object> properties) {
       this.properties = properties;
     }
-
-    private Map<String, Object> properties = new HashMap<>();
-
   }
 }
