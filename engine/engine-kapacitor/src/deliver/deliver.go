@@ -12,10 +12,11 @@ func main() {
 	thisHandler := deliverHandler.NewDeliverHandler(thisAgent)
 	thisAgent.Handler = thisHandler
 
-	log.Println("Starting agent")
+	log.Println("Starting delivering agent: PID", os.Getpid())
 	thisAgent.Start()
 	err := thisAgent.Wait()
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Stopping delivering agent: PID", os.Getpid())
 }

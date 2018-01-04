@@ -41,9 +41,9 @@ function is_extracted() {
 	return
 }
 
-target_fw="${fw_repo}/runtime/target/runtime-${version}.jar"
+target_fw="${fw_repo}/runtime/target/manager-${version}.jar"
 target_engine="${fw_repo}/engine/engine-flink/target/engine-flink-${version}-jar-with-dependencies.jar"
-target_common="${fw_repo}/runtime-common/target/runtime-common-${version}.jar"
+target_common="${fw_repo}/runtime-common/target/manager-common-${version}.jar"
 target_task_parent_dir="${fw_repo}/runtime-task/"
 
 if [ ! -f "$target_fw" ] || [ ! -f "$target_engine" ] || [ ! -f "$target_common" ]; then
@@ -53,9 +53,9 @@ if [ ! -f "$target_fw" ] || [ ! -f "$target_engine" ] || [ ! -f "$target_common"
 fi 
 
 mkdir -p "${output_path}/task"
-copy_here $target_fw "runtime.jar"
+copy_here $target_fw "manager.jar"
 copy_here $target_engine "engine-flink.jar"
-copy_here $target_common "runtime-common.jar"
+copy_here $target_common "manager-common.jar"
 
 echo "Extracting task jars: "
 for i in `find $target_task_parent_dir -name \*${version}\*.jar | grep "target/"`
