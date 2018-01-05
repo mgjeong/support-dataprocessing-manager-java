@@ -17,6 +17,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyDag;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
@@ -644,5 +645,56 @@ public final class TopologyTableManager {
 
   public Collection<ClusterWithService> listClusterWithServices() {
     return this.clusterWithServiceMap.values();
+  }
+
+  public Topology removeTopology(Long topologyId) {
+    Topology topology = this.topologies.get(topologyId);
+
+    // remove sources
+    // remove processors
+    // remove sinks
+    Collection<Long> del = new ArrayList<>();
+    for (TopologyComponent component : this.topologyComponentMap.values()) {
+      if (component.getTopologyId() == topologyId) {
+        del.add(component.getId());
+      }
+    }
+    for (Long d : del) {
+      this.topologyComponentMap.remove(d);
+    }
+
+    del.clear();
+    // remove streams
+    for (TopologyStream stream : this.topologyStreamMap.values()) {
+      if (stream.getTopologyId() == topologyId) {
+        del.add(stream.getId());
+      }
+    }
+    for (Long d : del) {
+      this.topologyStreamMap.remove(d);
+    }
+
+    del.clear();
+    // remove edges
+    for (TopologyEdge edge : this.topologyEdgeMap.values()) {
+      if (edge.getTopologyId() == topologyId) {
+        del.add(edge.getId());
+      }
+    }
+    for (Long d : del) {
+      this.topologyEdgeMap.remove(d);
+    }
+
+    return topology;
+  }
+
+  public String exportTopology(Topology topology) {
+    //TODO:
+    TopologyDag dag = buildTopologyDag(topology);
+    return "";
+  }
+
+  private TopologyDag buildTopologyDag(Topology topology) {
+    return new TopologyDag();
   }
 }

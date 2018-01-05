@@ -123,6 +123,15 @@ public class TopologyController {
     }
   }
 
+  @ApiOperation(value = "Remove topology", notes = "Removes a topology")
+  @RequestMapping(value = "/topologies/{topologyId}", method = RequestMethod.DELETE)
+  public ResponseEntity removeTopology(@PathVariable("topologyId") Long topologyId,
+      @RequestParam(value = "onlyCurrent", required = false) boolean onlyCurrent,
+      @RequestParam(value = "force", required = false) boolean force) {
+    Topology topology = this.topologyTableManager.removeTopology(topologyId);
+    return respond(topology, HttpStatus.OK);
+  }
+
   @ApiOperation(value = "Get topology versions", notes = "Returns a list of versions of a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/versions")
   public ResponseEntity listTopologyVersions(@PathVariable("topologyId") Long topologyId) {
@@ -130,7 +139,6 @@ public class TopologyController {
         .listTopologyVersionInfos(topologyId);
     return respondEntity(versions, HttpStatus.OK);
   }
-
 
   @ApiOperation(value = "Get namespaces", notes = "Returns a list of all namespaces.")
   @RequestMapping(value = "/namespaces", method = RequestMethod.GET)
@@ -586,6 +594,30 @@ public class TopologyController {
       @RequestParam(value = "detail", required = false) Boolean detail) {
     ClusterWithService cs = this.topologyTableManager.listClusterWithServices().iterator().next();
     return respond(cs, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Validate topology", notes = "Validates a topology")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
+  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("versionId") Long versionId) {
+    Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
+    return respond(result, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Deploy topology", notes = "Deploys a topology")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/deploy", method = RequestMethod.POST)
+  public ResponseEntity deployTopology(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("versionId") Long versionId) {
+    Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
+    return respond(result, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Export topology", notes = "Exports a topology")
+  @RequestMapping(value = "/topologies/{topologyId}/actions/export", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity exportTopology(@PathVariable("topologyId") Long topologyId) {
+    Topology topology = this.topologyTableManager.getTopology(topologyId, 1L);
+    String exportedTopology = this.topologyTableManager.exportTopology(topology);
+    return respond(exportedTopology, HttpStatus.OK);
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {
