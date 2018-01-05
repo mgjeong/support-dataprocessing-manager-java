@@ -1,9 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
@@ -94,23 +91,5 @@ public class TopologyComponent extends Format {
 
   public void setTimestamp(Long timestamp) {
     this.timestamp = timestamp;
-  }
-
-  @JsonInclude(Include.NON_NULL)
-  static class Config {
-
-    private Map<String, Object> properties = new HashMap<>();
-
-    public Config() {
-
-    }
-
-    public Map<String, Object> getProperties() {
-      return properties;
-    }
-
-    public void setProperties(Map<String, Object> properties) {
-      this.properties = properties;
-    }
   }
 }

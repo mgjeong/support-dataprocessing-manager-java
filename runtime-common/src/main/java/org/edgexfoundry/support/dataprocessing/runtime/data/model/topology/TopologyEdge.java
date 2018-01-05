@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Stream.Grouping;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologyEdge extends Format {
@@ -84,10 +85,6 @@ public class TopologyEdge extends Format {
     private Long streamId;
     private Grouping grouping;
     private List<String> fields;
-
-    public enum Grouping {
-      SHUFFLE, FIELDS
-    }
 
     public Long getStreamId() {
       return streamId;

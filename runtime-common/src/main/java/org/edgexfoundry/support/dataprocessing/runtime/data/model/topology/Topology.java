@@ -1,87 +1,100 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Topology extends Format {
-    /**
-     * Unique identifier for a topology.
-     */
-    private Long id;
 
-    /**
-     * Name of a topology.
-     */
-    private String name;
+  /**
+   * Unique identifier for a topology.
+   */
+  private Long id;
 
-    /**
-     * Json string representing the topology configuration.
-     */
-    private String config;
+  /**
+   * Name of a topology.
+   */
+  private String name;
 
-    /**
-     * Version id, hard-code it as 1
-     */
-    private Long versionId = 1L;
-    private Long namespaceId;
+  /**
+   * Json string representing the topology configuration.
+   */
+  private String config;
 
-    private String description;
-    private Long timestamp;
+  /**
+   * Version id, hard-code it as 1
+   */
+  private Long versionId = 1L;
+  private Long namespaceId;
 
-    public Long getId() {
-        return id;
-    }
+  private String description;
+  private Long timestamp;
+  private TopologyDag topologyDag;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getConfig() {
-        return config;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setConfig(String config) {
-        this.config = config;
-    }
+  public String getConfig() {
+    return config;
+  }
 
-    public Long getVersionId() {
-        return versionId;
-    }
+  public void setConfig(String config) {
+    this.config = config;
+  }
 
-    public void setVersionId(Long versionId) {
-        this.versionId = versionId;
-    }
+  public Long getVersionId() {
+    return versionId;
+  }
 
-    public Long getNamespaceId() {
-        return namespaceId;
-    }
+  public void setVersionId(Long versionId) {
+    this.versionId = versionId;
+  }
 
-    public void setNamespaceId(Long namespaceId) {
-        this.namespaceId = namespaceId;
-    }
+  public Long getNamespaceId() {
+    return namespaceId;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public void setNamespaceId(Long namespaceId) {
+    this.namespaceId = namespaceId;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public Long getTimestamp() {
-        return timestamp;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
+  public Long getTimestamp() {
+    return timestamp;
+  }
+
+  public void setTimestamp(Long timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  @JsonIgnore
+  public void setTopologyDag(TopologyDag topologyDag) {
+    this.topologyDag = topologyDag;
+  }
+
+  @JsonIgnore
+  public TopologyDag getTopologyDag() {
+    return this.topologyDag;
+  }
 }

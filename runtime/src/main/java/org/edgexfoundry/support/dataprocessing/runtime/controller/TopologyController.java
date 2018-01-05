@@ -1,13 +1,16 @@
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
@@ -17,6 +20,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyDetailed;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
@@ -613,11 +617,34 @@ public class TopologyController {
   }
 
   @ApiOperation(value = "Export topology", notes = "Exports a topology")
-  @RequestMapping(value = "/topologies/{topologyId}/actions/export", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @RequestMapping(value = "/topologies/{topologyId}/actions/export", method = RequestMethod.GET)
   public ResponseEntity exportTopology(@PathVariable("topologyId") Long topologyId) {
-    Topology topology = this.topologyTableManager.getTopology(topologyId, 1L);
-    String exportedTopology = this.topologyTableManager.exportTopology(topology);
-    return respond(exportedTopology, HttpStatus.OK);
+    try {
+      Topology topology = this.topologyTableManager.getTopology(topologyId, 1L);
+      String exportedTopology = this.topologyTableManager.exportTopology(topology);
+      return respond(exportedTopology, HttpStatus.OK);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiOperation(value = "Import topology", notes = "Imports a topology")
+  @RequestMapping(value = "/topologies/actions/import", method = RequestMethod.POST)
+  public ResponseEntity importTopology(@RequestParam("file") Part part,
+      @RequestParam("namespaceId") final Long namespaceId,
+      @RequestParam("topologyName") final String topologyName) {
+    try {
+      TopologyData topologyData = new ObjectMapper()
+          .readValue(part.getInputStream(), TopologyData.class);
+      Topology imported = this.topologyTableManager.importTopology(namespaceId, topologyName, topologyData);
+      return respond(imported, HttpStatus.OK);
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {
