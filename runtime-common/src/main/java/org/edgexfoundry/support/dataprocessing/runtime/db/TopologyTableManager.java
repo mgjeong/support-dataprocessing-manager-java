@@ -222,6 +222,24 @@ public final class TopologyTableManager {
 
     this.topologyComponentBundleMap.put(regression.getId(), regression);
 
+    TopologyComponentBundle query = new TopologyComponentBundle();
+    query.setId(TEMP_IDX++);
+    query.setName("query");
+    query.setType(TopologyComponentBundle.TopologyComponentType.PROCESSOR);
+    query.setStreamingEngine("STORM");
+    query.setTimestamp(System.currentTimeMillis());
+    query.setSubType("DPFW");
+    query.setBundleJar("");
+    componentUISpecification = new ComponentUISpecification();
+    addUIField(componentUISpecification, "query", "query", "Enter query");
+    query.setTopologyComponentUISpecification(componentUISpecification);
+    query.setFieldHintProviderClass("");
+    query.setTransformationClass("");
+    query.setBuiltin(true);
+    query.setMavenDeps("");
+
+    this.topologyComponentBundleMap.put(query.getId(), query);
+
     // add sink
     TopologyComponentBundle dpfwSink = new TopologyComponentBundle();
     dpfwSink.setId(TEMP_IDX++);
