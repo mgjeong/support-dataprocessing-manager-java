@@ -46,7 +46,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 @RestController
 @Api(tags = "Task Manager", description = "API List for Task Managing")
-@RequestMapping(value = "/v1/task")
+@RequestMapping(value = "/analytics/v1/task")
 public class TaskController {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
     private TaskManager taskManager;
