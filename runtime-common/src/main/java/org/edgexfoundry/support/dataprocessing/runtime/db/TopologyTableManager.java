@@ -709,12 +709,12 @@ public final class TopologyTableManager {
     return mapper.writeValueAsString(topologyData);
   }
 
-  private TopologyData doExportTopology(Topology topology) {
+  public TopologyData doExportTopology(Topology topology) {
     TopologyDag dag = buildTopologyDag(topology);
     topology.setTopologyDag(dag);
     TopologyData topologyData = new TopologyData();
     topologyData.setTopologyName(topology.getName());
-    topologyData.setConfig(topology.getConfig());
+    topologyData.setConfig(topology.getConfigStr());
     topologyData.setTopologyEditorMetadata(
         getTopologyEditorMetadata(topology.getId(), topology.getVersionId()));
 
@@ -869,7 +869,7 @@ public final class TopologyTableManager {
     topology.setTimestamp(System.currentTimeMillis());
     topology.setVersionId(1L);
     topology.setName(topologyName);
-    topology.setConfig(topologyData.getConfig());
+    topology.setConfigStr(topologyData.getConfigStr());
     topology.setNamespaceId(namespaceId);
     this.topologies.put(topology.getId(), topology);
 

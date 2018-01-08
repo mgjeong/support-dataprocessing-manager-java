@@ -613,6 +613,18 @@ public class TopologyController {
   public ResponseEntity deployTopology(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
+
+    // flink result
+    TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
+
+    LOGGER.info("TopologyData: " + topologyData.getConfigStr());
+
+    /*
+    FlinkEngine engine = new FlinkEngine(;)
+    String id = engine.createJob(topologyData);
+    engine.run(id);
+    */
+
     return respond(result, HttpStatus.OK);
   }
 
@@ -638,7 +650,8 @@ public class TopologyController {
     try {
       TopologyData topologyData = new ObjectMapper()
           .readValue(part.getInputStream(), TopologyData.class);
-      Topology imported = this.topologyTableManager.importTopology(namespaceId, topologyName, topologyData);
+      Topology imported = this.topologyTableManager
+          .importTopology(namespaceId, topologyName, topologyData);
       return respond(imported, HttpStatus.OK);
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);

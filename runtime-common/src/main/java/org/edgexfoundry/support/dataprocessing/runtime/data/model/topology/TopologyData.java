@@ -1,14 +1,17 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 public class TopologyData {
 
   private String topologyName;
-  private String config;
+  private Map<String, Object> config = new HashMap<>();
   private List<TopologySource> sources = new ArrayList<>();
   private List<TopologySink> sinks = new ArrayList<>();
   private List<TopologyProcessor> processors = new ArrayList<>();
@@ -27,12 +30,34 @@ public class TopologyData {
     this.topologyName = topologyName;
   }
 
-  public String getConfig() {
-    return config;
+  public String getConfigStr() {
+    try {
+      if (!this.config.isEmpty()) {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this.config);
+      } else {
+        return "{}";
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public void setConfig(String config) {
-    this.config = config;
+  public Map<String, Object> getConfig() {
+    return this.config;
+  }
+
+  public void setConfig(String configStr) {
+    try {
+      if (!StringUtils.isEmpty(configStr)) {
+        ObjectMapper mapper = new ObjectMapper();
+        this.config = mapper
+            .readValue(configStr, new TypeReference<Map<String, Object>>() {
+            });
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public List<TopologySource> getSources() {

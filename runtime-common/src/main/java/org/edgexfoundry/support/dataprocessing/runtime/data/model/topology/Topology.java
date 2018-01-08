@@ -2,6 +2,13 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -18,11 +25,6 @@ public class Topology extends Format {
   private String name;
 
   /**
-   * Json string representing the topology configuration.
-   */
-  private String config;
-
-  /**
    * Version id, hard-code it as 1
    */
   private Long versionId = 1L;
@@ -31,6 +33,8 @@ public class Topology extends Format {
   private String description;
   private Long timestamp;
   private TopologyDag topologyDag;
+
+  private Map<String, Object> config = new HashMap<>();
 
   public Long getId() {
     return id;
@@ -48,11 +52,41 @@ public class Topology extends Format {
     this.name = name;
   }
 
-  public String getConfig() {
+  @JsonProperty("config")
+  public String getConfigStr() {
+    if (this.config.isEmpty()) {
+      return "{}";
+    } else {
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this.config);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  @JsonProperty("config")
+  public void setConfigStr(String config) {
+    try {
+      if (!StringUtils.isEmpty(config)) {
+        ObjectMapper mapper = new ObjectMapper();
+        this.config = mapper
+            .readValue(config, new TypeReference<Map<String, Object>>() {
+            });
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @JsonIgnore
+  public Map<String, Object> getConfig() {
     return config;
   }
 
-  public void setConfig(String config) {
+  @JsonIgnore
+  public void setConfig(Map<String, Object> config) {
     this.config = config;
   }
 
