@@ -48,9 +48,10 @@ public class JarLoader {
    * @return
    */
   public Class getClassInstance(String className) throws ClassNotFoundException, NoClassDefFoundError {
+
     LOGGER.info("Attempting to load " + className);
-    Class clsInstance = urlClassLoader.loadClass(className);
-    return clsInstance;
+    return urlClassLoader.loadClass(className);
+
   }
 
   public void loadJar(String jarPath) throws Exception {
