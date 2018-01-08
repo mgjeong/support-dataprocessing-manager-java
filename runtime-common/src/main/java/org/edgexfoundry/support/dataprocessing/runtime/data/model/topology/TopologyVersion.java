@@ -5,53 +5,54 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologyVersion extends Format {
-    private Long id;
-    private Long topologyId;
-    private String name;
-    private String description;
-    private Long timestamp;
 
-    public TopologyVersion() {
+  private Long id;
+  private Long topologyId;
+  private String name;
+  private String description;
+  private Long timestamp;
 
-    }
+  public TopologyVersion() {
 
-    public Long getId() {
-        return id;
-    }
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public Long getTopologyId() {
-        return topologyId;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public void setTopologyId(Long topologyId) {
-        this.topologyId = topologyId;
-    }
+  public Long getTopologyId() {
+    return topologyId;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public void setTopologyId(Long topologyId) {
+    this.topologyId = topologyId;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public Long getTimestamp() {
-        return timestamp;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
-    }
+  public Long getTimestamp() {
+    return timestamp;
+  }
+
+  public void setTimestamp(Long timestamp) {
+    this.timestamp = timestamp;
+  }
 }

@@ -5,39 +5,40 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopologyDetailed extends Format {
-    public enum TopologyRunningStatus {
-        RUNNING, NOT_RUNNING, UNKNOWN
-    }
 
-    private Topology topology;
-    private TopologyRunningStatus running;
-    private String namespaceName;
+  public enum TopologyRunningStatus {
+    RUNNING, NOT_RUNNING, UNKNOWN
+  }
 
-    public TopologyDetailed() {
+  private Topology topology;
+  private TopologyRunningStatus running;
+  private String namespaceName;
 
-    }
+  public TopologyDetailed() {
 
-    public Topology getTopology() {
-        return topology;
-    }
+  }
 
-    public void setTopology(Topology topology) {
-        this.topology = topology;
-    }
+  public Topology getTopology() {
+    return topology;
+  }
 
-    public TopologyRunningStatus getRunning() {
-        return running;
-    }
+  public void setTopology(Topology topology) {
+    this.topology = topology;
+  }
 
-    public void setRunning(TopologyRunningStatus running) {
-        this.running = running;
-    }
+  public TopologyRunningStatus getRunning() {
+    return running;
+  }
 
-    public String getNamespaceName() {
-        return namespaceName;
-    }
+  public void setRunning(TopologyRunningStatus running) {
+    this.running = running;
+  }
 
-    public void setNamespaceName(String namespaceName) {
-        this.namespaceName = namespaceName;
-    }
+  public String getNamespaceName() {
+    return namespaceName;
+  }
+
+  public void setNamespaceName(String namespaceName) {
+    this.namespaceName = namespaceName;
+  }
 }
