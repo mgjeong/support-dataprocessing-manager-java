@@ -32,7 +32,6 @@ public class Topology extends Format {
 
   private String description;
   private Long timestamp;
-  private TopologyDag topologyDag;
 
   private Map<String, Object> config = new HashMap<>();
 
@@ -122,13 +121,4 @@ public class Topology extends Format {
     this.timestamp = timestamp;
   }
 
-  @JsonIgnore
-  public void setTopologyDag(TopologyDag topologyDag) {
-    this.topologyDag = topologyDag;
-  }
-
-  @JsonIgnore
-  public TopologyDag getTopologyDag() {
-    return this.topologyDag;
-  }
 }

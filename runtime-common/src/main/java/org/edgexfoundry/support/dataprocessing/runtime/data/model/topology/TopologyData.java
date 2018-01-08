@@ -1,5 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -8,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
+@JsonInclude(Include.NON_NULL)
 public class TopologyData {
 
   private String topologyName;
@@ -30,6 +35,7 @@ public class TopologyData {
     this.topologyName = topologyName;
   }
 
+  @JsonProperty("config")
   public String getConfigStr() {
     try {
       if (!this.config.isEmpty()) {
@@ -43,10 +49,12 @@ public class TopologyData {
     }
   }
 
+  @JsonIgnore
   public Map<String, Object> getConfig() {
     return this.config;
   }
 
+  @JsonProperty("config")
   public void setConfig(String configStr) {
     try {
       if (!StringUtils.isEmpty(configStr)) {
