@@ -216,6 +216,24 @@ public final class TopologyTableManager {
 
     this.topologyComponentBundleMap.put(regression.getId(), regression);
 
+    TopologyComponentBundle query = new TopologyComponentBundle();
+    query.setId(TEMP_IDX++);
+    query.setName("query");
+    query.setType(TopologyComponentBundle.TopologyComponentType.PROCESSOR);
+    query.setStreamingEngine("STORM");
+    query.setTimestamp(System.currentTimeMillis());
+    query.setSubType("DPFW");
+    query.setBundleJar("");
+    componentUISpecification = new ComponentUISpecification();
+    addUIField(componentUISpecification, "query", "query", "Enter query");
+    query.setTopologyComponentUISpecification(componentUISpecification);
+    query.setFieldHintProviderClass("");
+    query.setTransformationClass("");
+    query.setBuiltin(true);
+    query.setMavenDeps("");
+
+    this.topologyComponentBundleMap.put(query.getId(), query);
+
     // add sink
     TopologyComponentBundle dpfwSink = new TopologyComponentBundle();
     dpfwSink.setId(TEMP_IDX++);
@@ -239,25 +257,16 @@ public final class TopologyTableManager {
     this.topologyComponentBundleMap.put(dpfwSink.getId(), dpfwSink);
 
     // add topology
-    TopologyComponentBundle runtimeTopology = new TopologyComponentBundle();
-    runtimeTopology.setId(TEMP_IDX++);
-    runtimeTopology.setName("Runtime topology");
-    runtimeTopology.setType(TopologyComponentBundle.TopologyComponentType.TOPOLOGY);
-    runtimeTopology.setTimestamp(System.currentTimeMillis());
-    runtimeTopology.setStreamingEngine("STORM");
-    runtimeTopology.setSubType("TOPOLOGY");
-    runtimeTopology.setBundleJar(null);
+    TopologyComponentBundle workflowTopology = new TopologyComponentBundle();
+    workflowTopology.setId(TEMP_IDX++);
+    workflowTopology.setName("Workflow topology");
+    workflowTopology.setType(TopologyComponentBundle.TopologyComponentType.TOPOLOGY);
+    workflowTopology.setTimestamp(System.currentTimeMillis());
+    workflowTopology.setStreamingEngine("STORM");
+    workflowTopology.setSubType("TOPOLOGY");
+    workflowTopology.setBundleJar(null);
 
-    componentUISpecification = new ComponentUISpecification();
-    ComponentUISpecification.UIField runtimeHost = new ComponentUISpecification.UIField();
-    runtimeHost.setUiName("Runtime host");
-    runtimeHost.setFieldName("runtimeHost");
-    runtimeHost.setUserInput(true);
-    runtimeHost.setTooltip("Enter hostname of runtime edge.");
-    runtimeHost.setOptional(false);
-    runtimeHost.setType("string");
-    runtimeHost.setDefaultValue("localhost:8082");
-    componentUISpecification.addUIField(runtimeHost);
+    componentUISpecification = new ComponentUISpecification();;
     ComponentUISpecification.UIField targetHost = new ComponentUISpecification.UIField();
     targetHost.setUiName("Target host");
     targetHost.setFieldName("targetHost");
@@ -267,14 +276,14 @@ public final class TopologyTableManager {
     targetHost.setType("string");
     targetHost.setDefaultValue("localhost:9092");
     componentUISpecification.addUIField(targetHost);
-    runtimeTopology.setTopologyComponentUISpecification(componentUISpecification);
+    workflowTopology.setTopologyComponentUISpecification(componentUISpecification);
 
-    runtimeTopology.setFieldHintProviderClass(null);
-    runtimeTopology.setTransformationClass("dummy");
-    runtimeTopology.setBuiltin(true);
-    runtimeTopology.setMavenDeps("");
+    workflowTopology.setFieldHintProviderClass(null);
+    workflowTopology.setTransformationClass("dummy");
+    workflowTopology.setBuiltin(true);
+    workflowTopology.setMavenDeps("");
 
-    this.topologyComponentBundleMap.put(runtimeTopology.getId(), runtimeTopology);
+    this.topologyComponentBundleMap.put(workflowTopology.getId(), workflowTopology);
   }
 
   private void addUIField(ComponentUISpecification componentUISpecification, String uiName,
