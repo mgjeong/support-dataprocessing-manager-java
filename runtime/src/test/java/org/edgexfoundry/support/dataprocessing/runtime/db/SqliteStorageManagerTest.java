@@ -1,7 +1,10 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
 import java.util.Collection;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -98,6 +101,70 @@ public class SqliteStorageManagerTest {
       // Test for delete
       storageManager.removeTopologyEditorMetadata(topology.getId());
     }
+  }
+
+  @Test
+  public void testTopologyComponentBundle() {
+    // Sample component bundle
+    TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
+    dpfwSource.setName("DPFW-SOURCE");
+    dpfwSource.setType(TopologyComponentBundle.TopologyComponentType.SOURCE);
+    dpfwSource.setTimestamp(System.currentTimeMillis());
+    dpfwSource.setStreamingEngine("STORM");
+    dpfwSource.setSubType("DPFW");
+    dpfwSource.setBundleJar("a");
+    dpfwSource.setTransformationClass("a");
+
+    ComponentUISpecification componentUISpecification = new ComponentUISpecification();
+    addUIField(componentUISpecification, "Data Type", "dataType", "Enter data type");
+    addUIField(componentUISpecification, "Data Source", "dataSource", "Enter data source");
+    dpfwSource.setTopologyComponentUISpecification(componentUISpecification);
+
+    dpfwSource.setFieldHintProviderClass("a");
+    dpfwSource.setTransformationClass("a");
+    dpfwSource.setBuiltin(true);
+    dpfwSource.setMavenDeps(" ");
+
+    // Test insert
+    TopologyComponentBundle bundle = storageManager
+        .addTopologyComponentBundle(dpfwSource);
+    Assert.assertNotNull(bundle.getId());
+
+    try {
+      // Test select
+      Collection<TopologyComponentBundle> bundles = storageManager.listTopologyComponentBundles();
+      Assert.assertTrue(!bundles.isEmpty());
+      bundles = storageManager.listTopologyComponentBundles(TopologyComponentType.SOURCE);
+      Assert.assertTrue(!bundles.isEmpty());
+      TopologyComponentBundle added = bundles.iterator().next();
+
+      Assert.assertEquals(added.getName(), dpfwSource.getName());
+      Assert.assertEquals(added.getTopologyComponentUISpecification().getFields().size(),
+          dpfwSource.getTopologyComponentUISpecification().getFields().size());
+
+      // Test update
+      dpfwSource.setName("New name");
+      storageManager.addOrUpdateTopologyComponentBundle(dpfwSource);
+      added = storageManager.listTopologyComponentBundles().iterator().next();
+
+      Assert.assertEquals(added.getName(), dpfwSource.getName());
+      Assert.assertEquals(added.getTopologyComponentUISpecification().getFields().size(),
+          dpfwSource.getTopologyComponentUISpecification().getFields().size());
+    } finally {
+      storageManager.removeTopologyComponentBundle(bundle.getId());
+    }
+  }
+
+  private void addUIField(ComponentUISpecification componentUISpecification, String uiName,
+      String fieldName, String tooltip) {
+    ComponentUISpecification.UIField field = new ComponentUISpecification.UIField();
+    field.setUiName(uiName);
+    field.setFieldName(fieldName);
+    field.setUserInput(true);
+    field.setTooltip(tooltip);
+    field.setOptional(false);
+    field.setType("string");
+    componentUISpecification.addUIField(field);
   }
 
   @AfterClass

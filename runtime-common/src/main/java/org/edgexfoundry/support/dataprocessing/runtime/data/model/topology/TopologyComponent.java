@@ -1,6 +1,10 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
@@ -91,5 +95,29 @@ public class TopologyComponent extends Format {
 
   public void setTimestamp(Long timestamp) {
     this.timestamp = timestamp;
+  }
+
+  @JsonIgnore
+  public String getConfigStr() {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      return mapper.writeValueAsString(this.config);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @JsonIgnore
+  public void setConfigStr(String config) {
+    try {
+      if (!StringUtils.isEmpty(config)) {
+        ObjectMapper mapper = new ObjectMapper();
+        this.config = mapper
+            .readValue(config, new TypeReference<Config>() {
+            });
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

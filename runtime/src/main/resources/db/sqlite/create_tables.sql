@@ -76,11 +76,23 @@ CREATE TABLE IF NOT EXISTS `job_group` (
 CREATE TABLE IF NOT EXISTS `job` (
   `id` TEXT NOT NULL,
   `groupId` TEXT NOT NULL,
-  `state` TEXT NOT NULL,
   `engineId` TEXT NOT NULL,
   `data` TEXT NOT NULL,
   PRIMARY KEY (`id`, `groupId`),
   FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`)
+);
+
+-- -----------------------------------------------------
+-- Table `job_state`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `job_state` (
+  `groupId` TEXT NOT NULL,
+  `jobId` TEXT NOT NULL,
+  `state` TEXT NOT NULL,
+  `startTime` LONG NOT NULL,
+  PRIMARY KEY (`groupId`, `jobId`),
+  FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`),
+  FOREIGN KEY (`jobId`) REFERENCES `job` (`id`)
 );
 
 -- -----------------------------------------------------
@@ -89,7 +101,10 @@ CREATE TABLE IF NOT EXISTS `job` (
 CREATE TABLE IF NOT EXISTS `topology_stream` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `topologyId` INTEGER NOT NULL,
-  `streamId` TEXT NOT NULL,
+  `componentId` INTEGER NOT NULL,
+  `streamName` TEXT NOT NULL,
   `fields` TEXT NOT NULL,
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`)
+  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`),
+  FOREIGN KEY (`componentId`) REFERENCES `topology_component` (`id`)
 );
+

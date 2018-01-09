@@ -1,8 +1,13 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Schema.Type;
 
@@ -11,6 +16,7 @@ public class TopologyStream extends Format {
 
   private Long id;
   private Long versionId;
+  private Long componentId;
   private String streamId;
   private String description;
   private Long topologyId;
@@ -75,6 +81,44 @@ public class TopologyStream extends Format {
 
   public void setVersionTimestamp(Long versionTimestamp) {
     this.versionTimestamp = versionTimestamp;
+  }
+
+  @JsonIgnore
+  public Long getComponentId() {
+    return componentId;
+  }
+
+  @JsonIgnore
+  public void setComponentId(Long componentId) {
+    this.componentId = componentId;
+  }
+
+  @JsonIgnore
+  public String getFieldsStr() {
+    if (this.fields.isEmpty()) {
+      return "[]";
+    } else {
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this.fields);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  @JsonIgnore
+  public void setFieldsStr(String fields) {
+    try {
+      if (!StringUtils.isEmpty(fields)) {
+        ObjectMapper mapper = new ObjectMapper();
+        this.fields = mapper
+            .readValue(fields, new TypeReference<List<Field>>() {
+            });
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @JsonInclude(Include.NON_NULL)
