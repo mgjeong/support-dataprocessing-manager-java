@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.net.MalformedURLException;
 
 
-public class TaskLoaderTest {
+public class TaskModelLoaderTest {
 
     @Test
     public void testTaskLoader() {
@@ -27,4 +27,6 @@ public class TaskLoaderTest {
             System.err.println("Exception handling");
         }
     }
+
+
 }
