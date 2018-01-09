@@ -27,6 +27,8 @@ public class DataFormat extends Format {
     @ApiModelProperty(required = false)
     private String name = null;
 
+    private int id;
+
     public DataFormat() {
         this(null, null);
     }
@@ -56,4 +58,11 @@ public class DataFormat extends Format {
 
     public String getName() {return this.name;}
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

@@ -126,6 +126,20 @@
                             <packaging>jar</packaging>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>install-core-domain</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.edgexfoundry</groupId>
+                            <artifactId>support-logging</artifactId>
+                            <version>0.5.0-SNAPSHOT</version>
+                            <file>${edgex.libdir}/support-logging-0.5.0-SNAPSHOT.jar</file>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
                 </executions>
                 <inherited>false</inherited>
             </plugin>
