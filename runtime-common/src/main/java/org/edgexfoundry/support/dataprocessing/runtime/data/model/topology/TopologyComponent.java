@@ -19,10 +19,9 @@ public class TopologyComponent extends Format {
   private String description = StringUtils.EMPTY;
   private Boolean reconfigure = false;
   private Long timestamp;
-  private Config config;
+  private Config config = new Config();
 
   public TopologyComponent() {
-
   }
 
   public Long getId() {
@@ -118,6 +117,21 @@ public class TopologyComponent extends Format {
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @JsonIgnore
+  public void addConfig(String key, Object value) {
+    if (this.config != null) {
+      this.config.put(key, value);
+    }
+  }
+
+  public <T> T getConfig(String key) {
+    if (this.config != null) {
+      return (T) this.config.get(key);
+    } else {
+      return null;
     }
   }
 }

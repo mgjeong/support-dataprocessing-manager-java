@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
@@ -20,7 +21,7 @@ public class TopologyStream extends Format {
   private String streamId;
   private String description;
   private Long topologyId;
-  private List<Field> fields;
+  private List<Field> fields = new ArrayList<>();
   private Long versionTimestamp;
 
   public TopologyStream() {
@@ -118,6 +119,13 @@ public class TopologyStream extends Format {
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @JsonIgnore
+  public void addField(Field field) {
+    if (field != null && fields != null) {
+      fields.add(field);
     }
   }
 

@@ -7,16 +7,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService.ServiceConfiguration;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Stream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
@@ -720,15 +717,6 @@ public final class TopologyTableManager {
         .setEdges((List<TopologyEdge>) listEdges(topology.getId(), topology.getVersionId()));
 
     return topologyData;
-  }
-
-  private Set<Stream> createOutputStreams(TopologyOutputComponent outputComponent) {
-    Set<Stream> outputStreams = new HashSet<>();
-    for (Long id : outputComponent.getOutputStreamIds()) {
-      TopologyStream topologyStream = this.topologyStreamMap.get(id);
-      outputStreams.add(new Stream(topologyStream.getStreamId(), topologyStream.getFields()));
-    }
-    return outputStreams;
   }
 
   public Topology importTopology(Long namespaceId, String topologyName,

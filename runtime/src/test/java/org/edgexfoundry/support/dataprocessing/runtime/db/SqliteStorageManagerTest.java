@@ -2,10 +2,15 @@ package org.edgexfoundry.support.dataprocessing.runtime.db;
 
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Schema.Type;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream.Field;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -40,7 +45,8 @@ public class SqliteStorageManagerTest {
     try {
       Topology dbTopology = storageManager.getTopology(topologyId);
       Assert.assertEquals(dbTopology.getName(), topology.getName());
-      Assert.assertEquals(dbTopology.getConfig("targetHost"), topology.getConfig("targetHost"));
+      Assert.assertEquals(dbTopology.getConfig("targetHost").toString(),
+          topology.getConfig("targetHost").toString());
     } finally {
       storageManager.removeTopology(topologyId); // delete test topology
     }
@@ -57,8 +63,10 @@ public class SqliteStorageManagerTest {
       Topology dbTopology = storageManager.updateTopology(topologyId, topology);
 
       Assert.assertEquals(dbTopology.getName(), topology.getName());
-      Assert.assertEquals(dbTopology.getConfig("targetHost"), topology.getConfig("targetHost"));
-      Assert.assertEquals(dbTopology.getConfig("payload"), topology.getConfig("payload"));
+      Assert.assertEquals(dbTopology.getConfig("targetHost").toString(),
+          topology.getConfig("targetHost").toString());
+      Assert.assertEquals(dbTopology.getConfig("payload").toString(),
+          topology.getConfig("payload").toString());
     } finally {
       storageManager.removeTopology(topologyId); // delete test topology
     }
@@ -106,30 +114,7 @@ public class SqliteStorageManagerTest {
   @Test
   public void testTopologyComponentBundle() {
     // Sample component bundle
-    TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
-    dpfwSource.setName("DPFW-SOURCE");
-    dpfwSource.setType(TopologyComponentBundle.TopologyComponentType.SOURCE);
-    dpfwSource.setTimestamp(System.currentTimeMillis());
-    dpfwSource.setStreamingEngine("STORM");
-    dpfwSource.setSubType("DPFW");
-    dpfwSource.setBundleJar("a");
-    dpfwSource.setTransformationClass("a");
-
-    ComponentUISpecification componentUISpecification = new ComponentUISpecification();
-    addUIField(componentUISpecification, "Data Type", "dataType", "Enter data type");
-    addUIField(componentUISpecification, "Data Source", "dataSource", "Enter data source");
-    dpfwSource.setTopologyComponentUISpecification(componentUISpecification);
-
-    dpfwSource.setFieldHintProviderClass("a");
-    dpfwSource.setTransformationClass("a");
-    dpfwSource.setBuiltin(true);
-    dpfwSource.setMavenDeps(" ");
-
-    // Test insert
-    TopologyComponentBundle bundle = storageManager
-        .addTopologyComponentBundle(dpfwSource);
-    Assert.assertNotNull(bundle.getId());
-
+    TopologyComponentBundle dpfwSource = insertSampleSourceBundle();
     try {
       // Test select
       Collection<TopologyComponentBundle> bundles = storageManager.listTopologyComponentBundles();
@@ -151,7 +136,93 @@ public class SqliteStorageManagerTest {
       Assert.assertEquals(added.getTopologyComponentUISpecification().getFields().size(),
           dpfwSource.getTopologyComponentUISpecification().getFields().size());
     } finally {
-      storageManager.removeTopologyComponentBundle(bundle.getId());
+      storageManager.removeTopologyComponentBundle(dpfwSource.getId());
+    }
+  }
+
+  private TopologyComponentBundle insertSampleSourceBundle() {
+    TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
+    dpfwSource.setName("DPFW-SOURCE");
+    dpfwSource.setType(TopologyComponentType.SOURCE);
+    dpfwSource.setTimestamp(System.currentTimeMillis());
+    dpfwSource.setStreamingEngine("STORM");
+    dpfwSource.setSubType("DPFW");
+    dpfwSource.setBundleJar("a");
+    dpfwSource.setTransformationClass("a");
+
+    ComponentUISpecification componentUISpecification = new ComponentUISpecification();
+    addUIField(componentUISpecification, "Data Type", "dataType", "Enter data type");
+    addUIField(componentUISpecification, "Data Source", "dataSource", "Enter data source");
+    dpfwSource.setTopologyComponentUISpecification(componentUISpecification);
+
+    dpfwSource.setFieldHintProviderClass("a");
+    dpfwSource.setTransformationClass("a");
+    dpfwSource.setBuiltin(true);
+    dpfwSource.setMavenDeps(" ");
+
+    // Test insert
+    TopologyComponentBundle bundle = storageManager
+        .addTopologyComponentBundle(dpfwSource);
+    Assert.assertNotNull(bundle.getId());
+
+    return bundle;
+  }
+
+  @Test
+  public void testTopologyComponent() throws Exception {
+    Topology topology = insertSampleTopology();
+    TopologyComponentBundle source = insertSampleSourceBundle();
+    TopologyStream stream = new TopologyStream();
+    TopologyComponent component = new TopologySource();
+    try {
+      component.setName("SourceComponent");
+      component.setTopologyComponentBundleId(source.getId());
+      component.setTopologyId(topology.getId());
+      component.addConfig("dataSource", "EZMQ");
+
+      // insert
+      component = storageManager.addTopologyComponent(topology.getId(), component);
+
+      // select
+      Collection<TopologyComponent> components = storageManager
+          .listTopologyComponents(topology.getId());
+      Assert.assertTrue(components.size() == 1);
+      TopologyComponent added = components.iterator().next();
+      Assert.assertEquals(added.getName(), component.getName());
+      Assert.assertEquals(added.getConfig("dataSource").toString(),
+          component.getConfig("dataSource").toString());
+
+      // update
+      // add stream
+      stream.setTopologyId(topology.getId());
+      stream.setComponentId(component.getId());
+      stream.setStreamId("streamA");
+      Field field = new Field();
+      field.setName("fieldName");
+      field.setOptional(false);
+      field.setType(Type.STRING);
+      stream.addField(field);
+      stream = storageManager.addTopologyStream(stream);
+      ((TopologySource) component).addOutputStream(stream);
+      component.setName("SourceUpdated");
+      component = storageManager
+          .addOrUpdateTopologyComponent(topology.getId(), component.getId(), component);
+
+      // select
+      added = storageManager.listTopologyComponents(topology.getId()).iterator().next();
+      Assert.assertTrue(added instanceof TopologySource);
+      Assert.assertEquals(((TopologySource) added).getOutputStreams().size(),
+          ((TopologySource) component).getOutputStreams().size());
+
+    } finally {
+      if (stream.getId() != null) {
+        storageManager.removeTopologyStream(topology.getId(), stream.getId());
+      }
+      if (component.getId() != null) {
+        storageManager.removeTopologyComponent(topology.getId(), component.getId());
+      }
+      storageManager.removeTopologyComponentBundle(source.getId());
+      storageManager.removeTopology(topology.getId());
     }
   }
 

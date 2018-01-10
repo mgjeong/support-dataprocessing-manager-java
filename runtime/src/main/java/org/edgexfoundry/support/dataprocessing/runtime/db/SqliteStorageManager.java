@@ -763,10 +763,18 @@ public class SqliteStorageManager {
         .collect(Collectors.groupingBy(TopologyStream::getComponentId));
 
     Collection<TopologyComponent> components = new ArrayList<>();
-    String sql = "SELECT C.topologyId AS topologyId, C.componentBundleId AS componentBundleId, "
-        + "C.name AS name, C.config AS config, B.type AS type "
-        + "FROM topology_component AS C, topology_component_bundle AS B"
-        + "WHERE C.topologyId = ? AND C.componentBundleId = B.id";
+    StringBuilder sqlBuilder = new StringBuilder();
+    sqlBuilder.append("SELECT ")
+        .append("topology_component.id AS id,")
+        .append("topology_component.topologyId AS topologyId,")
+        .append("topology_component.componentBundleId AS componentBundleId,")
+        .append("topology_component.name AS name,")
+        .append("topology_component.config as config,")
+        .append("topology_component_bundle.type AS type ")
+        .append("FROM topology_component, topology_component_bundle ")
+        .append("WHERE topology_component.topologyId = ? ")
+        .append("AND topology_component.componentBundleId = topology_component_bundle.id");
+    String sql = sqlBuilder.toString();
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
