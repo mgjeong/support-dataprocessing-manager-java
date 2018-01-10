@@ -1,6 +1,11 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+import java.io.File;
 import java.util.Collection;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Schema.Type;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
@@ -15,13 +20,32 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
-public class SqliteStorageManagerTest {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(TopologyTableManager.class)
+public class TopologyTableManagerTest {
 
-  private static SqliteStorageManager storageManager = SqliteStorageManager.getInstance();
+  private static TopologyTableManager storageManager = TopologyTableManager.getInstance();
+  private static File sqliteFile = new File(Settings.DOCKER_PATH + Settings.DB_TEST_PATH);
 
   @BeforeClass
   public static void setup() throws Exception {
+    if (sqliteFile.exists() && !sqliteFile.delete()) {
+      throw new RuntimeException("Failed to clean " + sqliteFile.getPath());
+    }
+
+    storageManager = spy(TopologyTableManager.getInstance());
+    when(storageManager, "getJdbcUrl")
+        .thenReturn("jdbc:sqlite:" + sqliteFile.getPath());
+    ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
+    Resource resource = loader.getResource("db/sqlite/create_tables.sql");
+    storageManager.executeSqlScript(resource);
   }
 
   @Test
@@ -100,7 +124,7 @@ public class SqliteStorageManagerTest {
 
       // Test for update
       editorMetadata.setData("{\"abc\":\"xyz\"}");
-      storageManager.addOrUpdateTopologyEditorMetadata(editorMetadata);
+      storageManager.addOrUpdateTopologyEditorMetadata(topology.getId(), editorMetadata);
       added = storageManager.getTopologyEditorMetadata(topology.getId());
       Assert.assertEquals(added.getTopologyId(), editorMetadata.getTopologyId());
       Assert.assertEquals(added.getData(), editorMetadata.getData());
@@ -240,5 +264,8 @@ public class SqliteStorageManagerTest {
   @AfterClass
   public static void cleanup() throws Exception {
     storageManager.terminate();
+    if (sqliteFile.exists()) {
+      sqliteFile.delete();
+    }
   }
 }

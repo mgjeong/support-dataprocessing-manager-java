@@ -76,8 +76,15 @@ CREATE TABLE IF NOT EXISTS `job_group` (
 CREATE TABLE IF NOT EXISTS `job` (
   `id` TEXT NOT NULL,
   `groupId` TEXT NOT NULL,
-  `engineId` TEXT NOT NULL,
-  `data` TEXT NOT NULL,
+  `engineId` TEXT,
+  `data` TEXT,
+  `input` TEXT,
+  `output` TEXT,
+  `taskinfo` TEXT,
+  `state` TEXT,
+  `targetHost` TEXT,
+  `runtimeHost` TEXT,
+  `engineType` TEXT,
   PRIMARY KEY (`id`, `groupId`),
   FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`)
 );

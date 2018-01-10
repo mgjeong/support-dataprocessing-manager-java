@@ -102,8 +102,8 @@ public final class JobManager {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 engineType = job.get(JobTableManager.Entry.engineType.name());
-                jobId = job.get(JobTableManager.Entry.jid.name());
-                groupId = job.get(JobTableManager.Entry.gid.name());
+                jobId = job.get(JobTableManager.Entry.id.name());
+                groupId = job.get(JobTableManager.Entry.groupId.name());
                 state = JobState.getState(job.get(JobTableManager.Entry.state.name()));
                 runtimeHost = job.get(JobTableManager.Entry.runtimeHost.name());
                 targetHost = job.get(JobTableManager.Entry.targetHost.name());

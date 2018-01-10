@@ -2,6 +2,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -113,7 +114,8 @@ public class TopologyEdge extends Format {
     }
   }
 
-  public static class StreamGrouping {
+  @JsonInclude(Include.NON_NULL)
+  public static class StreamGrouping extends Format {
 
     private Long streamId;
     private Grouping grouping;

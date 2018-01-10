@@ -2,7 +2,7 @@ package org.edgexfoundry.support.dataprocessing.runtime;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
-import org.edgexfoundry.support.dataprocessing.runtime.db.SqliteStorageManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -13,7 +13,7 @@ public class Bootstrap {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Bootstrap.class);
 
-  private final SqliteStorageManager storageManager = SqliteStorageManager.getInstance();
+  private final TopologyTableManager storageManager = TopologyTableManager.getInstance();
 
   public Bootstrap() {
 
@@ -44,7 +44,15 @@ public class Bootstrap {
     dpfwSink.setBuiltin(true);
     dpfwSink.setMavenDeps("");
 
-    dpfwSink = storageManager.addTopologyComponentBundle(dpfwSink);
+    TopologyComponentBundle existingBundle =
+        storageManager.getTopologyComponentBundle(dpfwSink.getName(), dpfwSink.getType(),
+            dpfwSink.getSubType());
+    if (existingBundle == null) {
+      dpfwSink = storageManager.addTopologyComponentBundle(dpfwSink);
+    } else {
+      dpfwSink.setId(existingBundle.getId());
+      dpfwSink = storageManager.addOrUpdateTopologyComponentBundle(dpfwSink);
+    }
     LOGGER.info("Sink id={}/name={} added.", dpfwSink.getId(), dpfwSink.getName());
   }
 
@@ -68,7 +76,15 @@ public class Bootstrap {
     dpfwSource.setBuiltin(true);
     dpfwSource.setMavenDeps("");
 
-    dpfwSource = storageManager.addTopologyComponentBundle(dpfwSource);
+    TopologyComponentBundle existingBundle =
+        storageManager.getTopologyComponentBundle(dpfwSource.getName(), dpfwSource.getType(),
+            dpfwSource.getSubType());
+    if (existingBundle == null) {
+      dpfwSource = storageManager.addTopologyComponentBundle(dpfwSource);
+    } else {
+      dpfwSource.setId(existingBundle.getId());
+      dpfwSource = storageManager.addOrUpdateTopologyComponentBundle(dpfwSource);
+    }
     LOGGER.info("Source id={}/name={} added.", dpfwSource.getId(), dpfwSource.getName());
   }
 
@@ -107,7 +123,16 @@ public class Bootstrap {
     runtimeTopology.setBuiltin(true);
     runtimeTopology.setMavenDeps("");
 
-    runtimeTopology = storageManager.addTopologyComponentBundle(runtimeTopology);
+    TopologyComponentBundle existingBundle =
+        storageManager
+            .getTopologyComponentBundle(runtimeTopology.getName(), runtimeTopology.getType(),
+                runtimeTopology.getSubType());
+    if (existingBundle == null) {
+      runtimeTopology = storageManager.addTopologyComponentBundle(runtimeTopology);
+    } else {
+      runtimeTopology.setId(existingBundle.getId());
+      runtimeTopology = storageManager.addOrUpdateTopologyComponentBundle(runtimeTopology);
+    }
     LOGGER.info("Topology id={}/name={} added.",
         runtimeTopology.getId(), runtimeTopology.getName());
   }

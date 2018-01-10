@@ -1,118 +1,75 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService.ServiceConfiguration;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 
-public class SqliteStorageManager {
+public final class TopologyTableManager extends AbstractStorageManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SqliteStorageManager.class);
-  private static SqliteStorageManager instance = null;
+  private static final Logger LOGGER = LoggerFactory.getLogger(TopologyTableManager.class);
 
-  public synchronized static SqliteStorageManager getInstance() {
+  private static TopologyTableManager instance = null;
+
+  public synchronized static TopologyTableManager getInstance() {
     if (instance == null) {
-      instance = new SqliteStorageManager();
+      instance = new TopologyTableManager();
     }
     return instance;
   }
 
-  private Connection connection;
-
-  private transient boolean isTerminated = false;
-
-  private SqliteStorageManager() {
+  private TopologyTableManager() {
   }
 
-  private Connection getConnection() throws SQLException {
-    if (isTerminated) {
-      return null;
-    } else if (connection != null && !connection.isClosed()) {
-      return connection; // valid connection already exists
-    }
+  @Deprecated
+  private Namespace mockNamespace() {
+    Namespace.Info firstInfo = new Namespace.Info();
+    firstInfo.setId(1L);
+    firstInfo.setDescription("First namespace");
+    firstInfo.setName("Dover");
+    firstInfo.setStreamingEngine("STORM");
+    firstInfo.setTimeSeriesDB(null);
+    firstInfo.setTimestamp(System.currentTimeMillis());
 
-    String url = "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH;
-    try {
-      Class.forName("org.sqlite.JDBC");
-      this.connection = DriverManager.getConnection(url);
-      this.connection.setAutoCommit(false);
-      LOGGER.info("New connection is created.");
-      return this.connection;
-    } catch (ClassNotFoundException e) {
-      throw new SQLException(e);
-    }
-  }
+    Namespace.ServiceClusterMap firstMap = new Namespace.ServiceClusterMap();
+    firstMap.setClusterId(1L);
+    firstMap.setNamespaceId(1L);
+    firstMap.setServiceName("STORM");
 
-  public void executeSqlScript(Resource resource) {
-    if (resource == null) {
-      throw new RuntimeException("Resource is null.");
-    }
-
-    try {
-      ScriptUtils.executeSqlScript(getConnection(), resource);
-      commit();
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
-    }
-  }
-
-  private PreparedStatement createPreparedStatement(Connection con, String sql, Object... params)
-      throws SQLException {
-    PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-    for (int i = 0; i < params.length; i++) {
-      ps.setObject(i + 1, params[i]);
-    }
-    return ps;
-  }
-
-  /**
-   * Returns a topology by id
-   *
-   * @param topologyId id of a topology to find
-   * @return {@link Topology} if found, otherwise null.
-   */
-  public Topology getTopology(Long topologyId) {
-    if (topologyId == null) {
-      return null;
-    }
-
-    String sql = "SELECT id, name, config FROM topology WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId);
-        ResultSet rs = ps.executeQuery()) {
-
-      if (!rs.next()) {
-        return null; // topology not found
-      }
-
-      return mapToTopology(rs);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    // enrich
+    Namespace first = new Namespace();
+    first.setNamespace(firstInfo);
+    first.addMapping(firstMap);
+    return first;
   }
 
   /**
@@ -132,6 +89,25 @@ public class SqliteStorageManager {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Returns a collection of every topology component bundles
+   *
+   * @return Topology component bundles
+   */
+  public Collection<TopologyComponentBundle> listTopologyComponentBundles() {
+    Collection<TopologyComponentBundle> bundles = new ArrayList<>();
+    String sql = "SELECT * FROM topology_component_bundle";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql);
+        ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        bundles.add(mapToTopologyComponentBundle(rs));
+      }
+    } catch (SQLException | IOException e) {
+      throw new RuntimeException(e);
+    }
+    return bundles;
   }
 
   /**
@@ -165,6 +141,122 @@ public class SqliteStorageManager {
         }
       }
     } catch (Exception e) {
+      rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
+
+  /**
+   * Inserts or updates existing topology
+   *
+   * @param topologyId topology id to update
+   * @param topology topology to update
+   * @return updated topology
+   */
+  public Topology addOrUpdateTopology(Long topologyId, Topology topology) {
+    if (topology == null || topologyId == null) {
+      throw new RuntimeException("Topology or id is null.");
+    }
+    topology.setId(topologyId);
+
+    String sql = "INSERT OR REPLACE INTO topology (id, name, config) VALUES (?, ?, ?)";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+        topologyId,
+        topology.getName(),
+        topology.getConfigStr())) {
+      // insert
+      int affectedRows = ps.executeUpdate();
+      if (affectedRows == 0) {
+        throw new RuntimeException("Updating topology failed, no rows affected.");
+      } else {
+        topology.setId(topologyId);
+        return topology;
+      }
+    } catch (Exception e) {
+      rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns a topology by id
+   *
+   * @param topologyId id of a topology to find
+   * @return {@link Topology} if found, otherwise null.
+   */
+  public Topology getTopology(Long topologyId) {
+    if (topologyId == null) {
+      return null;
+    }
+
+    String sql = "SELECT id, name, config FROM topology WHERE id = ?";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId);
+        ResultSet rs = ps.executeQuery()) {
+
+      if (!rs.next()) {
+        return null; // topology not found
+      }
+
+      return mapToTopology(rs);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Inserts a new topology editor metadata
+   *
+   * @param editorMetadata new topology editor metadata
+   * @return inserted topology editor metadata
+   */
+  public TopologyEditorMetadata addTopologyEditorMetadata(TopologyEditorMetadata editorMetadata) {
+    if (editorMetadata == null) {
+      throw new RuntimeException("Topology editor metadata is null.");
+    }
+
+    String sql = "INSERT INTO topology_editor_metadata (topologyId, data) VALUES (?, ?)";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+        editorMetadata.getTopologyId(), editorMetadata.getData())) {
+      int affectedRows = ps.executeUpdate();
+      if (affectedRows == 0) {
+        throw new RuntimeException("Creating topology editor metadata failed, no rows affected.");
+      } else {
+        commit();
+        return editorMetadata;
+      }
+    } catch (SQLException e) {
+      rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Inserts or replaces existing topology editor metadata
+   *
+   * @param topologyId topology id
+   * @param editorMetadata updated editor metadata
+   * @return updated editor metadata
+   */
+  public TopologyEditorMetadata addOrUpdateTopologyEditorMetadata(
+      Long topologyId,
+      TopologyEditorMetadata editorMetadata) {
+    if (topologyId == null || editorMetadata == null) {
+      throw new RuntimeException("Topology id or editor metadata is null.");
+    }
+    editorMetadata.setTopologyId(topologyId);
+
+    String sql = "INSERT OR REPLACE INTO topology_editor_metadata (topologyId, data) VALUES(?, ?)";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+        editorMetadata.getTopologyId(), editorMetadata.getData())) {
+      int affectedRows = ps.executeUpdate();
+      if (affectedRows == 0) {
+        throw new RuntimeException("Updating topology editor metadata failed, no rows affected.");
+      } else {
+        commit();
+        return editorMetadata;
+      }
+    } catch (SQLException e) {
       rollback();
       throw new RuntimeException(e);
     }
@@ -205,15 +297,21 @@ public class SqliteStorageManager {
    *
    * @param topologyId topology id
    */
-  public void removeTopology(Long topologyId) {
+  public Topology removeTopology(Long topologyId) {
     if (topologyId == null) {
       throw new RuntimeException("Topology id is null.");
+    }
+
+    Topology topology = getTopology(topologyId);
+    if (topology == null) {
+      throw new RuntimeException("Topology with id=" + topologyId + " not found.");
     }
 
     String sql = "DELETE FROM topology WHERE id = ?";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
       ps.executeUpdate();
       commit();
+      return topology;
     } catch (SQLException e) {
       rollback();
       throw new RuntimeException(e);
@@ -254,61 +352,6 @@ public class SqliteStorageManager {
   }
 
   /**
-   * Inserts a new topology editor metadata
-   *
-   * @param editorMetadata new topology editor metadata
-   * @return inserted topology editor metadata
-   */
-  public TopologyEditorMetadata addTopologyEditorMetadata(TopologyEditorMetadata editorMetadata) {
-    if (editorMetadata == null) {
-      throw new RuntimeException("Topology editor metadata is null.");
-    }
-
-    String sql = "INSERT INTO topology_editor_metadata (topologyId, data) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        editorMetadata.getTopologyId(), editorMetadata.getData())) {
-      int affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating topology editor metadata failed, no rows affected.");
-      } else {
-        commit();
-        return editorMetadata;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Inserts or replaces existing topology editor metadata
-   *
-   * @param editorMetadata updated editor metadata
-   * @return updated editor metadata
-   */
-  public TopologyEditorMetadata addOrUpdateTopologyEditorMetadata(
-      TopologyEditorMetadata editorMetadata) {
-    if (editorMetadata == null) {
-      throw new RuntimeException("Topology editor metadata is null.");
-    }
-
-    String sql = "INSERT OR REPLACE INTO topology_editor_metadata (topologyId, data) VALUES(?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        editorMetadata.getTopologyId(), editorMetadata.getData())) {
-      int affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating topology editor metadata failed, no rows affected.");
-      } else {
-        commit();
-        return editorMetadata;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
    * Removes topology editor metadata for a topology
    *
    * @param topologyId topology id
@@ -328,24 +371,6 @@ public class SqliteStorageManager {
     }
   }
 
-  /**
-   * Returns a list of every topology component bundles
-   *
-   * @return Topology component bundles
-   */
-  public Collection<TopologyComponentBundle> listTopologyComponentBundles() {
-    Collection<TopologyComponentBundle> bundles = new ArrayList<>();
-    String sql = "SELECT * FROM topology_component_bundle";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql);
-        ResultSet rs = ps.executeQuery()) {
-      while (rs.next()) {
-        bundles.add(mapToTopologyComponentBundle(rs));
-      }
-    } catch (SQLException | IOException e) {
-      throw new RuntimeException(e);
-    }
-    return bundles;
-  }
 
   /**
    * Returns a list of topology component bundles of a specific type
@@ -401,8 +426,8 @@ public class SqliteStorageManager {
       // Get auto-incremented id
       try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
         if (generatedKeys.next()) {
-          commit();
           bundle.setId(generatedKeys.getLong(1));
+          commit();
           return bundle;
         } else {
           throw new RuntimeException("Creating bundle failed, no ID obtained.");
@@ -450,7 +475,7 @@ public class SqliteStorageManager {
     }
   }
 
-  public TopologyComponent getTopologyComponentBundle(String componentName,
+  public TopologyComponentBundle getTopologyComponentBundle(String componentName,
       TopologyComponentType componentType,
       String componentSubType) {
     if (componentName == null || componentType == null || componentSubType == null) {
@@ -465,9 +490,9 @@ public class SqliteStorageManager {
       if (!rs.next()) {
         return null;
       } else {
-        return mapToTopologyComponent(rs);
+        return mapToTopologyComponentBundle(rs);
       }
-    } catch (SQLException e) {
+    } catch (SQLException | IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -518,6 +543,24 @@ public class SqliteStorageManager {
     return streams;
   }
 
+  public TopologyStream getTopologyStream(Long topologyId, Long streamId) {
+    if (topologyId == null || streamId == null) {
+      throw new RuntimeException("Topology id or stream id is null.");
+    }
+
+    String sql = "SELECT * FROM topology_stream WHERE topologyId = ? AND id = ?";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId, streamId);
+        ResultSet rs = ps.executeQuery()) {
+      if (!rs.next()) {
+        throw new RuntimeException("Topology stream does not exist.");
+      } else {
+        return mapToTopologyStream(rs);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Inserts a new topology stream
    *
@@ -566,10 +609,18 @@ public class SqliteStorageManager {
    * @return updated topology stream
    */
   public TopologyStream addOrUpdateTopologyStream(Long topologyStreamId, TopologyStream stream) {
-    if (topologyStreamId == null || stream == null) {
-      throw new RuntimeException("Either topology stream id or stream is null.");
+    if (stream == null) {
+      throw new RuntimeException("Topology stream is null.");
+    }
+    stream.setId(topologyStreamId);
+
+    // Add if stream id does not exist
+    if (topologyStreamId == null) {
+      stream = addTopologyStream(stream);
+      return stream;
     }
 
+    // Otherwise, update
     stream.setId(topologyStreamId);
     String sql =
         "INSERT OR REPLACE INTO topology_stream (id, topologyId, componentId, streamName, fields) VALUES"
@@ -596,18 +647,25 @@ public class SqliteStorageManager {
    * Removes a topology stream using topology and component ids
    *
    * @param topologyId topology id
-   * @param componentId component id
+   * @param streamId stream id
+   * @return removed topology stream
    */
-  public void removeTopologyStream(Long topologyId, Long componentId) {
-    if (topologyId == null || componentId == null) {
+  public TopologyStream removeTopologyStream(Long topologyId, Long streamId) {
+    if (topologyId == null || streamId == null) {
       throw new RuntimeException("Topology id or component id is null.");
+    }
+
+    TopologyStream stream = getTopologyStream(topologyId, streamId);
+    if (stream == null) {
+      throw new RuntimeException("Topology stream does not exist.");
     }
 
     String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND componentId = ?";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
-        componentId)) {
+        streamId)) {
       ps.executeUpdate();
       commit();
+      return stream;
     } catch (SQLException e) {
       rollback();
       throw new RuntimeException(e);
@@ -675,6 +733,7 @@ public class SqliteStorageManager {
     if (topologyId == null || topologyEdge == null) {
       throw new RuntimeException("Topology id or edge is null.");
     }
+    topologyEdge.setTopologyId(topologyId);
 
     String sql = "INSERT INTO topology_edge (topologyId, fromId, toId, streamGroupings) "
         + "VALUES (?,?,?,?)";
@@ -741,21 +800,43 @@ public class SqliteStorageManager {
     }
   }
 
+  private void removeTopologyComponentEdges(Long topologyId, Long componentId) {
+    if (topologyId == null || componentId == null) {
+      throw new RuntimeException("Topology id or component id is null.");
+    }
+
+    String sql = "DELETE FROM topology_edge WHERE topologyId = ? AND (fromId = ? OR toId = ?)";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+        componentId, componentId)) {
+      ps.executeUpdate();
+      commit();
+    } catch (SQLException e) {
+      rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Remove topology edge by topology id and edge id
    *
    * @param topologyId topology id
    * @param edgeId edge id
    */
-  public void removeTopologyEdge(Long topologyId, Long edgeId) {
+  public TopologyEdge removeTopologyEdge(Long topologyId, Long edgeId) {
     if (topologyId == null || edgeId == null) {
       throw new RuntimeException("Topology id or edge id is null.");
+    }
+
+    TopologyEdge edge = getTopologyEdge(topologyId, edgeId);
+    if (edge == null) {
+      throw new RuntimeException("Topology edge not found.");
     }
 
     String sql = "DELETE FROM topology_edge WHERE topologyId = ? AND id = ?";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId, edgeId)) {
       ps.executeUpdate();
       commit();
+      return edge;
     } catch (SQLException e) {
       rollback();
       throw new RuntimeException(e);
@@ -819,7 +900,7 @@ public class SqliteStorageManager {
    * @param topologyComponent topology component to insert
    * @return updated topology component
    */
-  public TopologyComponent addTopologyComponent(Long topologyId,
+  public <T extends TopologyComponent> T addTopologyComponent(Long topologyId,
       TopologyComponent topologyComponent) {
     if (topologyId == null || topologyComponent == null) {
       throw new RuntimeException("Either topology id or component is null.");
@@ -858,7 +939,7 @@ public class SqliteStorageManager {
           }
 
           commit();
-          return topologyComponent;
+          return (T) topologyComponent;
         } else {
           throw new RuntimeException("Creating component failed, no ID obtained.");
         }
@@ -879,12 +960,14 @@ public class SqliteStorageManager {
    * @param topologyComponent topology component to update
    * @return updated topology component
    */
-  public TopologyComponent addOrUpdateTopologyComponent(Long topologyId,
+  public <T extends TopologyComponent> T addOrUpdateTopologyComponent(Long topologyId,
       Long topologyComponentId,
       TopologyComponent topologyComponent) {
     if (topologyId == null || topologyComponentId == null || topologyComponent == null) {
       throw new RuntimeException("Topology id, component id or component is null.");
     }
+    topologyComponent.setId(topologyComponentId);
+    topologyComponent.setTopologyId(topologyId);
 
     String sql =
         "INSERT OR REPLACE INTO topology_component (id, topologyId, componentBundleId, name, config) "
@@ -916,7 +999,7 @@ public class SqliteStorageManager {
       }
 
       commit();
-      return topologyComponent;
+      return (T) topologyComponent;
     } catch (SQLException e) {
       rollback();
       throw new RuntimeException(e);
@@ -929,14 +1012,41 @@ public class SqliteStorageManager {
    * @param topologyId topology id
    * @param topologyComponentId component id
    */
-  public void removeTopologyComponent(Long topologyId, Long topologyComponentId) {
+  public <T extends TopologyComponent> T removeTopologyComponent(Long topologyId,
+      Long topologyComponentId) {
     if (topologyId == null || topologyComponentId == null) {
       throw new RuntimeException("Topology id or component id is null.");
     }
 
-    removeTopologyStream(topologyId, topologyComponentId);
+    TopologyComponent component = getTopologyComponent(topologyId, topologyComponentId);
+    if (component == null) {
+      throw new RuntimeException("Topology component does not exist.");
+    }
+
+    // remove edges
+    removeTopologyComponentEdges(topologyId, topologyComponentId);
+
+    // remove streams
+    removeTopologyComponentStreams(topologyId, topologyComponentId);
 
     String sql = "DELETE FROM topology_component WHERE topologyId = ? AND id = ?";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+        topologyComponentId)) {
+      ps.executeUpdate();
+      commit();
+      return (T) component;
+    } catch (SQLException e) {
+      rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void removeTopologyComponentStreams(Long topologyId, Long topologyComponentId) {
+    if (topologyId == null || topologyComponentId == null) {
+      throw new RuntimeException("Topology id or component id is null.");
+    }
+
+    String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND componentId = ?";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
         topologyComponentId)) {
       ps.executeUpdate();
@@ -945,6 +1055,56 @@ public class SqliteStorageManager {
       rollback();
       throw new RuntimeException(e);
     }
+  }
+
+  private Topology mapToTopology(ResultSet rs) throws SQLException {
+    Topology topology = new Topology();
+    topology.setId(rs.getLong("id"));
+    topology.setName(rs.getString("name"));
+    topology.setConfigStr(rs.getString("config"));
+
+    //TODO: hard-coded. Delete them or use them
+    topology.setNamespaceId(1L);
+    topology.setVersionId(1L);
+    topology.setTimestamp(System.currentTimeMillis());
+    topology.setDescription("");
+
+    return topology;
+  }
+
+  private TopologyEdge mapToTopologyEdge(ResultSet rs) throws SQLException {
+    TopologyEdge edge = new TopologyEdge();
+    edge.setId(rs.getLong("id"));
+    edge.setTopologyId(rs.getLong("topologyId"));
+    edge.setFromId(rs.getLong("fromId"));
+    edge.setToId(rs.getLong("toId"));
+    edge.setStreamGroupingsStr(rs.getString("streamGroupings"));
+    return edge;
+  }
+
+  private TopologyComponentBundle mapToTopologyComponentBundle(ResultSet rs)
+      throws SQLException, IOException {
+    TopologyComponentBundle bundle = new TopologyComponentBundle();
+    bundle.setId(rs.getLong("id"));
+    bundle.setName(rs.getString("name"));
+    bundle.setType(TopologyComponentType.toTopologyComponentType(rs.getString("type")));
+    bundle.setSubType(rs.getString("subType"));
+    bundle.setStreamingEngine(rs.getString("streamingEngine"));
+
+    String ui = rs.getString("componentUISpecification");
+    ComponentUISpecification uiSpecification = ComponentUISpecification
+        .create(ui, ComponentUISpecification.class);
+    bundle.setTopologyComponentUISpecification(uiSpecification);
+
+    // TODO: is this correct mapping?
+    bundle.setBundleJar(rs.getString("path"));
+    bundle.setTransformationClass(rs.getString("classname"));
+    bundle.setBuiltin(rs.getByte("removable") == (byte) '0');
+    // TODO: Hard-coded
+    bundle.setMavenDeps("");
+    bundle.setFieldHintProviderClass("");
+    bundle.setTimestamp(System.currentTimeMillis());
+    return bundle;
   }
 
   private TopologyStream mapToTopologyStream(ResultSet rs) throws SQLException {
@@ -987,86 +1147,190 @@ public class SqliteStorageManager {
     return component;
   }
 
-  private void commit() {
-    try {
-      getConnection().commit();
-    } catch (SQLException e) {
-      LOGGER.error(e.getMessage(), e);
+  @Deprecated
+  public Collection<TopologyVersion> listTopologyVersionInfos(Long topologyId) {
+    List<TopologyVersion> versions = new ArrayList<>();
+    TopologyVersion firstVersion = new TopologyVersion();
+    firstVersion.setId(1L);
+    firstVersion.setDescription("First version");
+    firstVersion.setName("CURRENT");
+    firstVersion.setTimestamp(System.currentTimeMillis());
+    firstVersion.setTopologyId(topologyId);
+    versions.add(firstVersion);
+
+    return Collections.unmodifiableCollection(versions);
+  }
+
+  @Deprecated
+  public Collection<Namespace> listNamespaces() {
+    Collection<Namespace> namespaces = new ArrayList<>();
+    namespaces.add(mockNamespace());
+    return namespaces;
+  }
+
+  public Collection<TopologySource> listSources(Long topologyId) {
+    Collection<TopologyComponent> components = listTopologyComponents(topologyId);
+    return components.stream().filter(component -> component instanceof TopologySource)
+        .map(component -> (TopologySource) component)
+        .collect(Collectors.toSet());
+  }
+
+  public Collection<TopologySink> listSinks(Long topologyId) {
+    Collection<TopologyComponent> components = listTopologyComponents(topologyId);
+    return components.stream().filter(component -> component instanceof TopologySink)
+        .map(component -> (TopologySink) component)
+        .collect(Collectors.toSet());
+  }
+
+  public Collection<TopologyProcessor> listProcessors(Long topologyId) {
+    Collection<TopologyComponent> components = listTopologyComponents(topologyId);
+    return components.stream().filter(component -> component instanceof TopologyProcessor)
+        .map(component -> (TopologyProcessor) component)
+        .collect(Collectors.toSet());
+  }
+
+  public <T extends TopologyComponent> T getTopologyComponent(Long topologyId, Long componentId) {
+    if (topologyId == null || componentId == null) {
+      throw new RuntimeException("Topology id or component id is null.");
     }
-  }
 
-  private void rollback() {
-    try {
-      getConnection().rollback();
-    } catch (SQLException e) {
-      LOGGER.error(e.getMessage(), e);
-    }
-  }
+    StringBuilder sqlBuilder = new StringBuilder();
+    sqlBuilder.append("SELECT ")
+        .append("topology_component.id AS id,")
+        .append("topology_component.topologyId AS topologyId,")
+        .append("topology_component.componentBundleId AS componentBundleId,")
+        .append("topology_component.name AS name,")
+        .append("topology_component.config as config,")
+        .append("topology_component_bundle.type AS type ")
+        .append("FROM topology_component, topology_component_bundle ")
+        .append("WHERE topology_component.topologyId = ? ")
+        .append("AND topology_component.id = ? ")
+        .append("AND topology_component.componentBundleId = topology_component_bundle.id");
+    String sql = sqlBuilder.toString();
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+        componentId);
+        ResultSet rs = ps.executeQuery()) {
+      if (!rs.next()) {
+        return null;
+      } else {
+        TopologyComponent component = mapToTopologyComponent(rs);
+        // Get output streams
+        Collection<TopologyStream> streams = listTopologyStreams(topologyId);
+        for (TopologyStream stream : streams) {
+          if (stream.getComponentId() == component.getId()) {
+            if (component instanceof TopologySource) {
+              ((TopologySource) component).addOutputStream(stream);
+            } else if (component instanceof TopologyProcessor) {
+              ((TopologyProcessor) component).addOutputStream(stream);
+            }
+          }
+        }
 
-
-  private TopologyEdge mapToTopologyEdge(ResultSet rs) throws SQLException {
-    TopologyEdge edge = new TopologyEdge();
-    edge.setId(rs.getLong("id"));
-    edge.setTopologyId(rs.getLong("topologyId"));
-    edge.setFromId(rs.getLong("fromId"));
-    edge.setToId(rs.getLong("toId"));
-    edge.setStreamGroupingsStr(rs.getString("streamGroupings"));
-    return edge;
-  }
-
-  private TopologyComponentBundle mapToTopologyComponentBundle(ResultSet rs)
-      throws SQLException, IOException {
-    TopologyComponentBundle bundle = new TopologyComponentBundle();
-    bundle.setId(rs.getLong("id"));
-    bundle.setName(rs.getString("name"));
-    bundle.setType(TopologyComponentType.toTopologyComponentType(rs.getString("type")));
-    bundle.setSubType(rs.getString("subType"));
-    bundle.setStreamingEngine(rs.getString("streamingEngine"));
-
-    String ui = rs.getString("componentUISpecification");
-    ComponentUISpecification uiSpecification = ComponentUISpecification
-        .create(ui, ComponentUISpecification.class);
-    bundle.setTopologyComponentUISpecification(uiSpecification);
-
-    // TODO: is this correct mapping?
-    bundle.setBundleJar(rs.getString("path"));
-    bundle.setTransformationClass(rs.getString("classname"));
-    bundle.setBuiltin(rs.getByte("removable") == (byte) '0');
-    // TODO: Hard-coded
-    bundle.setMavenDeps("");
-    bundle.setFieldHintProviderClass("");
-    bundle.setTimestamp(System.currentTimeMillis());
-    return bundle;
-  }
-
-  private Topology mapToTopology(ResultSet rs) throws SQLException {
-    Topology topology = new Topology();
-    topology.setId(rs.getLong("id"));
-    topology.setName(rs.getString("name"));
-    topology.setConfigStr(rs.getString("config"));
-
-    //TODO: hard-coded. Delete them or use them
-    topology.setNamespaceId(1L);
-    topology.setVersionId(1L);
-    topology.setTimestamp(System.currentTimeMillis());
-    topology.setDescription("");
-
-    return topology;
-  }
-
-  public synchronized void terminate() {
-    try {
-      if (this.isTerminated) {
-        return;
+        return (T) component;
       }
-
-      this.isTerminated = true;
-      if (this.connection != null && !this.connection.isClosed()) {
-        this.connection.close();
-      }
     } catch (SQLException e) {
-      LOGGER.error(e.getMessage(), e);
+      throw new RuntimeException(e);
     }
   }
 
+  @Deprecated
+  public TopologyEditorToolbar getTopologyEditorToolbar() {
+    TopologyEditorToolbar toolbar = new TopologyEditorToolbar();
+    toolbar.setUserId(1L);
+    JsonObject data = new JsonObject();
+    JsonArray sources = new JsonArray();
+    JsonArray processors = new JsonArray();
+    JsonArray sinks = new JsonArray();
+    for (TopologyComponentBundle bundle : listTopologyComponentBundles()) {
+      JsonObject b = new JsonObject();
+      b.addProperty("bundleId", bundle.getId());
+      if (bundle.getType() == TopologyComponentType.SOURCE) {
+        sources.add(b);
+      } else if (bundle.getType() == TopologyComponentType.SINK) {
+        sinks.add(b);
+      } else if (bundle.getType() == TopologyComponentType.PROCESSOR) {
+        processors.add(b);
+      }
+    }
+    data.add("sources", sources);
+    data.add("sinks", sinks);
+    data.add("processors", processors);
+    toolbar.setData(data.toString());
+    toolbar.setTimestamp(System.currentTimeMillis());
+    return toolbar;
+  }
+
+  @Deprecated
+  public TopologyEditorToolbar addOrUpdateTopologyEditorToolbar(TopologyEditorToolbar toolbar) {
+    return toolbar;
+  }
+
+  @Deprecated
+  public Collection<ClusterWithService> listClusterWithServices() {
+    Collection<ClusterWithService> clusterWithServices = new ArrayList<>();
+    ClusterWithService cs = new ClusterWithService();
+    cs.setId(1L);
+    ClusterWithService.Cluster cluster = new ClusterWithService.Cluster();
+    cluster.setId(1L);
+    cluster.setDescription("First cluster");
+    cluster.setName("First Cluster");
+    cluster.setTimestamp(System.currentTimeMillis());
+    cs.setCluster(cluster);
+
+    List<ServiceConfiguration> serviceConfigurations = new ArrayList<>();
+    ServiceConfiguration sc = new ServiceConfiguration();
+    ClusterWithService.Service service = new ClusterWithService.Service();
+    service.setId(1L);
+    service.setName("STORM");
+    service.setClusterId(1L);
+    service.setDescription("");
+    service.setTimestamp(System.currentTimeMillis());
+    sc.setService(service);
+    List<ClusterWithService.Configuration> configurations = new ArrayList<>();
+    ClusterWithService.Configuration configuration = new ClusterWithService.Configuration();
+    configuration.setId(1L);
+    configuration.setServiceId(1L);
+    configuration.setName("storm");
+    configuration.setConfiguration("{}");
+    configuration.setDescription("");
+    configuration.setFilename("");
+    configuration.setTimestamp(System.currentTimeMillis());
+    configuration.setConfigurationMap(new HashMap<>());
+    configurations.add(configuration);
+    sc.setConfigurations(configurations);
+    serviceConfigurations.add(sc);
+    cs.setServiceConfigurations(serviceConfigurations);
+    clusterWithServices.add(cs);
+    return clusterWithServices;
+  }
+
+  public String exportTopology(Topology topology) throws Exception {
+    TopologyData topologyData = doExportTopology(topology);
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.writeValueAsString(topologyData);
+  }
+
+  public TopologyData doExportTopology(Topology topology) {
+    TopologyData topologyData = new TopologyData();
+    topologyData.setTopologyName(topology.getName());
+    topologyData.setConfig(topology.getConfigStr());
+    topologyData.setTopologyEditorMetadata(
+        getTopologyEditorMetadata(topology.getId()));
+
+    topologyData.setSources(
+        new ArrayList<>(listSources(topology.getId())));
+    topologyData.setProcessors(
+        new ArrayList<>(listProcessors(topology.getId())));
+    topologyData.setSinks(
+        new ArrayList<>(listSinks(topology.getId())));
+    topologyData
+        .setEdges(new ArrayList<>(listTopologyEdges(topology.getId())));
+
+    return topologyData;
+  }
+
+  public Topology importTopology(String topologyName, TopologyData topologyData) {
+    // TODO
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
 }
