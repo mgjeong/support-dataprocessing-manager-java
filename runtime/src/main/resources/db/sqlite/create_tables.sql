@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS `topology_component` (
   `componentBundleId` INTEGER NOT NULL,
   `name` TEXT NOT NULL,
   `config` TEXT NOT NULL,
+  UNIQUE (`id`, `topologyId`),
   FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`),
   FOREIGN KEY (`componentBundleId`) REFERENCES `topology_component_bundle` (`id`)
 );

@@ -24,6 +24,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge.StreamGrouping;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
@@ -1330,7 +1331,80 @@ public final class TopologyTableManager extends AbstractStorageManager {
   }
 
   public Topology importTopology(String topologyName, TopologyData topologyData) {
-    // TODO
-    throw new UnsupportedOperationException("Not implemented yet.");
+    // Add topology
+    Topology newTopology = new Topology();
+    newTopology.setName(topologyName);
+    newTopology.setConfigStr(topologyData.getConfigStr());
+    // Hard-code
+    newTopology.setTimestamp(System.currentTimeMillis());
+    newTopology.setVersionId(1L);
+    newTopology.setNamespaceId(1L);
+    newTopology = addTopology(newTopology);
+
+    // Add topology editor meta data
+    TopologyEditorMetadata metadata = topologyData.getTopologyEditorMetadata();
+    metadata.setTopologyId(newTopology.getId());
+    addTopologyEditorMetadata(metadata);
+
+    // Map edge connection with new component ids
+    // Key: old component id, value: new component id
+    Map<Long, Long> updatedEdgeMap = new HashMap<>();
+    // Key: old stream id, value: new stream id
+    Map<Long, Long> updatedStreamMap = new HashMap<>();
+
+    // Add source
+    List<TopologySource> sources = topologyData.getSources();
+    for (TopologySource source : sources) {
+      Long oldId = source.getId();
+      source.setTopologyId(newTopology.getId());
+      TopologySource newSource = addTopologyComponent(newTopology.getId(), source);
+      for (TopologyStream stream : source.getOutputStreams()) {
+        Long oldStreamId = stream.getId();
+        stream.setTopologyId(newTopology.getId());
+        stream.setComponentId(newSource.getId());
+        TopologyStream newStream = addTopologyStream(stream);
+        updatedStreamMap.put(oldStreamId, newStream.getId());
+      }
+      updatedEdgeMap.put(oldId, newSource.getId());
+    }
+
+    // Add processor
+    List<TopologyProcessor> processors = topologyData.getProcessors();
+    for (TopologyProcessor processor : processors) {
+      Long oldId = processor.getId();
+      processor.setTopologyId(newTopology.getId());
+      TopologyProcessor newProcessor = addTopologyComponent(newTopology.getId(), processor);
+      for (TopologyStream stream : processor.getOutputStreams()) {
+        Long oldStreamId = stream.getId();
+        stream.setTopologyId(newTopology.getId());
+        stream.setComponentId(newProcessor.getId());
+        TopologyStream newStream = addTopologyStream(stream);
+        updatedStreamMap.put(oldStreamId, newStream.getId());
+      }
+      updatedEdgeMap.put(oldId, newProcessor.getId());
+    }
+
+    // Add sink
+    List<TopologySink> sinks = topologyData.getSinks();
+    for (TopologySink sink : sinks) {
+      Long oldId = sink.getId();
+      sink.setTopologyId(newTopology.getId());
+      TopologySink newSink = addTopologyComponent(newTopology.getId(), sink);
+      updatedEdgeMap.put(oldId, newSink.getId());
+    }
+
+    // Add edges
+    List<TopologyEdge> edges = topologyData.getEdges();
+    for (TopologyEdge edge : edges) {
+      edge.setTopologyId(newTopology.getId());
+      edge.setFromId(updatedEdgeMap.get(edge.getFromId()));
+      edge.setToId(updatedEdgeMap.get(edge.getToId()));
+      for (StreamGrouping streamGrouping : edge.getStreamGroupings()) {
+        streamGrouping.setStreamId(updatedStreamMap.get(streamGrouping.getStreamId()));
+      }
+      addTopologyEdge(newTopology.getId(), edge);
+    }
+
+    return newTopology;
   }
 }
