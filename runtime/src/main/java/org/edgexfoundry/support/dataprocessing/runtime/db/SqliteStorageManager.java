@@ -26,31 +26,26 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 public class SqliteStorageManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SqliteStorageManager.class);
+  private static SqliteStorageManager instance = null;
 
-  private ResourceLoader resourceLoader;
+  public synchronized static SqliteStorageManager getInstance() {
+    if (instance == null) {
+      instance = new SqliteStorageManager();
+    }
+    return instance;
+  }
+
   private Connection connection;
 
   private transient boolean isTerminated = false;
 
-  public SqliteStorageManager() {
-  }
-
-  public void initialize() throws Exception {
-    try {
-      resourceLoader = new DefaultResourceLoader(getClass().getClassLoader());
-      getConnection();
-      createTablesIfNotExist();
-    } catch (Exception e) {
-      throw e;
-    }
+  private SqliteStorageManager() {
   }
 
   private Connection getConnection() throws SQLException {
@@ -72,18 +67,17 @@ public class SqliteStorageManager {
     }
   }
 
-  /**
-   * Creates required table(s) using SQL script file from resource.
-   */
-  private void createTablesIfNotExist() throws SQLException {
-    Resource resource = resourceLoader.getResource("db/sqlite/create_tables.sql");
+  public void executeSqlScript(Resource resource) {
+    if (resource == null) {
+      throw new RuntimeException("Resource is null.");
+    }
 
-    Connection connection = getConnection();
     try {
-      ScriptUtils.executeSqlScript(connection, resource);
-      connection.commit();
+      ScriptUtils.executeSqlScript(getConnection(), resource);
+      commit();
     } catch (SQLException e) {
-      throw e;
+      rollback();
+      throw new RuntimeException(e);
     }
   }
 
@@ -452,6 +446,28 @@ public class SqliteStorageManager {
       }
     } catch (SQLException e) {
       rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
+  public TopologyComponent getTopologyComponentBundle(String componentName,
+      TopologyComponentType componentType,
+      String componentSubType) {
+    if (componentName == null || componentType == null || componentSubType == null) {
+      throw new RuntimeException("Component name, type or subtype is null.");
+    }
+
+    String sql = "SELECT * FROM topology_component_bundle WHERE " +
+        "name = ? AND type = ? AND subType = ?";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, componentName,
+        componentType.name(), componentSubType);
+        ResultSet rs = ps.executeQuery()) {
+      if (!rs.next()) {
+        return null;
+      } else {
+        return mapToTopologyComponent(rs);
+      }
+    } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
@@ -1038,8 +1054,12 @@ public class SqliteStorageManager {
     return topology;
   }
 
-  public void terminate() {
+  public synchronized void terminate() {
     try {
+      if (this.isTerminated) {
+        return;
+      }
+
       this.isTerminated = true;
       if (this.connection != null && !this.connection.isClosed()) {
         this.connection.close();
@@ -1048,4 +1068,5 @@ public class SqliteStorageManager {
       LOGGER.error(e.getMessage(), e);
     }
   }
+
 }

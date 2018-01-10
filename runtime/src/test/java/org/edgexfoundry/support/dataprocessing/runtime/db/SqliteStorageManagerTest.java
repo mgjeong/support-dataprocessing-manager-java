@@ -18,11 +18,10 @@ import org.junit.Test;
 
 public class SqliteStorageManagerTest {
 
-  private static SqliteStorageManager storageManager = new SqliteStorageManager();
+  private static SqliteStorageManager storageManager = SqliteStorageManager.getInstance();
 
   @BeforeClass
   public static void setup() throws Exception {
-    storageManager.initialize();
   }
 
   @Test
