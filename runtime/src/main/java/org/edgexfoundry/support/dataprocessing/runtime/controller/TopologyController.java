@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
@@ -32,6 +34,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +59,12 @@ public class TopologyController {
 
   private TopologyTableManager topologyTableManager = null;
   private TaskManager taskManager = null;
+  private EdgeInfo edgeInfo = null;
 
   public TopologyController() {
     this.topologyTableManager = new TopologyTableManager();
     this.taskManager = TaskManager.getInstance();
+    this.edgeInfo = new EdgeInfo();
   }
 
   @ApiOperation(value = "Sample get response", notes = "Returns response entity.")
@@ -659,6 +664,17 @@ public class TopologyController {
     }
   }
 
+  @ApiOperation(value = "Get edge group list", notes = "Get edge group list")
+  @RequestMapping(value = "/edge/groups", method = RequestMethod.GET)
+  public ResponseEntity getGroupList() {
+    return respondEntity(edgeInfo.getGroupList(), HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Get engine list", notes = "Get engine list")
+  @RequestMapping(value = "/edge/groups/{groupId}", method = RequestMethod.GET)
+  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId) {
+    return respondEntity(edgeInfo.getEngineList(groupId, "any"), HttpStatus.OK);
+  }
   private ResponseEntity listTopologyComponentTopologyBundles() {
     // TEMP
     Collection<TopologyComponentBundle> topologies
