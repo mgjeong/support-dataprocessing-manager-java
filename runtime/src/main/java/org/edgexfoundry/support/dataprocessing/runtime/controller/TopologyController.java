@@ -610,7 +610,18 @@ public class TopologyController {
   public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
-    return respond(result, HttpStatus.OK);
+
+    TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
+
+    TopologyData.EngineType engineType = topologyData.getEngineType();
+
+    if (engineType == TopologyData.EngineType.FLINK || engineType == TopologyData.EngineType.KAPACITOR) {
+      return respond(result, HttpStatus.OK);
+    } else {
+      return respond(
+              new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE, "Query and Algorithm task can not be in the same workflow"),
+              HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @ApiOperation(value = "Deploy topology", notes = "Deploys a topology")
