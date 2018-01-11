@@ -46,6 +46,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyJobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;

@@ -685,7 +685,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
    */
   public TopologyStream removeTopologyStream(Long topologyId, Long streamId) {
     if (topologyId == null || streamId == null) {
-      throw new RuntimeException("Topology id or component id is null.");
+      throw new RuntimeException("Topology id or stream id is null.");
     }
 
     TopologyStream stream = getTopologyStream(topologyId, streamId);
@@ -693,7 +693,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
       throw new RuntimeException("Topology stream does not exist.");
     }
 
-    String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND componentId = ?";
+    String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND id = ?";
     synchronized (writeLock) {
       try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
           streamId)) {
@@ -1085,7 +1085,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     removeTopologyComponentEdges(topologyId, topologyComponentId);
 
     // remove streams
-    removeTopologyComponentStreams(topologyId, topologyComponentId);
+    // removeTopologyComponentStreams(topologyId, topologyComponentId);
 
     String sql = "DELETE FROM topology_component WHERE topologyId = ? AND id = ?";
     synchronized (writeLock) {
