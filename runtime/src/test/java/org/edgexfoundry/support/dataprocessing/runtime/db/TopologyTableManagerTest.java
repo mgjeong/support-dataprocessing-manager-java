@@ -199,7 +199,7 @@ public class TopologyTableManagerTest {
     TopologyStream stream = new TopologyStream();
     TopologyComponent component = new TopologySource();
     try {
-      component.setUiName("SourceComponent");
+      component.setName("SourceComponent");
       component.setTopologyComponentBundleId(source.getId());
       component.setTopologyId(topology.getId());
       component.addConfig("dataSource", "EZMQ");
@@ -212,7 +212,7 @@ public class TopologyTableManagerTest {
           .listTopologyComponents(topology.getId());
       Assert.assertTrue(components.size() == 1);
       TopologyComponent added = components.iterator().next();
-      Assert.assertEquals(added.getUiName(), component.getUiName());
+      Assert.assertEquals(added.getName(), component.getName());
       Assert.assertEquals(added.getConfig("dataSource").toString(),
           component.getConfig("dataSource").toString());
 
@@ -228,7 +228,7 @@ public class TopologyTableManagerTest {
       stream.addField(field);
       stream = storageManager.addTopologyStream(stream);
       ((TopologySource) component).addOutputStream(stream);
-      component.setUiName("SourceUpdated");
+      component.setName("SourceUpdated");
       component = storageManager
           .addOrUpdateTopologyComponent(topology.getId(), component.getId(), component);
 

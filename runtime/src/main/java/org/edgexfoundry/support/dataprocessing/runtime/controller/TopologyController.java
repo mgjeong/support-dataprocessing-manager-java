@@ -632,7 +632,7 @@ public class TopologyController {
     TopologyJobGroup jobGroup = TopologyJobGroup.create(topologyData);
     //List<String> targetHosts = (List<String>) topologyData.getConfig().get("targetHost");
     List<String> targetHosts = new ArrayList<>();
-    //targetHosts.add((String) topologyData.getConfig().get("targetHost"));
+    targetHosts.add((String) topologyData.getConfig().get("targetHost"));
     for (String targetHost : targetHosts) {
       //String engineId = engine.createJob(topologyData);
       String engineId = "TODO: CHANGE HERE";

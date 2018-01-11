@@ -32,12 +32,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class TopologyTableManager extends AbstractStorageManager {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TopologyTableManager.class);
 
   private static TopologyTableManager instance = null;
 
@@ -134,8 +130,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
       // Get auto-incremented id
       try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
         if (generatedKeys.next()) {
-          commit();
           topology.setId(generatedKeys.getLong(1));
+          commit();
           return topology;
         } else {
           throw new RuntimeException("Creating topology failed, no ID obtained.");
@@ -172,6 +168,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
         throw new RuntimeException("Updating topology failed, no rows affected.");
       } else {
         topology.setId(topologyId);
+        commit();
         return topology;
       }
     } catch (Exception e) {
@@ -283,8 +280,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
       if (affectedRows == 0) {
         throw new RuntimeException("Updating topology failed, no rows affected.");
       } else {
-        commit();
         topology.setId(topologyId);
+        commit();
         return topology;
       }
     } catch (SQLException e) {
@@ -587,8 +584,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
       // Get auto-incremented id
       try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
         if (generatedKeys.next()) {
-          commit();
           topologyStream.setId(generatedKeys.getLong(1));
+          commit();
           return topologyStream;
         } else {
           throw new RuntimeException("Creating stream failed, no ID obtained.");
@@ -750,8 +747,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
       // Get auto-incremented id
       try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
         if (generatedKeys.next()) {
-          commit();
           topologyEdge.setId(generatedKeys.getLong(1));
+          commit();
           return topologyEdge;
         } else {
           throw new RuntimeException("Creating edge failed, no ID obtained.");
@@ -910,7 +907,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_component (topologyId, componentBundleId, name, config) "
         + "VALUES (?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    int transactionKey = 31;
+    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
         topologyId, topologyComponent.getTopologyComponentBundleId(),
         topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
@@ -940,7 +938,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
             }
           }
 
-          commit();
+          commit(transactionKey);
           return (T) topologyComponent;
         } else {
           throw new RuntimeException("Creating component failed, no ID obtained.");
@@ -949,7 +947,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
         throw new RuntimeException(e);
       }
     } catch (SQLException e) {
-      rollback();
+      rollback(transactionKey);
       throw new RuntimeException(e);
     }
   }
@@ -974,7 +972,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_component (id, topologyId, componentBundleId, name, config) "
             + "VALUES (?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    int transactionKey = 31;
+    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
         topologyComponentId,
         topologyId, topologyComponent.getTopologyComponentBundleId(),
         topologyComponent.getName(), topologyComponent.getConfigStr())) {
@@ -1000,10 +999,10 @@ public final class TopologyTableManager extends AbstractStorageManager {
         }
       }
 
-      commit();
+      commit(transactionKey);
       return (T) topologyComponent;
     } catch (SQLException e) {
-      rollback();
+      rollback(transactionKey);
       throw new RuntimeException(e);
     }
   }

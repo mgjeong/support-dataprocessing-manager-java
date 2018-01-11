@@ -18,6 +18,13 @@ public abstract class AbstractStorageManager {
   private Connection connection;
   private transient boolean isTerminated = false;
 
+  /**
+   * Used to control transaction.
+   *
+   * Commits/rollbacks only if transaction number match.
+   */
+  private int transactionNumber = -1;
+
   private String getJdbcUrl() {
     return "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH;
   }
@@ -26,10 +33,20 @@ public abstract class AbstractStorageManager {
     return "org.sqlite.JDBC";
   }
 
-  protected Connection getConnection() throws SQLException {
+  protected synchronized Connection getConnection() throws SQLException {
+    return getConnection(-1);
+  }
+
+  protected synchronized Connection getConnection(int transactionNumber) throws SQLException {
     if (isTerminated) {
       return null;
-    } else if (connection != null && !connection.isClosed()) {
+    }
+
+    if (this.transactionNumber == -1) {
+      this.transactionNumber = transactionNumber;
+    }
+
+    if (connection != null && !connection.isClosed()) {
       return connection; // valid connection already exists
     }
 
@@ -48,28 +65,45 @@ public abstract class AbstractStorageManager {
       throw new RuntimeException("Resource is null.");
     }
 
+    int transactionNumber = 5;
     try {
-      ScriptUtils.executeSqlScript(getConnection(), resource);
-      commit();
+      ScriptUtils.executeSqlScript(getConnection(transactionNumber), resource);
+      commit(transactionNumber);
     } catch (SQLException e) {
-      rollback();
+      rollback(transactionNumber);
       throw new RuntimeException(e);
     }
   }
 
   protected void commit() {
+    commit(-1);
+  }
+
+  protected void commit(int transactionNumber) {
     try {
-      getConnection().commit();
+      if (this.transactionNumber == transactionNumber) {
+        getConnection().commit();
+        this.transactionNumber = -1;
+      }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);
+      this.transactionNumber = -1;
     }
   }
 
   protected void rollback() {
+    rollback(-1);
+  }
+
+  protected void rollback(int transactionNumber) {
     try {
-      getConnection().rollback();
+      if (this.transactionNumber == transactionNumber) {
+        getConnection().rollback();
+        this.transactionNumber = -1;
+      }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);
+      this.transactionNumber = -1;
     }
   }
 

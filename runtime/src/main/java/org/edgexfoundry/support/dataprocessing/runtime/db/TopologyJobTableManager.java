@@ -49,7 +49,8 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO job (id, groupId, engineId, data) VALUES (?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    int transactionKey = 2;
+    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
         topologyJob.getId(), topologyJob.getGroupId(),
         topologyJob.getEngineId(), topologyJob.getData())) {
       int affectedRows = ps.executeUpdate();
@@ -58,11 +59,11 @@ public class TopologyJobTableManager extends AbstractStorageManager {
       } else {
         addOrUpdateTopologyJobState(topologyJob.getGroupId(), topologyJob.getId(),
             topologyJob.getState());
-        commit();
+        commit(transactionKey);
         return topologyJob;
       }
     } catch (SQLException e) {
-      rollback();
+      rollback(transactionKey);
       throw new RuntimeException(e);
     }
   }
@@ -73,7 +74,8 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO job_group (id, topologyId) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    int transactionKey = 4;
+    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
         topologyJobGroup.getId(), topologyJobGroup.getTopologyId())) {
       int affectedRows = ps.executeUpdate();
       if (affectedRows == 0) {
@@ -83,11 +85,11 @@ public class TopologyJobTableManager extends AbstractStorageManager {
         for (TopologyJob job : topologyJobGroup.getJobs()) {
           addOrUpdateTopologyJob(job);
         }
-        commit();
+        commit(transactionKey);
         return topologyJobGroup;
       }
     } catch (SQLException e) {
-      rollback();
+      rollback(transactionKey);
       throw new RuntimeException(e);
     }
   }
