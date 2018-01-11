@@ -251,7 +251,11 @@ public final class TaskManager implements DirectoryChangeEventListener {
       TaskModel model) {
     bundle.setFieldHintProviderClass("");
     bundle.setMavenDeps("");
-    bundle.setStreamingEngine("FLINK");
+    if(model.getName().equalsIgnoreCase("QUERY")) {
+      bundle.setStreamingEngine("KAPACITOR");
+    } else {
+      bundle.setStreamingEngine("FLINK");
+    }
     bundle.setTimestamp(System.currentTimeMillis());
 
     // UI component
