@@ -62,10 +62,12 @@ public class EdgeInfo {
                         engineList.add((String)edgeInfo.get("host"));
                         break;
                     } else if (engineType.equals("flink") && service.equals(PharosConstants.FLINK_NAME)) {
-                        engineList.add((String)edgeInfo.get("host"));
+                        String flinkAddress = (String)edgeInfo.get("host");
+                        engineList.add(flinkAddress + ":" + PharosConstants.FLINK_PORT);
                         break;
                     } else if (engineType.equals("kapacitor") && service.equals(PharosConstants.KAPACITOR_NAME)) {
-                        engineList.add((String)edgeInfo.get("host"));
+                        String kapacitorAddress = (String)edgeInfo.get("host");
+                        engineList.add(kapacitorAddress + ":" + PharosConstants.KAPACITOR_PORT);
                         break;
                     }
                 }

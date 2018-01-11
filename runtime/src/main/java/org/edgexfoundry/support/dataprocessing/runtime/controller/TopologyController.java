@@ -14,6 +14,7 @@ import java.util.List;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
@@ -613,14 +614,18 @@ public class TopologyController {
   public ResponseEntity checkEngineType(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Topology result = this.topologyTableManager.getTopology(topologyId);
-
     TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
-
     TopologyData.EngineType engineType = topologyData.getEngineType();
 
     if (engineType == TopologyData.EngineType.FLINK
         || engineType == TopologyData.EngineType.KAPACITOR) {
-      return respond(result, HttpStatus.OK);
+      EngineTypeResponse engineTypeResponse = null;
+      if (engineType == TopologyData.EngineType.FLINK) {
+        engineTypeResponse = new EngineTypeResponse("flink");
+      } else {
+        engineTypeResponse = new EngineTypeResponse("kapacitor");
+      }
+      return respond(engineTypeResponse, HttpStatus.OK);
     } else {
       return respond(
           new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE,
@@ -724,8 +729,23 @@ public class TopologyController {
 
   @ApiOperation(value = "Get engine list", notes = "Get engine list")
   @RequestMapping(value = "/edge/groups/{groupId}", method = RequestMethod.GET)
-  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId) {
-    return respondEntity(edgeInfo.getEngineList(groupId, "any"), HttpStatus.OK);
+  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId,
+      @RequestParam(value = "engineType", required = false) String engineType) {
+    List<String> engineList;
+
+    if (engineType == null) {
+      engineList = edgeInfo.getEngineList(groupId, "any");
+    } else {
+      engineList = edgeInfo.getEngineList(groupId, engineType);
+    }
+
+    JsonArray response = new JsonArray();
+
+    for (String engine : engineList) {
+      response.add(engine);
+    }
+
+    return respondEntity(response, HttpStatus.OK);
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {
