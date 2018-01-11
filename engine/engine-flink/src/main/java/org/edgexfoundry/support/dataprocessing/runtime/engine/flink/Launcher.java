@@ -79,7 +79,7 @@ public class Launcher {
     Reader jsonReader;
 
     if (jsonTopology != null) {
-      String jsonFileName = jsonTopology + ".json";
+      String jsonFileName = "/" + jsonTopology + ".json";
       jsonReader = new InputStreamReader(getClass().getResourceAsStream(jsonFileName));
     } else {
       jsonReader = new InputStreamReader(getClass().getResourceAsStream(CONFIGPATH));
