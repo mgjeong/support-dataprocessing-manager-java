@@ -668,7 +668,7 @@ public class TopologyController {
       String engineId = engine.createJob(topologyData);
       TopologyJob job = TopologyJob.create(jobGroup.getId());
       job.setEngineId(engineId);
-      // job.setData(targetHost); // ???
+      job.setConfig(topologyData.getConfig());
       jobGroup.addJob(job);
 
       // Write to database

@@ -51,12 +51,12 @@ public class TopologyJobTableManager extends AbstractStorageManager {
       throw new RuntimeException("Topology job is null.");
     }
 
-    String sql = "INSERT OR REPLACE INTO job (id, groupId, engineId, data) VALUES (?, ?, ?, ?)";
+    String sql = "INSERT OR REPLACE INTO job (id, groupId, engineId, config) VALUES (?, ?, ?, ?)";
     int transactionKey = 2;
     synchronized (writeLock) {
       try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
           topologyJob.getId(), topologyJob.getGroupId(),
-          topologyJob.getEngineId(), topologyJob.getData())) {
+          topologyJob.getEngineId(), topologyJob.getConfigStr())) {
         int affectedRows;
         affectedRows = ps.executeUpdate();
         if (affectedRows == 0) {
@@ -113,7 +113,7 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     sb.append("job.id AS id, ");
     sb.append("job.groupId AS groupId, ");
     sb.append("job.engineId AS engineId, ");
-    sb.append("job.data AS data, ");
+    sb.append("job.config AS config, ");
     sb.append("job_state.state AS state, ");
     sb.append("job_state.startTime AS startTime ");
     sb.append("FROM job, job_state WHERE ");
@@ -139,7 +139,7 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     job.setId(rs.getString("id"));
     job.setGroupId(rs.getString("groupId"));
     job.setEngineId(rs.getString("engineId"));
-    job.setData(rs.getString("data"));
+    job.setConfigStr(rs.getString("config"));
 
     TopologyJobState jobState = new TopologyJobState();
     jobState.setState(rs.getString("state"));

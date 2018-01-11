@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `job` (
   `id` TEXT NOT NULL,
   `groupId` TEXT NOT NULL,
   `engineId` TEXT,
-  `data` TEXT,
+  `config` TEXT,
   `input` TEXT,
   `output` TEXT,
   `taskinfo` TEXT,
