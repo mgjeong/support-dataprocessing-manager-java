@@ -866,10 +866,10 @@ public final class TopologyTableManager extends AbstractStorageManager {
         .append("topology_component.id AS id,")
         .append("topology_component.topologyId AS topologyId,")
         .append("topology_component.componentBundleId AS componentBundleId,")
-        .append("topology_component.name AS uiName,")
+        .append("topology_component.name AS name,")
         .append("topology_component.config as config,")
         .append("topology_component_bundle.type AS type, ")
-        .append("topology_component_bundle.name AS bundleName ")
+        .append("topology_component_bundle.streamingEngine AS streamingEngine ")
         .append("FROM topology_component, topology_component_bundle ")
         .append("WHERE topology_component.topologyId = ? ")
         .append("AND topology_component.componentBundleId = topology_component_bundle.id");
@@ -912,7 +912,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
         + "VALUES (?, ?, ?, ?)";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
         topologyId, topologyComponent.getTopologyComponentBundleId(),
-        topologyComponent.getUiName(), topologyComponent.getConfigStr())) {
+        topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
       // insert
       int affectedRows = ps.executeUpdate();
@@ -977,7 +977,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
         topologyComponentId,
         topologyId, topologyComponent.getTopologyComponentBundleId(),
-        topologyComponent.getUiName(), topologyComponent.getConfigStr())) {
+        topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
       // insert
       int affectedRows = ps.executeUpdate();
@@ -1143,8 +1143,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
     component.setId(rs.getLong("id"));
     component.setTopologyId(rs.getLong("topologyId"));
     component.setTopologyComponentBundleId(rs.getLong("componentBundleId"));
-    component.setUiName(rs.getString("uiName"));
-    component.setBundleName(rs.getString("bundleName"));
+    component.setName(rs.getString("name"));
+    component.setEngineType(rs.getString("streamingEngine"));
     component.setConfigStr(rs.getString("config"));
 
     return component;
@@ -1202,10 +1202,10 @@ public final class TopologyTableManager extends AbstractStorageManager {
         .append("topology_component.id AS id,")
         .append("topology_component.topologyId AS topologyId,")
         .append("topology_component.componentBundleId AS componentBundleId,")
-        .append("topology_component.name AS uiName,")
+        .append("topology_component.name AS name,")
         .append("topology_component.config as config,")
         .append("topology_component_bundle.type AS type, ")
-        .append("topology_component_bundle.name AS bundleName ")
+        .append("topology_component_bundle.streamingEngine AS streamingEngine ")
         .append("FROM topology_component, topology_component_bundle ")
         .append("WHERE topology_component.topologyId = ? ")
         .append("AND topology_component.id = ? ")

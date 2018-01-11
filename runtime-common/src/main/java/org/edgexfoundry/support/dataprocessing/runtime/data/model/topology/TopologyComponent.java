@@ -2,7 +2,6 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,9 +15,9 @@ public class TopologyComponent extends Format {
   private Long topologyId;
   private Long versionId;
   private Long topologyComponentBundleId;
-  private String uiName = StringUtils.EMPTY;
+  private String name = StringUtils.EMPTY;
   private String description = StringUtils.EMPTY;
-  private String bundleName = StringUtils.EMPTY;
+  private String engineType = StringUtils.EMPTY;
   private Boolean reconfigure = false;
   private Long timestamp;
   private Config config = new Config();
@@ -58,22 +57,20 @@ public class TopologyComponent extends Format {
     this.topologyComponentBundleId = topologyComponentBundleId;
   }
 
-  @JsonProperty("name")
-  public String getUiName() {
-    return uiName;
+  public String getName() {
+    return name;
   }
 
-  @JsonProperty("name")
-  public void setUiName(String uiName) {
-    this.uiName = uiName;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public String getBundleName() {
-    return bundleName;
+  public String getEngineType() {
+    return engineType;
   }
 
-  public void setBundleName(String bundleName) {
-    this.bundleName = bundleName;
+  public void setEngineType(String engineType) {
+    this.engineType = engineType;
   }
 
   public String getDescription() {
