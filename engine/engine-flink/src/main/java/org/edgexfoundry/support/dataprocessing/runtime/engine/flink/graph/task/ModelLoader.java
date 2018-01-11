@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ModelLoader {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ModelLoader.class);
   private static final String modelArchive = "./";
   private URLClassLoader urlClassLoader = null;
@@ -45,7 +46,8 @@ public class ModelLoader {
     }
   }
 
-  public Class getClassInstance(String className) throws ClassNotFoundException, NoClassDefFoundError {
+  public Class getClassInstance(String className)
+      throws ClassNotFoundException, NoClassDefFoundError {
     LOGGER.info("Attempting to load " + className);
     return urlClassLoader.loadClass(className);
 
@@ -54,11 +56,12 @@ public class ModelLoader {
   public void loadJar(String jarPath) throws Exception {
     File targetJar = new File(modelArchive + jarPath);
     if (!targetJar.exists()) {
-      InputStream jarStream = getClass().getResourceAsStream(jarPath);
+      InputStream jarStream = getClass().getResourceAsStream("/" + jarPath);
       Files.copy(jarStream, targetJar.getAbsoluteFile().toPath());
     }
 
-    this.urlClassLoader = new URLClassLoader(new URL[]{targetJar.toURI().toURL()}, this.classLoader);
+    this.urlClassLoader = new URLClassLoader(new URL[]{targetJar.toURI().toURL()},
+        this.classLoader);
 
     Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
     method.setAccessible(true);
