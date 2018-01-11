@@ -18,11 +18,8 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 import com.google.gson.Gson;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
@@ -36,7 +33,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSin
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.task.ModelLoader;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator.TaskFlatMap;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
@@ -73,7 +69,21 @@ public class Launcher {
     }
 
     env.getConfig().setGlobalJobParameters(params);
-    Reader jsonReader = new InputStreamReader(getClass().getResourceAsStream(CONFIGPATH));
+
+    if (!params.has("json")) {
+      throw new RuntimeException("No specified job-config file");
+    }
+
+    String jsonTopology = params.get("json");
+
+    Reader jsonReader;
+
+    if (jsonTopology != null) {
+      String jsonFileName = jsonTopology + ".json";
+      jsonReader = new InputStreamReader(getClass().getResourceAsStream(jsonFileName));
+    } else {
+      jsonReader = new InputStreamReader(getClass().getResourceAsStream(CONFIGPATH));
+    }
     JobGraph jobGraph = new JobGraphBuilder().getInstance(env, jsonReader).initialize();
 
     jsonReader.close();

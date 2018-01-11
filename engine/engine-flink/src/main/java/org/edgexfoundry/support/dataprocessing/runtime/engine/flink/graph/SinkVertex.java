@@ -15,7 +15,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.Z
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SinkVertex implements Vertex {
-
   TopologySink config;
   DataStream<DataSet> influx;
 

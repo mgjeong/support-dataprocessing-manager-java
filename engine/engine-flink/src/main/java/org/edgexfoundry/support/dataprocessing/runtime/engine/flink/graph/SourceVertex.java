@@ -13,7 +13,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.Z
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SourceVertex implements Vertex {
-  private Long id;
   private StreamExecutionEnvironment env;
   private TopologySource config;
 
