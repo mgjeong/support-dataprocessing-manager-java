@@ -676,7 +676,7 @@ public class TopologyController {
 
       // Run
       try {
-        engine.run(job.getEngineId());
+        engine.deploy(job.getEngineId());
         job.getState().setState("RUNNING");
         job.getState().setStartTime(System.currentTimeMillis());
       } catch (Exception e) {

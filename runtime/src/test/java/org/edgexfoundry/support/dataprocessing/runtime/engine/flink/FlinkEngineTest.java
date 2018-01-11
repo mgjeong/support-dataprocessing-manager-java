@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class FlinkEngineTest {
 
-  private static final String testConfigPath = "src/test/resources/config.json";
+  private static final String testConfigPath = "src/test/resources/config_test2.json";
   private static final String testJar = "src/test/resources/moving-average-0.1.0-SNAPSHOT.jar";
 
   @Test

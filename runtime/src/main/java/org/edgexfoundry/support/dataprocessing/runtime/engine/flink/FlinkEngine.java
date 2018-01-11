@@ -83,8 +83,8 @@ public class FlinkEngine extends AbstractEngine {
   @Override
   public String createJob(TopologyData topologyData) {
     List<Path> jobSpecificData = new ArrayList<>();
-    jobSpecificData.add(prepareFlinkJobPlan(topologyData));
     jobSpecificData.addAll(getModelInfo(topologyData));
+    jobSpecificData.add(prepareFlinkJobPlan(topologyData));
 
     String topologyName = topologyData.getTopologyName();
     String jobJarFile = null;
