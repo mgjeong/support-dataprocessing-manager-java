@@ -41,10 +41,12 @@ import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,8 +83,8 @@ public class FlinkEngine extends AbstractEngine {
   @Override
   public String createJob(TopologyData topologyData) {
     List<Path> jobSpecificData = new ArrayList<>();
-    jobSpecificData.add(prepareFlinkJobPlan(topologyData));
     jobSpecificData.addAll(getModelInfo(topologyData));
+    jobSpecificData.add(prepareFlinkJobPlan(topologyData));
 
     String topologyName = topologyData.getTopologyName();
     String jobJarFile = null;
@@ -139,17 +141,10 @@ public class FlinkEngine extends AbstractEngine {
     try {
       for (TopologyProcessor processor : topologyData.getProcessors()) {
         String name = processor.getName();
-        List<Map<String, String>> resArray = TaskTableManager.getInstance()
-            .getTaskByName(name);
-        if (resArray.size() == 0) {
-          throw new RuntimeException("Task jar info for " + name + " does not exist in database.");
-        }
-
-        // Get jar file info
-        String className = resArray.get(0).get(TaskTableManager.Entry.classname.name());
+        String className = processor.getClassname();
         processor.getConfig().getProperties().put("className", className);
 
-        String jarPath = resArray.get(0).get(TaskTableManager.Entry.path.name());
+        String jarPath = processor.getPath();
 
         Path artifact = Paths.get(jarPath);
         processor.getConfig().getProperties().put("jar", artifact.getFileName().toString());

@@ -26,7 +26,7 @@ public class ErrorFormat extends Format {
     @ApiModelProperty(required = true)
     private ErrorType errorCode;
     @ApiModelProperty(required = true)
-    private String errorMessage;
+    private String responseMessage;
 
     public ErrorFormat() {
         this(ErrorType.DPFW_ERROR_NONE, "Success.");
@@ -36,9 +36,9 @@ public class ErrorFormat extends Format {
         this(errorCode, "Success.");
     }
 
-    public ErrorFormat(ErrorType errorCode, String errorMessage) {
+    public ErrorFormat(ErrorType errorCode, String responseMessage) {
         setErrorCode(errorCode);
-        setErrorMessage(errorMessage);
+        setResponseMessage(responseMessage);
     }
 
     public ErrorType getErrorCode() {
@@ -49,12 +49,12 @@ public class ErrorFormat extends Format {
         this.errorCode = errorCode;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getResponseMessage() {
+        return responseMessage;
     }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setResponseMessage(String responseMessage) {
+        this.responseMessage = responseMessage;
     }
 
     @JsonIgnore

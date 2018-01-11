@@ -44,7 +44,7 @@ public class ErrorFormatTest {
         String message = "Test Case";
         ErrorFormat errorFormat = new ErrorFormat(ErrorType.DPFW_ERROR_NONE, message);
 
-        Assert.assertEquals(message, errorFormat.getErrorMessage());
+        Assert.assertEquals(message, errorFormat.getResponseMessage());
 
     }
 
@@ -53,9 +53,9 @@ public class ErrorFormatTest {
 
         String message = "Test Case";
         ErrorFormat errorFormat = new ErrorFormat();
-        errorFormat.setErrorMessage(message);
+        errorFormat.setResponseMessage(message);
 
-        Assert.assertEquals(message, errorFormat.getErrorMessage());
+        Assert.assertEquals(message, errorFormat.getResponseMessage());
 
     }
 

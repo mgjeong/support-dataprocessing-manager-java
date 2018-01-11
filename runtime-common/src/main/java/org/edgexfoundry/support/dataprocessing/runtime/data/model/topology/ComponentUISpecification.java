@@ -2,6 +2,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
@@ -32,13 +33,37 @@ public class ComponentUISpecification extends Format {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public static class UIField {
+    public enum UIFieldType {
+      STRING("string"), ENUMSTRING("enumstring"), ARRAYSTRING("array.string"), ARRAYENUMSTRING("array.enumstring"),
+      NUMBER("number"), ARRAYNUMBER("array.number"), BOOLEAN("boolean"), ARRAYBOOLEAN("array.boolean"),
+      OBJECT("object"), ENUMOBJECT("enumobject"), ARRAYOBJECT("array.object"), ARRAYENUMOBJECT("array.enumobject"),
+      FILE("file");
+
+      private String uiFieldTypeText;
+
+      UIFieldType (String uiFieldTypeText) {
+        this.uiFieldTypeText = uiFieldTypeText;
+      }
+
+      @JsonValue
+      public String getUiFieldTypeText () {
+        return this.uiFieldTypeText;
+      }
+
+      @Override
+      public String toString() {
+        return "UIFieldType{" +
+            "uiFieldTypeText='" + uiFieldTypeText + '\'' +
+            '}';
+      }
+    }
 
     private String uiName;
     private String fieldName;
     private Boolean isUserInput;
     private String tooltip;
     private Boolean isOptional;
-    private String type;
+    private UIFieldType type;
     private String defaultValue;
 
     public UIField() {
@@ -87,11 +112,11 @@ public class ComponentUISpecification extends Format {
       this.tooltip = tooltip;
     }
 
-    public String getType() {
+    public UIFieldType getType() {
       return type;
     }
 
-    public void setType(String type) {
+    public void setType(UIFieldType type) {
       this.type = type;
     }
 

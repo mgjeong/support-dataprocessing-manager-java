@@ -6,7 +6,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 public interface Vertex {
   Long getId();
 
-  DataStream<DataSet> serve();
+  DataStream<DataSet> serve() throws Exception;
 
   void setFluxIn(DataStream<DataSet> in);
 }

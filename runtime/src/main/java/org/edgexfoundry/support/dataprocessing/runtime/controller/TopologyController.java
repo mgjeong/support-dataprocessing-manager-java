@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
@@ -25,13 +26,18 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobGroup;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
+import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyJobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +62,12 @@ public class TopologyController {
 
   private TopologyTableManager topologyTableManager = null;
   private TaskManager taskManager = null;
+  private EdgeInfo edgeInfo = null;
 
   public TopologyController() {
-    this.topologyTableManager = new TopologyTableManager();
+    this.topologyTableManager = TopologyTableManager.getInstance();
     this.taskManager = TaskManager.getInstance();
+    this.edgeInfo = new EdgeInfo();
   }
 
   @ApiOperation(value = "Sample get response", notes = "Returns response entity.")
@@ -109,7 +117,7 @@ public class TopologyController {
       @PathVariable("versionId") Long versionId,
       @RequestParam(value = "detail", required = false) Boolean detail,
       @RequestParam(value = "latencyTopN", required = false) Integer latencyTopN) {
-    Topology topology = this.topologyTableManager.getTopology(topologyId, versionId);
+    Topology topology = this.topologyTableManager.getTopology(topologyId);
     if (topology == null) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, "Topology does not exist."),
           HttpStatus.NOT_FOUND);
@@ -214,7 +222,7 @@ public class TopologyController {
   @ApiOperation(value = "Get topology sources", notes = "Returns a list of sources in use in a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/sources", method = RequestMethod.GET)
   public ResponseEntity listTopologySources(@PathVariable("topologyId") Long topologyId) {
-    Collection<TopologySource> sources = this.topologyTableManager.listSources(topologyId, 1L);
+    Collection<TopologySource> sources = this.topologyTableManager.listSources(topologyId);
     return respondEntity(sources, HttpStatus.OK);
   }
 
@@ -223,7 +231,7 @@ public class TopologyController {
   public ResponseEntity listTopologySourcesForVersion(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Collection<TopologySource> sources = this.topologyTableManager
-        .listSources(topologyId, versionId);
+        .listSources(topologyId);
     return respondEntity(sources, HttpStatus.OK);
   }
 
@@ -231,7 +239,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/processors", method = RequestMethod.GET)
   public ResponseEntity listTopologyProcessors(@PathVariable("topologyId") Long topologyId) {
     Collection<TopologyProcessor> processors = this.topologyTableManager
-        .listProcessors(topologyId, 1L);
+        .listProcessors(topologyId);
     return respondEntity(processors, HttpStatus.OK);
   }
 
@@ -241,14 +249,14 @@ public class TopologyController {
       @PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Collection<TopologyProcessor> processors = this.topologyTableManager
-        .listProcessors(topologyId, versionId);
+        .listProcessors(topologyId);
     return respondEntity(processors, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Get topology sinks", notes = "Returns a list of sinks in use in a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/sinks", method = RequestMethod.GET)
   public ResponseEntity listTopologySinks(@PathVariable("topologyId") Long topologyId) {
-    Collection<TopologySink> sinks = this.topologyTableManager.listSinks(topologyId, 1L);
+    Collection<TopologySink> sinks = this.topologyTableManager.listSinks(topologyId);
     return respondEntity(sinks, HttpStatus.OK);
   }
 
@@ -256,14 +264,14 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/sinks", method = RequestMethod.GET)
   public ResponseEntity listTopologySinksForVersion(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
-    Collection<TopologySink> sinks = this.topologyTableManager.listSinks(topologyId, versionId);
+    Collection<TopologySink> sinks = this.topologyTableManager.listSinks(topologyId);
     return respondEntity(sinks, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Get topology edges", notes = "Returns a list of edges in use in a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/edges", method = RequestMethod.GET)
   public ResponseEntity listTopologyEdges(@PathVariable("topologyId") Long topologyId) {
-    Collection<TopologyEdge> edges = this.topologyTableManager.listEdges(topologyId, 1L);
+    Collection<TopologyEdge> edges = this.topologyTableManager.listTopologyEdges(topologyId);
     return respondEntity(edges, HttpStatus.OK);
   }
 
@@ -271,7 +279,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/edges", method = RequestMethod.GET)
   public ResponseEntity listTopologyEdgesForVersion(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
-    Collection<TopologyEdge> edges = this.topologyTableManager.listEdges(topologyId, versionId);
+    Collection<TopologyEdge> edges = this.topologyTableManager.listTopologyEdges(topologyId);
     return respondEntity(edges, HttpStatus.OK);
   }
 
@@ -280,7 +288,7 @@ public class TopologyController {
   public ResponseEntity getTopologyEditorMetadataByTopologyId(
       @PathVariable("topologyId") Long topologyId) {
     TopologyEditorMetadata metadata = this.topologyTableManager
-        .getTopologyEditorMetadata(topologyId, 1L);
+        .getTopologyEditorMetadata(topologyId);
     return respond(metadata, HttpStatus.OK);
   }
 
@@ -290,7 +298,7 @@ public class TopologyController {
       @PathVariable("versionId") Long versionId,
       @PathVariable("topologyId") Long topologyId) {
     TopologyEditorMetadata metadata = this.topologyTableManager
-        .getTopologyEditorMetadata(topologyId, versionId);
+        .getTopologyEditorMetadata(topologyId);
     return respond(metadata, HttpStatus.OK);
   }
 
@@ -324,7 +332,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/sources", method = RequestMethod.POST)
   public ResponseEntity addTopologySource(@PathVariable("topologyId") Long topologyId,
       @RequestBody TopologySource topologySource) {
-    topologySource = this.topologyTableManager.addTopologySource(topologyId, 1L, topologySource);
+    topologySource = this.topologyTableManager.addTopologyComponent(topologyId, topologySource);
     return respond(topologySource, HttpStatus.CREATED);
   }
 
@@ -333,7 +341,7 @@ public class TopologyController {
   public ResponseEntity getTopologySourceById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("sourceId") Long sourceId) {
     TopologySource source = (TopologySource) this.topologyTableManager
-        .getTopologyComponent(topologyId, 1L, sourceId);
+        .getTopologyComponent(topologyId, sourceId);
     return respond(source, HttpStatus.OK);
   }
 
@@ -343,7 +351,7 @@ public class TopologyController {
       @PathVariable("versionId") Long versionId,
       @PathVariable("sourceId") Long sourceId) {
     TopologyComponent component = this.topologyTableManager
-        .getTopologyComponent(topologyId, versionId, sourceId);
+        .getTopologyComponent(topologyId, sourceId);
     return respond(component, HttpStatus.OK);
   }
 
@@ -353,7 +361,7 @@ public class TopologyController {
       @PathVariable("sourceId") Long sourceId,
       @RequestBody TopologySource topologySource) {
     topologySource = this.topologyTableManager
-        .addOrUpdateTopologySource(topologyId, sourceId, topologySource);
+        .addOrUpdateTopologyComponent(topologyId, sourceId, topologySource);
     return respond(topologySource, HttpStatus.CREATED);
   }
 
@@ -363,7 +371,7 @@ public class TopologyController {
       @PathVariable("sourceId") Long sourceId,
       @RequestParam(value = "removeEdges", required = false) boolean removeEdges) {
     TopologySource removed = this.topologyTableManager
-        .removeTopologySource(topologyId, sourceId, 1L, removeEdges);
+        .removeTopologyComponent(topologyId, sourceId);
     return respond(removed, HttpStatus.OK);
   }
 
@@ -372,7 +380,7 @@ public class TopologyController {
   public ResponseEntity addTopologyProcessor(@PathVariable("topologyId") Long topologyId,
       @RequestBody TopologyProcessor topologyProcessor) {
     topologyProcessor = this.topologyTableManager
-        .addTopologyProcessor(topologyId, 1L, topologyProcessor);
+        .addTopologyComponent(topologyId, topologyProcessor);
     return respond(topologyProcessor, HttpStatus.CREATED);
   }
 
@@ -381,7 +389,7 @@ public class TopologyController {
   public ResponseEntity getTopologyProcessorById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("processorId") Long processorId) {
     TopologyProcessor processor = (TopologyProcessor) this.topologyTableManager
-        .getTopologyComponent(topologyId, 1L, processorId);
+        .getTopologyComponent(topologyId, processorId);
     return respond(processor, HttpStatus.OK);
   }
 
@@ -392,7 +400,7 @@ public class TopologyController {
       @PathVariable("versionId") Long versionId,
       @PathVariable("processorId") Long processorId) {
     TopologyComponent component = this.topologyTableManager
-        .getTopologyComponent(topologyId, versionId, processorId);
+        .getTopologyComponent(topologyId, processorId);
     return respond(component, HttpStatus.OK);
   }
 
@@ -402,7 +410,7 @@ public class TopologyController {
       @PathVariable("processorId") Long processorId,
       @RequestBody TopologyProcessor topologyProcessor) {
     topologyProcessor = this.topologyTableManager
-        .addOrUpdateTopologyProcessor(topologyId, processorId, topologyProcessor);
+        .addOrUpdateTopologyComponent(topologyId, processorId, topologyProcessor);
     return respond(topologyProcessor, HttpStatus.CREATED);
   }
 
@@ -412,7 +420,7 @@ public class TopologyController {
       @PathVariable("processorId") Long processorId,
       @RequestParam(value = "removeEdges", required = false) boolean removeEdges) {
     TopologyProcessor removed = this.topologyTableManager
-        .removeTopologyProcessor(topologyId, processorId, 1L, removeEdges);
+        .removeTopologyComponent(topologyId, processorId);
     return respond(removed, HttpStatus.OK);
   }
 
@@ -421,7 +429,7 @@ public class TopologyController {
   public ResponseEntity addTopologySink(@PathVariable("topologyId") Long topologyId,
       @RequestBody TopologySink topologySink) {
     topologySink = this.topologyTableManager
-        .addTopologySink(topologyId, 1L, topologySink);
+        .addTopologyComponent(topologyId, topologySink);
     return respond(topologySink, HttpStatus.CREATED);
   }
 
@@ -431,7 +439,7 @@ public class TopologyController {
       @PathVariable("sinkId") Long sinkId,
       @RequestParam(value = "removeEdges", required = false) boolean removeEdges) {
     TopologySink removed = this.topologyTableManager
-        .removeTopologySink(topologyId, sinkId, 1L, removeEdges);
+        .removeTopologyComponent(topologyId, sinkId);
     return respond(removed, HttpStatus.OK);
   }
 
@@ -440,7 +448,7 @@ public class TopologyController {
   public ResponseEntity getTopologySinkById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("sinkId") Long sinkId) {
     TopologySink sink = (TopologySink) this.topologyTableManager
-        .getTopologyComponent(topologyId, 1L, sinkId);
+        .getTopologyComponent(topologyId, sinkId);
     return respond(sink, HttpStatus.OK);
   }
 
@@ -451,7 +459,7 @@ public class TopologyController {
       @PathVariable("versionId") Long versionId,
       @PathVariable("sinkId") Long sinkId) {
     TopologyComponent component = this.topologyTableManager
-        .getTopologyComponent(topologyId, versionId, sinkId);
+        .getTopologyComponent(topologyId, sinkId);
     return respond(component, HttpStatus.OK);
   }
 
@@ -461,7 +469,7 @@ public class TopologyController {
       @PathVariable("sinkId") Long sinkId,
       @RequestBody TopologySink topologySink) {
     topologySink = this.topologyTableManager
-        .addOrUpdateTopologySink(topologyId, sinkId, topologySink);
+        .addOrUpdateTopologyComponent(topologyId, sinkId, topologySink);
     return respond(topologySink, HttpStatus.CREATED);
   }
 
@@ -470,7 +478,7 @@ public class TopologyController {
   public ResponseEntity addTopologyEdge(@PathVariable("topologyId") Long topologyId,
       @RequestBody TopologyEdge topologyEdge) {
     topologyEdge = this.topologyTableManager
-        .addTopologyEdge(topologyId, 1L, topologyEdge);
+        .addTopologyEdge(topologyId, topologyEdge);
     return respond(topologyEdge, HttpStatus.CREATED);
   }
 
@@ -478,7 +486,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/edges/{edgeId}", method = RequestMethod.GET)
   public ResponseEntity getTopologyEdgeById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("edgeId") Long edgeId) {
-    TopologyEdge edge = this.topologyTableManager.getTopologyEdge(topologyId, 1L, edgeId);
+    TopologyEdge edge = this.topologyTableManager.getTopologyEdge(topologyId, edgeId);
     return respond(edge, HttpStatus.OK);
   }
 
@@ -488,7 +496,7 @@ public class TopologyController {
       @PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId,
       @PathVariable("edgeId") Long edgeId) {
-    TopologyEdge edge = this.topologyTableManager.getTopologyEdge(topologyId, versionId, edgeId);
+    TopologyEdge edge = this.topologyTableManager.getTopologyEdge(topologyId, edgeId);
     return respond(edge, HttpStatus.OK);
   }
 
@@ -538,14 +546,14 @@ public class TopologyController {
   public ResponseEntity listStreamInfosForVersion(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Collection<TopologyStream> streams = this.topologyTableManager
-        .listStreamInfos(topologyId, versionId);
+        .listTopologyStreams(topologyId);
     return respondEntity(streams, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Get streams", notes = "Returns a list of streams for topology.")
   @RequestMapping(value = "/topologies/{topologyId}/streams", method = RequestMethod.GET)
   public ResponseEntity listStreamInfos(@PathVariable("topologyId") Long topologyId) {
-    Collection<TopologyStream> streams = this.topologyTableManager.listStreamInfos(topologyId, 1L);
+    Collection<TopologyStream> streams = this.topologyTableManager.listTopologyStreams(topologyId);
     return respondEntity(streams, HttpStatus.OK);
   }
 
@@ -553,7 +561,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/streams/{streamId}", method = RequestMethod.GET)
   public ResponseEntity getStreamInfoById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("streamId") Long streamId) {
-    TopologyStream stream = this.topologyTableManager.getStreamInfo(topologyId, 1L, streamId);
+    TopologyStream stream = this.topologyTableManager.getTopologyStream(topologyId, streamId);
     return respond(stream, HttpStatus.OK);
   }
 
@@ -563,7 +571,7 @@ public class TopologyController {
       @PathVariable("versionId") Long versionId,
       @PathVariable("streamId") Long streamId) {
     TopologyStream stream = this.topologyTableManager
-        .getStreamInfo(topologyId, versionId, streamId);
+        .getTopologyStream(topologyId, streamId);
     return respond(stream, HttpStatus.OK);
   }
 
@@ -571,7 +579,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/streams/{streamId}", method = RequestMethod.DELETE)
   public ResponseEntity removeStreamInfo(@PathVariable("topologyId") Long topologyId,
       @PathVariable("streamId") Long streamId) {
-    TopologyStream removed = this.topologyTableManager.removeStreamInfo(topologyId, streamId);
+    TopologyStream removed = this.topologyTableManager.removeTopologyStream(topologyId, streamId);
     return respond(removed, HttpStatus.OK);
   }
 
@@ -600,11 +608,33 @@ public class TopologyController {
     return respond(cs, HttpStatus.OK);
   }
 
+  @ApiOperation(value = "Check topology whether unique engine type", notes = "Check topology whether unique engine type")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/enginetype", method = RequestMethod.GET)
+  public ResponseEntity checkEngineType(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("versionId") Long versionId) {
+    Topology result = this.topologyTableManager.getTopology(topologyId);
+
+    TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
+
+    TopologyData.EngineType engineType = topologyData.getEngineType();
+
+    if (engineType == TopologyData.EngineType.FLINK
+        || engineType == TopologyData.EngineType.KAPACITOR) {
+      return respond(result, HttpStatus.OK);
+    } else {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE,
+              "Query and Algorithm task can not be in the same workflow"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @ApiOperation(value = "Validate topology", notes = "Validates a topology")
   @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
   public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
-    Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
+    Topology result = this.topologyTableManager.getTopology(topologyId);
+
     return respond(result, HttpStatus.OK);
   }
 
@@ -612,17 +642,44 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/deploy", method = RequestMethod.POST)
   public ResponseEntity deployTopology(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
-    Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
+    Topology result = this.topologyTableManager.getTopology(topologyId);
 
     // flink result
     TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
 
     LOGGER.info("TopologyData: " + topologyData.getConfigStr());
 
-    /*
-    FlinkEngine engine = new FlinkEngine(;)
-    String id = engine.createJob(topologyData);
-    engine.run(id); */
+    // Create
+    TopologyJobGroup jobGroup = TopologyJobGroup.create(topologyData);
+    // write to database
+    TopologyJobTableManager.getInstance().addOrUpdateTopologyJobGroup(jobGroup);
+
+    List<String> targetHosts = new ArrayList<>();
+    targetHosts.add((String) topologyData.getConfig().get("targetHost"));
+    for (String targetHost : targetHosts) {
+      targetHost = "localhost:8081";
+      String[] splits = targetHost.split(":");
+      FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+      String engineId = engine.createJob(topologyData);
+      TopologyJob job = TopologyJob.create(jobGroup.getId());
+      job.setEngineId(engineId);
+      // job.setData(targetHost); // ???
+      jobGroup.addJob(job);
+
+      // Write to database
+      TopologyJobTableManager.getInstance().addOrUpdateTopologyJob(job);
+
+      // Run
+      try {
+        engine.deploy(job.getEngineId());
+        job.getState().setState("RUNNING");
+        job.getState().setStartTime(System.currentTimeMillis());
+      } catch (Exception e) {
+        job.getState().setState("ERROR");
+      }
+      TopologyJobTableManager.getInstance().addOrUpdateTopologyJobState(jobGroup.getId(),
+          job.getId(), job.getState());
+    }
 
     return respond(result, HttpStatus.OK);
   }
@@ -631,7 +688,7 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/actions/export", method = RequestMethod.GET)
   public ResponseEntity exportTopology(@PathVariable("topologyId") Long topologyId) {
     try {
-      Topology topology = this.topologyTableManager.getTopology(topologyId, 1L);
+      Topology topology = this.topologyTableManager.getTopology(topologyId);
       String exportedTopology = this.topologyTableManager.exportTopology(topology);
       return respond(exportedTopology, HttpStatus.OK);
     } catch (Exception e) {
@@ -650,13 +707,25 @@ public class TopologyController {
       TopologyData topologyData = new ObjectMapper()
           .readValue(part.getInputStream(), TopologyData.class);
       Topology imported = this.topologyTableManager
-          .importTopology(namespaceId, topologyName, topologyData);
+          .importTopology(topologyName, topologyData);
       return respond(imported, HttpStatus.OK);
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @ApiOperation(value = "Get edge group list", notes = "Get edge group list")
+  @RequestMapping(value = "/edge/groups", method = RequestMethod.GET)
+  public ResponseEntity getGroupList() {
+    return respondEntity(edgeInfo.getGroupList(), HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Get engine list", notes = "Get engine list")
+  @RequestMapping(value = "/edge/groups/{groupId}", method = RequestMethod.GET)
+  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId) {
+    return respondEntity(edgeInfo.getEngineList(groupId, "any"), HttpStatus.OK);
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {

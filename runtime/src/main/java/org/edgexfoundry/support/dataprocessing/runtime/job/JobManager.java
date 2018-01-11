@@ -102,8 +102,8 @@ public final class JobManager {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 engineType = job.get(JobTableManager.Entry.engineType.name());
-                jobId = job.get(JobTableManager.Entry.jid.name());
-                groupId = job.get(JobTableManager.Entry.gid.name());
+                jobId = job.get(JobTableManager.Entry.id.name());
+                groupId = job.get(JobTableManager.Entry.groupId.name());
                 state = JobState.getState(job.get(JobTableManager.Entry.state.name()));
                 runtimeHost = job.get(JobTableManager.Entry.runtimeHost.name());
                 targetHost = job.get(JobTableManager.Entry.targetHost.name());
@@ -220,7 +220,7 @@ public final class JobManager {
 
         JobResponseFormat response = createGroupJob(groupId, request);
         if (response.getError().isError()) {
-            response.getError().setErrorMessage("Fail to Create Job.");
+            response.getError().setResponseMessage("Fail to Create Job.");
             response.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
         }
 
@@ -244,7 +244,7 @@ public final class JobManager {
             response.addJobGroup(jobGroup);
         }
 
-        response.getError().setErrorMessage("Created job instance : " + response.getJobGroups().size());
+        response.getError().setResponseMessage("Created job instance : " + response.getJobGroups().size());
         return response;
     }
 

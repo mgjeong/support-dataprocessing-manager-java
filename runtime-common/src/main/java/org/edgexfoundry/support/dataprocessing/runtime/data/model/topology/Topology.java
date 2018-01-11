@@ -89,6 +89,22 @@ public class Topology extends Format {
     this.config = config;
   }
 
+  @JsonIgnore
+  public void addConfig(String key, Object value) {
+    if (this.config != null) {
+      this.config.put(key, value);
+    }
+  }
+
+  @JsonIgnore
+  public <T> T getConfig(String key) {
+    if (this.config != null) {
+      return (T) this.config.get(key);
+    } else {
+      return null;
+    }
+  }
+
   public Long getVersionId() {
     return versionId;
   }

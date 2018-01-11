@@ -27,7 +27,8 @@ public enum ErrorType implements Serializable {
     DPFW_ERROR_DB,
     DPFW_ERROR_ENGINE_FLINK,
     DPFW_ERROR_FULL_JOB,
-    DPFW_ERROR_CONNECTION_ERROR;
+    DPFW_ERROR_CONNECTION_ERROR,
+    DPFW_ERROR_ENGINE_TYPE;
 
     @JsonIgnore
     private int error;

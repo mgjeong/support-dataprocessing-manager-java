@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 @JsonInclude(Include.NON_NULL)
 public class TopologyData {
 
+  private Long topologyId;
   private String topologyName;
   private Map<String, Object> config = new HashMap<>();
   private List<TopologySource> sources = new ArrayList<>();
@@ -22,6 +23,10 @@ public class TopologyData {
   private List<TopologyProcessor> processors = new ArrayList<>();
   private List<TopologyEdge> edges = new ArrayList<>();
   private TopologyEditorMetadata topologyEditorMetadata;
+
+  public enum EngineType {
+    MULTI, FLINK, KAPACITOR, UNKNOWN
+  }
 
   public TopologyData() {
 
@@ -111,5 +116,40 @@ public class TopologyData {
   public void setTopologyEditorMetadata(
       TopologyEditorMetadata topologyEditorMetadata) {
     this.topologyEditorMetadata = topologyEditorMetadata;
+  }
+
+  public Long getTopologyId() {
+    return this.topologyId;
+  }
+
+  public void setTopologyId(Long topologyId) {
+    this.topologyId = topologyId;
+  }
+
+  public EngineType getEngineType() {
+    EngineType engineType = null;
+
+    for (TopologyProcessor processor : processors) {
+      if (processor.getEngineType().toLowerCase().equals("flink")) {
+        if (engineType == null) {
+          engineType = EngineType.FLINK;
+        } else if (engineType == EngineType.KAPACITOR) {
+          engineType = EngineType.MULTI;
+          return engineType;
+        }
+      } else if (processor.getEngineType().toLowerCase().equals("kapacitor")) {
+        if (engineType == null) {
+          engineType = EngineType.KAPACITOR;
+        } else if (engineType == EngineType.FLINK) {
+          engineType = EngineType.MULTI;
+          return engineType;
+        }
+      } else {
+        engineType = EngineType.UNKNOWN;
+        return engineType;
+      }
+    }
+
+    return engineType;
   }
 }

@@ -30,7 +30,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineFactory;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
-import org.json.JSONString;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -228,15 +227,15 @@ public class JobManagerTest {
 
         // valid param - create
         Map<String, String> p2 = new HashMap<>(p);
-        p2.put(JobTableManager.Entry.jid.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce11");
-        p2.put(JobTableManager.Entry.gid.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce10");
+        p2.put(JobTableManager.Entry.id.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce11");
+        p2.put(JobTableManager.Entry.groupId.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce10");
         p2.put(JobTableManager.Entry.state.name(), JobState.CREATE.toString());
         payload.add(p2);
 
         // valid param - running
         Map<String, String> p3 = new HashMap<>(p2);
-        p3.put(JobTableManager.Entry.jid.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce21");
-        p3.put(JobTableManager.Entry.gid.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce20");
+        p3.put(JobTableManager.Entry.id.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce21");
+        p3.put(JobTableManager.Entry.groupId.name(), "ef91c5b3-b5bb-4e8b-8145-e271ac16ce20");
         p3.put(JobTableManager.Entry.state.name(), JobState.RUNNING.toString());
         payload.add(p3);
         return payload;
