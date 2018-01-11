@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
@@ -616,7 +617,13 @@ public class TopologyController {
     TopologyData.EngineType engineType = topologyData.getEngineType();
 
     if (engineType == TopologyData.EngineType.FLINK || engineType == TopologyData.EngineType.KAPACITOR) {
-      return respond(result, HttpStatus.OK);
+      EngineTypeResponse engineTypeResponse = null;
+      if (engineType == TopologyData.EngineType.FLINK) {
+        engineTypeResponse = new EngineTypeResponse("flink");
+      } else {
+        engineTypeResponse = new EngineTypeResponse("kapacitor");
+      }
+      return respond(engineTypeResponse, HttpStatus.OK);
     } else {
       return respond(
               new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE, "Query and Algorithm task can not be in the same workflow"),
