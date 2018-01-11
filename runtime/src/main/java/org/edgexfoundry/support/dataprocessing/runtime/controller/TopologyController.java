@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
@@ -25,13 +26,17 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobGroup;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
+import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyJobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -619,7 +624,6 @@ public class TopologyController {
 
     LOGGER.info("TopologyData: " + topologyData.getConfigStr());
 
-    /*
     String config = (String) topologyData.getConfig().get("targetHost");
     String[] splits = config.split(":");
     FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
@@ -628,9 +632,10 @@ public class TopologyController {
     TopologyJobGroup jobGroup = TopologyJobGroup.create(topologyData);
     //List<String> targetHosts = (List<String>) topologyData.getConfig().get("targetHost");
     List<String> targetHosts = new ArrayList<>();
-    targetHosts.add((String) topologyData.getConfig().get("targetHost"));
+    //targetHosts.add((String) topologyData.getConfig().get("targetHost"));
     for (String targetHost : targetHosts) {
-      String engineId = engine.createJob(topologyData);
+      //String engineId = engine.createJob(topologyData);
+      String engineId = "TODO: CHANGE HERE";
       TopologyJob job = TopologyJob.create(jobGroup.getId());
       job.setEngineId(engineId);
       // job.setData(targetHost); // ???
@@ -650,7 +655,6 @@ public class TopologyController {
       TopologyJobTableManager.getInstance().addOrUpdateTopologyJobState(jobGroup.getId(),
           job.getId(), job.getState());
     }
-    */
 
     return respond(result, HttpStatus.OK);
   }
