@@ -17,7 +17,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,7 +26,7 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 public class Application extends SpringBootServletInitializer {
 
   private static TaskManager taskManager = null;
-  private static JobManager jobManager = null;
+  //private static JobManager jobManager = null;
 
   private static void initialize() {
 
@@ -36,8 +35,8 @@ public class Application extends SpringBootServletInitializer {
 
       taskManager.scanTaskModel(Settings.FW_JAR_PATH);
 
-      jobManager = JobManager.getInstance();
-      jobManager.initialize();
+      //jobManager = JobManager.getInstance();
+      //jobManager.initialize();
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -14,6 +14,7 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 public abstract class AbstractStorageManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageManager.class);
+  protected static final Object writeLock = new Object();
 
   private Connection connection;
   private transient boolean isTerminated = false;

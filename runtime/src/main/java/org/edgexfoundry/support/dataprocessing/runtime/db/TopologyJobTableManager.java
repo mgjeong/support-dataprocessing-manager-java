@@ -30,7 +30,10 @@ public class TopologyJobTableManager extends AbstractStorageManager {
         + "VALUES (?, ?, ?, ?)";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
         jobGroupId, jobId, jobState.getState(), jobState.getStartTime())) {
-      int affectedRows = ps.executeUpdate();
+      int affectedRows;
+      synchronized (writeLock) {
+        affectedRows = ps.executeUpdate();
+      }
       if (affectedRows == 0) {
         throw new RuntimeException("Failed to insert job state.");
       } else {
@@ -53,7 +56,10 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
         topologyJob.getId(), topologyJob.getGroupId(),
         topologyJob.getEngineId(), topologyJob.getData())) {
-      int affectedRows = ps.executeUpdate();
+      int affectedRows;
+      synchronized (writeLock) {
+        affectedRows = ps.executeUpdate();
+      }
       if (affectedRows == 0) {
         throw new RuntimeException("Failed to insert job.");
       } else {
@@ -77,7 +83,10 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     int transactionKey = 4;
     try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
         topologyJobGroup.getId(), topologyJobGroup.getTopologyId())) {
-      int affectedRows = ps.executeUpdate();
+      int affectedRows;
+      synchronized (writeLock) {
+        affectedRows = ps.executeUpdate();
+      }
       if (affectedRows == 0) {
         throw new RuntimeException("Failed to insert job group.");
       } else {
