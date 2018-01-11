@@ -18,16 +18,22 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 
 public interface Engine {
-    JobResponseFormat createJob();
 
-    JobResponseFormat createJob(String jobId);
+  JobResponseFormat createJob();
 
-    JobResponseFormat run(String jobId);
+  JobResponseFormat createJob(String jobId);
 
-    JobResponseFormat stop(String jobId);
+  String createJob(TopologyData topology);
 
-    JobResponseFormat delete(String jobId);
+  JobResponseFormat deploy(String topologyName);
+
+  JobResponseFormat run(String jobId);
+
+  JobResponseFormat stop(String jobId);
+
+  JobResponseFormat delete(String jobId);
 }
 

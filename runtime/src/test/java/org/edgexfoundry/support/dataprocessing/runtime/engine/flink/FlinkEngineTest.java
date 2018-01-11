@@ -17,12 +17,17 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 
+import com.google.gson.Gson;
+import java.io.FileReader;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class FlinkEngineTest {
+    private static final String testConfigPath = "src/test/resources/config.json";
+    private static final String testJar = "src/test/resources/moving-average-0.1.0-SNAPSHOT.jar";
 
     @Test
     public void testFlinkEngine() {
@@ -51,5 +56,17 @@ public class FlinkEngineTest {
 
         en.delete(format.getJobId());
 
+    }
+
+    @Test
+    public void testCreateJar() throws Exception {
+        TopologyData sample = getSampleTopology();
+        Engine en = new FlinkEngine("localhost", 8081);
+        String id = en.createJob(sample);
+    }
+
+    private TopologyData getSampleTopology() throws Exception {
+        TopologyData res = new Gson().fromJson(new FileReader(testConfigPath), TopologyData.class);
+        return res;
     }
 }

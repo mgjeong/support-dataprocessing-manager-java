@@ -101,6 +101,12 @@
             <systemPath>${project.basedir}/lib/core-domain-1.0.0-SNAPSHOT.jar</systemPath>
             -->
         </dependency>
+
+        <dependency>
+            <groupId>org.edgexfoundry</groupId>
+            <artifactId>support-logging-client</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <repositories>
