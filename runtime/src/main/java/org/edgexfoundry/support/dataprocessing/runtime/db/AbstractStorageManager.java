@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.locks.ReentrantLock;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,36 +16,38 @@ public abstract class AbstractStorageManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageManager.class);
   protected static final Object writeLock = new Object();
+  protected static final ReentrantLock connectionLock = new ReentrantLock(false);
 
-  private Connection connection;
-  private transient boolean isTerminated = false;
+  private static Connection connection;
+  private static transient boolean isTerminated = false;
 
   /**
    * Used to control transaction.
    *
    * Commits/rollbacks only if transaction number match.
    */
-  private int transactionNumber = -1;
+  private static int tNumber = -1;
 
-  private String getJdbcUrl() {
+  private static String getJdbcUrl() {
     return "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH;
   }
 
-  private String getJdbcClass() {
+  private static String getJdbcClass() {
     return "org.sqlite.JDBC";
   }
 
-  protected synchronized Connection getConnection() throws SQLException {
+  protected synchronized static Connection getConnection() throws SQLException {
     return getConnection(-1);
   }
 
-  protected synchronized Connection getConnection(int transactionNumber) throws SQLException {
+  protected synchronized static Connection getConnection(int transactionNumber)
+      throws SQLException {
     if (isTerminated) {
       return null;
     }
 
-    if (this.transactionNumber == -1) {
-      this.transactionNumber = transactionNumber;
+    if (tNumber == -1) {
+      tNumber = transactionNumber;
     }
 
     if (connection != null && !connection.isClosed()) {
@@ -53,9 +56,9 @@ public abstract class AbstractStorageManager {
 
     try {
       Class.forName(getJdbcClass());
-      this.connection = DriverManager.getConnection(getJdbcUrl());
-      this.connection.setAutoCommit(false);
-      return this.connection;
+      connection = DriverManager.getConnection(getJdbcUrl());
+      connection.setAutoCommit(false);
+      return connection;
     } catch (ClassNotFoundException e) {
       throw new SQLException(e);
     }
@@ -76,35 +79,35 @@ public abstract class AbstractStorageManager {
     }
   }
 
-  protected void commit() {
+  protected static void commit() {
     commit(-1);
   }
 
-  protected void commit(int transactionNumber) {
+  protected static void commit(int transactionNumber) {
     try {
-      if (this.transactionNumber == transactionNumber) {
+      if (tNumber == transactionNumber) {
         getConnection().commit();
-        this.transactionNumber = -1;
+        tNumber = -1;
       }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);
-      this.transactionNumber = -1;
+      tNumber = -1;
     }
   }
 
-  protected void rollback() {
+  protected static void rollback() {
     rollback(-1);
   }
 
-  protected void rollback(int transactionNumber) {
+  protected static void rollback(int transactionNumber) {
     try {
-      if (this.transactionNumber == transactionNumber) {
+      if (tNumber == transactionNumber) {
         getConnection().rollback();
-        this.transactionNumber = -1;
+        tNumber = -1;
       }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);
-      this.transactionNumber = -1;
+      tNumber = -1;
     }
   }
 
@@ -117,16 +120,16 @@ public abstract class AbstractStorageManager {
     return ps;
   }
 
-  public void terminate() {
+  public static void terminate() {
     try {
-      if (this.isTerminated) {
+      if (isTerminated) {
         return;
       }
 
-      this.isTerminated = true;
-      if (this.connection != null && !this.connection.isClosed()) {
-        this.connection.rollback();
-        this.connection.close();
+      isTerminated = true;
+      if (connection != null && !connection.isClosed()) {
+        connection.rollback();
+        connection.close();
       }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);

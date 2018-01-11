@@ -119,30 +119,30 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO topology (name, config) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topology.getName(),
-        topology.getConfigStr())) {
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topology.getName(),
+          topology.getConfigStr())) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating topology failed, no rows affected.");
-      }
-
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          topology.setId(generatedKeys.getLong(1));
-          commit();
-          return topology;
-        } else {
-          throw new RuntimeException("Creating topology failed, no ID obtained.");
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating topology failed, no rows affected.");
         }
+
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            topology.setId(generatedKeys.getLong(1));
+            commit();
+            return topology;
+          } else {
+            throw new RuntimeException("Creating topology failed, no ID obtained.");
+          }
+        }
+      } catch (Exception e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-    } catch (Exception e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -161,25 +161,25 @@ public final class TopologyTableManager extends AbstractStorageManager {
     topology.setId(topologyId);
 
     String sql = "INSERT OR REPLACE INTO topology (id, name, config) VALUES (?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        topologyId,
-        topology.getName(),
-        topology.getConfigStr())) {
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          topologyId,
+          topology.getName(),
+          topology.getConfigStr())) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating topology failed, no rows affected.");
+        } else {
+          topology.setId(topologyId);
+          commit();
+          return topology;
+        }
+      } catch (Exception e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating topology failed, no rows affected.");
-      } else {
-        topology.setId(topologyId);
-        commit();
-        return topology;
-      }
-    } catch (Exception e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -220,21 +220,21 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO topology_editor_metadata (topologyId, data) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        editorMetadata.getTopologyId(), editorMetadata.getData())) {
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          editorMetadata.getTopologyId(), editorMetadata.getData())) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating topology editor metadata failed, no rows affected.");
+        } else {
+          commit();
+          return editorMetadata;
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating topology editor metadata failed, no rows affected.");
-      } else {
-        commit();
-        return editorMetadata;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -254,21 +254,21 @@ public final class TopologyTableManager extends AbstractStorageManager {
     editorMetadata.setTopologyId(topologyId);
 
     String sql = "INSERT OR REPLACE INTO topology_editor_metadata (topologyId, data) VALUES(?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        editorMetadata.getTopologyId(), editorMetadata.getData())) {
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          editorMetadata.getTopologyId(), editorMetadata.getData())) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating topology editor metadata failed, no rows affected.");
+        } else {
+          commit();
+          return editorMetadata;
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating topology editor metadata failed, no rows affected.");
-      } else {
-        commit();
-        return editorMetadata;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -285,23 +285,23 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO topology (id, name, config) VALUES(?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
-        topology.getName(), topology.getConfigStr())) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+          topology.getName(), topology.getConfigStr())) {
 
-      int affectedRows;
-      synchronized (writeLock) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating topology failed, no rows affected.");
+        } else {
+          topology.setId(topologyId);
+          commit();
+          return topology;
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating topology failed, no rows affected.");
-      } else {
-        topology.setId(topologyId);
-        commit();
-        return topology;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -321,15 +321,15 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
         ps.executeUpdate();
+        commit();
+        return topology;
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-      return topology;
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -377,14 +377,14 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_editor_metadata WHERE topologyId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
         ps.executeUpdate();
+        commit();
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -428,34 +428,35 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql = "INSERT INTO topology_component_bundle "
         + "(name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        bundle.getName(), bundle.getType().name(), bundle.getSubType(), bundle.getStreamingEngine(),
-        bundle.getBundleJar(), bundle.getTransformationClass(),
-        bundle.getTopologyComponentUISpecification().toString(),
-        bundle.getTopologyComponentUISpecification().toString(),
-        bundle.isBuiltin() ? "0" : "1")) {
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          bundle.getName(), bundle.getType().name(), bundle.getSubType(),
+          bundle.getStreamingEngine(),
+          bundle.getBundleJar(), bundle.getTransformationClass(),
+          bundle.getTopologyComponentUISpecification().toString(),
+          bundle.getTopologyComponentUISpecification().toString(),
+          bundle.isBuiltin() ? "0" : "1")) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating bundle failed, no rows affected.");
-      }
-
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          bundle.setId(generatedKeys.getLong(1));
-          commit();
-          return bundle;
-        } else {
-          throw new RuntimeException("Creating bundle failed, no ID obtained.");
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating bundle failed, no rows affected.");
         }
+
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            bundle.setId(generatedKeys.getLong(1));
+            commit();
+            return bundle;
+          } else {
+            throw new RuntimeException("Creating bundle failed, no ID obtained.");
+          }
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -474,27 +475,28 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql = "INSERT OR REPLACE INTO topology_component_bundle "
         + "(id, name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        bundle.getId(),
-        bundle.getName(), bundle.getType().name(), bundle.getSubType(), bundle.getStreamingEngine(),
-        bundle.getBundleJar(), bundle.getTransformationClass(),
-        bundle.getTopologyComponentUISpecification().toString(),
-        bundle.getTopologyComponentUISpecification().toString(),
-        bundle.isBuiltin() ? '0' : '1')) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          bundle.getId(),
+          bundle.getName(), bundle.getType().name(), bundle.getSubType(),
+          bundle.getStreamingEngine(),
+          bundle.getBundleJar(), bundle.getTransformationClass(),
+          bundle.getTopologyComponentUISpecification().toString(),
+          bundle.getTopologyComponentUISpecification().toString(),
+          bundle.isBuiltin() ? '0' : '1')) {
 
-      int affectedRows;
-      synchronized (writeLock) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating bundle failed, no rows affected.");
+        } else {
+          commit();
+          return bundle;
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating bundle failed, no rows affected.");
-      } else {
-        commit();
-        return bundle;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -531,15 +533,15 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_component_bundle WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        topologyComponentBundleId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          topologyComponentBundleId)) {
         ps.executeUpdate();
+        commit();
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -599,33 +601,33 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_stream (topologyId, componentId, streamName, fields) VALUES"
         + "(?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        topologyStream.getTopologyId(), topologyStream.getComponentId(),
-        topologyStream.getStreamId(), topologyStream.getFieldsStr())) {
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          topologyStream.getTopologyId(), topologyStream.getComponentId(),
+          topologyStream.getStreamId(), topologyStream.getFieldsStr())) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating stream failed, no rows affected.");
-      }
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating stream failed, no rows affected.");
+        }
 
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          topologyStream.setId(generatedKeys.getLong(1));
-          commit();
-          return topologyStream;
-        } else {
-          throw new RuntimeException("Creating stream failed, no ID obtained.");
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            topologyStream.setId(generatedKeys.getLong(1));
+            commit();
+            return topologyStream;
+          } else {
+            throw new RuntimeException("Creating stream failed, no ID obtained.");
+          }
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
       } catch (SQLException e) {
+        rollback();
         throw new RuntimeException(e);
       }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -653,24 +655,24 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_stream (id, topologyId, componentId, streamName, fields) VALUES"
             + "(?,?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        topologyStreamId,
-        stream.getTopologyId(), stream.getComponentId(),
-        stream.getStreamId(), stream.getFieldsStr())) {
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          topologyStreamId,
+          stream.getTopologyId(), stream.getComponentId(),
+          stream.getStreamId(), stream.getFieldsStr())) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating stream failed, no rows affected.");
+        } else {
+          commit();
+          return stream;
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating stream failed, no rows affected.");
-      } else {
-        commit();
-        return stream;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -692,16 +694,16 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND componentId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
-        streamId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+          streamId)) {
         ps.executeUpdate();
+        commit();
+        return stream;
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-      return stream;
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -770,33 +772,33 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_edge (topologyId, fromId, toId, streamGroupings) "
         + "VALUES (?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        topologyEdge.getTopologyId(), topologyEdge.getFromId(),
-        topologyEdge.getToId(), topologyEdge.getStreamGroupings())) {
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          topologyEdge.getTopologyId(), topologyEdge.getFromId(),
+          topologyEdge.getToId(), topologyEdge.getStreamGroupings())) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating edge failed, no rows affected.");
-      }
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating edge failed, no rows affected.");
+        }
 
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          topologyEdge.setId(generatedKeys.getLong(1));
-          commit();
-          return topologyEdge;
-        } else {
-          throw new RuntimeException("Creating edge failed, no ID obtained.");
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            topologyEdge.setId(generatedKeys.getLong(1));
+            commit();
+            return topologyEdge;
+          } else {
+            throw new RuntimeException("Creating edge failed, no ID obtained.");
+          }
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
       } catch (SQLException e) {
+        rollback();
         throw new RuntimeException(e);
       }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -819,23 +821,23 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_edge (id, topologyId, fromId, toId, streamGroupings) "
             + "VALUES (?,?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        topologyEdgeId,
-        topologyEdge.getTopologyId(), topologyEdge.getFromId(),
-        topologyEdge.getToId(), topologyEdge.getStreamGroupings())) {
-      // update
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          topologyEdgeId,
+          topologyEdge.getTopologyId(), topologyEdge.getFromId(),
+          topologyEdge.getToId(), topologyEdge.getStreamGroupings())) {
+        // update
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating edge failed, no rows affected.");
+        }
+        commit();
+        return topologyEdge;
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating edge failed, no rows affected.");
-      }
-      commit();
-      return topologyEdge;
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -845,15 +847,15 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_edge WHERE topologyId = ? AND (fromId = ? OR toId = ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
-        componentId, componentId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+          componentId, componentId)) {
         ps.executeUpdate();
+        commit();
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -874,15 +876,16 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_edge WHERE topologyId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId, edgeId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+          edgeId)) {
         ps.executeUpdate();
+        commit();
+        return edge;
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-      return edge;
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -955,50 +958,50 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql = "INSERT INTO topology_component (topologyId, componentBundleId, name, config) "
         + "VALUES (?, ?, ?, ?)";
     int transactionKey = 31;
-    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
-        topologyId, topologyComponent.getTopologyComponentBundleId(),
-        topologyComponent.getName(), topologyComponent.getConfigStr())) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+          topologyId, topologyComponent.getTopologyComponentBundleId(),
+          topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating component failed, no rows affected.");
-      }
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating component failed, no rows affected.");
+        }
 
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          topologyComponent.setId(generatedKeys.getLong(1));
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            topologyComponent.setId(generatedKeys.getLong(1));
 
-          // Insert output streams
-          List<TopologyStream> streams = null;
-          if ((topologyComponent instanceof TopologySource)) {
-            streams = ((TopologySource) topologyComponent).getOutputStreams();
-          } else if ((topologyComponent instanceof TopologyProcessor)) {
-            streams = ((TopologyProcessor) topologyComponent).getOutputStreams();
-          }
-          if (streams != null) {
-            for (TopologyStream stream : streams) {
-              stream.setTopologyId(topologyId);
-              stream.setComponentId(topologyComponent.getId());
-              addTopologyStream(stream);
+            // Insert output streams
+            List<TopologyStream> streams = null;
+            if ((topologyComponent instanceof TopologySource)) {
+              streams = ((TopologySource) topologyComponent).getOutputStreams();
+            } else if ((topologyComponent instanceof TopologyProcessor)) {
+              streams = ((TopologyProcessor) topologyComponent).getOutputStreams();
             }
-          }
+            if (streams != null) {
+              for (TopologyStream stream : streams) {
+                stream.setTopologyId(topologyId);
+                stream.setComponentId(topologyComponent.getId());
+                addTopologyStream(stream);
+              }
+            }
 
-          commit(transactionKey);
-          return (T) topologyComponent;
-        } else {
-          throw new RuntimeException("Creating component failed, no ID obtained.");
+            commit(transactionKey);
+            return (T) topologyComponent;
+          } else {
+            throw new RuntimeException("Creating component failed, no ID obtained.");
+          }
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
         }
       } catch (SQLException e) {
+        rollback(transactionKey);
         throw new RuntimeException(e);
       }
-    } catch (SQLException e) {
-      rollback(transactionKey);
-      throw new RuntimeException(e);
     }
   }
 
@@ -1023,40 +1026,40 @@ public final class TopologyTableManager extends AbstractStorageManager {
         "INSERT OR REPLACE INTO topology_component (id, topologyId, componentBundleId, name, config) "
             + "VALUES (?, ?, ?, ?, ?)";
     int transactionKey = 31;
-    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
-        topologyComponentId,
-        topologyId, topologyComponent.getTopologyComponentBundleId(),
-        topologyComponent.getName(), topologyComponent.getConfigStr())) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+          topologyComponentId,
+          topologyId, topologyComponent.getTopologyComponentBundleId(),
+          topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
-      // insert
-      int affectedRows;
-      synchronized (writeLock) {
+        // insert
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating component failed, no rows affected.");
-      }
-
-      // Update output streams
-      List<TopologyStream> streams = null;
-      if ((topologyComponent instanceof TopologySource)) {
-        streams = ((TopologySource) topologyComponent).getOutputStreams();
-      } else if ((topologyComponent instanceof TopologyProcessor)) {
-        streams = ((TopologyProcessor) topologyComponent).getOutputStreams();
-      }
-      if (streams != null) {
-        for (TopologyStream stream : streams) {
-          stream.setTopologyId(topologyId);
-          stream.setComponentId(topologyComponentId);
-          addOrUpdateTopologyStream(stream.getId(), stream);
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating component failed, no rows affected.");
         }
-      }
 
-      commit(transactionKey);
-      return (T) topologyComponent;
-    } catch (SQLException e) {
-      rollback(transactionKey);
-      throw new RuntimeException(e);
+        // Update output streams
+        List<TopologyStream> streams = null;
+        if ((topologyComponent instanceof TopologySource)) {
+          streams = ((TopologySource) topologyComponent).getOutputStreams();
+        } else if ((topologyComponent instanceof TopologyProcessor)) {
+          streams = ((TopologyProcessor) topologyComponent).getOutputStreams();
+        }
+        if (streams != null) {
+          for (TopologyStream stream : streams) {
+            stream.setTopologyId(topologyId);
+            stream.setComponentId(topologyComponentId);
+            addOrUpdateTopologyStream(stream.getId(), stream);
+          }
+        }
+
+        commit(transactionKey);
+        return (T) topologyComponent;
+      } catch (SQLException e) {
+        rollback(transactionKey);
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -1066,6 +1069,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
    * @param topologyId topology id
    * @param topologyComponentId component id
    */
+
   public <T extends TopologyComponent> T removeTopologyComponent(Long topologyId,
       Long topologyComponentId) {
     if (topologyId == null || topologyComponentId == null) {
@@ -1084,16 +1088,16 @@ public final class TopologyTableManager extends AbstractStorageManager {
     removeTopologyComponentStreams(topologyId, topologyComponentId);
 
     String sql = "DELETE FROM topology_component WHERE topologyId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
-        topologyComponentId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+          topologyComponentId)) {
         ps.executeUpdate();
+        commit();
+        return (T) component;
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-      return (T) component;
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -1103,15 +1107,15 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND componentId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
-        topologyComponentId)) {
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+          topologyComponentId)) {
         ps.executeUpdate();
+        commit();
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      commit();
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 

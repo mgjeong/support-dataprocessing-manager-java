@@ -28,21 +28,21 @@ public class TopologyJobTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO job_state (groupId, jobId, state, startTime) "
         + "VALUES (?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        jobGroupId, jobId, jobState.getState(), jobState.getStartTime())) {
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+          jobGroupId, jobId, jobState.getState(), jobState.getStartTime())) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Failed to insert job state.");
+        } else {
+          commit();
+          return jobState;
+        }
+      } catch (SQLException e) {
+        rollback();
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Failed to insert job state.");
-      } else {
-        commit();
-        return jobState;
-      }
-    } catch (SQLException e) {
-      rollback();
-      throw new RuntimeException(e);
     }
   }
 
@@ -53,24 +53,24 @@ public class TopologyJobTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO job (id, groupId, engineId, data) VALUES (?, ?, ?, ?)";
     int transactionKey = 2;
-    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
-        topologyJob.getId(), topologyJob.getGroupId(),
-        topologyJob.getEngineId(), topologyJob.getData())) {
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+          topologyJob.getId(), topologyJob.getGroupId(),
+          topologyJob.getEngineId(), topologyJob.getData())) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Failed to insert job.");
+        } else {
+          addOrUpdateTopologyJobState(topologyJob.getGroupId(), topologyJob.getId(),
+              topologyJob.getState());
+          commit(transactionKey);
+          return topologyJob;
+        }
+      } catch (SQLException e) {
+        rollback(transactionKey);
+        throw new RuntimeException(e);
       }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Failed to insert job.");
-      } else {
-        addOrUpdateTopologyJobState(topologyJob.getGroupId(), topologyJob.getId(),
-            topologyJob.getState());
-        commit(transactionKey);
-        return topologyJob;
-      }
-    } catch (SQLException e) {
-      rollback(transactionKey);
-      throw new RuntimeException(e);
     }
   }
 
@@ -81,25 +81,25 @@ public class TopologyJobTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO job_group (id, topologyId) VALUES (?, ?)";
     int transactionKey = 4;
-    try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
-        topologyJobGroup.getId(), topologyJobGroup.getTopologyId())) {
-      int affectedRows;
-      synchronized (writeLock) {
+    synchronized (writeLock) {
+      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+          topologyJobGroup.getId(), topologyJobGroup.getTopologyId())) {
+        int affectedRows;
         affectedRows = ps.executeUpdate();
-      }
-      if (affectedRows == 0) {
-        throw new RuntimeException("Failed to insert job group.");
-      } else {
-        // Add jobs
-        for (TopologyJob job : topologyJobGroup.getJobs()) {
-          addOrUpdateTopologyJob(job);
+        if (affectedRows == 0) {
+          throw new RuntimeException("Failed to insert job group.");
+        } else {
+          // Add jobs
+          for (TopologyJob job : topologyJobGroup.getJobs()) {
+            addOrUpdateTopologyJob(job);
+          }
+          commit(transactionKey);
+          return topologyJobGroup;
         }
-        commit(transactionKey);
-        return topologyJobGroup;
+      } catch (SQLException e) {
+        rollback(transactionKey);
+        throw new RuntimeException(e);
       }
-    } catch (SQLException e) {
-      rollback(transactionKey);
-      throw new RuntimeException(e);
     }
   }
 
