@@ -743,7 +743,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
       throw new RuntimeException("Topology id or edge id is null.");
     }
 
-    String sql = "SELECT * FROM topology_edge WHERE topology_id = ? AND id = ?";
+    String sql = "SELECT * FROM topology_edge WHERE topologyId = ? AND id = ?";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId, edgeId);
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {

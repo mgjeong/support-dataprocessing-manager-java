@@ -309,7 +309,7 @@ public class TopologyController {
     TopologyState state = new TopologyState();
     state.setTopologyId(topologyId);
     state.setName("TOPOLOGY_STATE_INITIAL");
-    state.setDescription("Topology initialized.");
+    state.setDescription("Topology deployed.");
     return respond(state, HttpStatus.OK);
   }
 
