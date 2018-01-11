@@ -96,8 +96,8 @@ CREATE TABLE IF NOT EXISTS `job` (
 CREATE TABLE IF NOT EXISTS `job_state` (
   `groupId` TEXT NOT NULL,
   `jobId` TEXT NOT NULL,
-  `state` TEXT NOT NULL,
-  `startTime` LONG NOT NULL,
+  `state` TEXT,
+  `startTime` LONG,
   PRIMARY KEY (`groupId`, `jobId`),
   FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`),
   FOREIGN KEY (`jobId`) REFERENCES `job` (`id`)

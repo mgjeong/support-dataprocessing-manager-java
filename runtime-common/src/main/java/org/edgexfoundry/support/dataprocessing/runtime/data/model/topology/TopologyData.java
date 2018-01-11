@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 @JsonInclude(Include.NON_NULL)
 public class TopologyData {
 
+  private Long topologyId;
   private String topologyName;
   private Map<String, Object> config = new HashMap<>();
   private List<TopologySource> sources = new ArrayList<>();
@@ -111,5 +112,13 @@ public class TopologyData {
   public void setTopologyEditorMetadata(
       TopologyEditorMetadata topologyEditorMetadata) {
     this.topologyEditorMetadata = topologyEditorMetadata;
+  }
+
+  public Long getTopologyId() {
+    return this.topologyId;
+  }
+
+  public void setTopologyId(Long topologyId){
+    this.topologyId = topologyId;
   }
 }

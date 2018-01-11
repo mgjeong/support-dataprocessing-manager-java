@@ -1313,6 +1313,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
   public TopologyData doExportTopology(Topology topology) {
     TopologyData topologyData = new TopologyData();
+    topologyData.setTopologyId(topology.getId());
     topologyData.setTopologyName(topology.getName());
     topologyData.setConfig(topology.getConfigStr());
     topologyData.setTopologyEditorMetadata(

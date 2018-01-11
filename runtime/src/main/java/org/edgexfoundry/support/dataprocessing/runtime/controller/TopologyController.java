@@ -620,9 +620,37 @@ public class TopologyController {
     LOGGER.info("TopologyData: " + topologyData.getConfigStr());
 
     /*
-    FlinkEngine engine = new FlinkEngine(;)
-    String id = engine.createJob(topologyData);
-    engine.run(id); */
+    String config = (String) topologyData.getConfig().get("targetHost");
+    String[] splits = config.split(":");
+    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+
+    // Create
+    TopologyJobGroup jobGroup = TopologyJobGroup.create(topologyData);
+    //List<String> targetHosts = (List<String>) topologyData.getConfig().get("targetHost");
+    List<String> targetHosts = new ArrayList<>();
+    targetHosts.add((String) topologyData.getConfig().get("targetHost"));
+    for (String targetHost : targetHosts) {
+      String engineId = engine.createJob(topologyData);
+      TopologyJob job = TopologyJob.create(jobGroup.getId());
+      job.setEngineId(engineId);
+      // job.setData(targetHost); // ???
+      jobGroup.addJob(job);
+    }
+    TopologyJobTableManager.getInstance().addOrUpdateTopologyJobGroup(jobGroup);
+
+    // Run
+    for (TopologyJob job : jobGroup.getJobs()) {
+      try {
+        engine.run(job.getEngineId());
+        job.getState().setState("RUNNING");
+        job.getState().setStartTime(System.currentTimeMillis());
+      } catch (Exception e) {
+        job.getState().setState("ERROR");
+      }
+      TopologyJobTableManager.getInstance().addOrUpdateTopologyJobState(jobGroup.getId(),
+          job.getId(), job.getState());
+    }
+    */
 
     return respond(result, HttpStatus.OK);
   }
