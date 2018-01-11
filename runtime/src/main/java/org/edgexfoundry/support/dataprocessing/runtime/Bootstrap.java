@@ -31,7 +31,7 @@ public class Bootstrap {
     dpfwSink.setName("DPFW-SINK");
     dpfwSink.setType(TopologyComponentBundle.TopologyComponentType.SINK);
     dpfwSink.setTimestamp(System.currentTimeMillis());
-    dpfwSink.setStreamingEngine("STORM");
+    dpfwSink.setStreamingEngine("FLINK");
     dpfwSink.setSubType("DPFW");
     dpfwSink.setBundleJar("");
 
@@ -62,7 +62,7 @@ public class Bootstrap {
     dpfwSource.setName("DPFW-SOURCE");
     dpfwSource.setType(TopologyComponentBundle.TopologyComponentType.SOURCE);
     dpfwSource.setTimestamp(System.currentTimeMillis());
-    dpfwSource.setStreamingEngine("STORM");
+    dpfwSource.setStreamingEngine("FLINK");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("");
     dpfwSource.setTransformationClass("");
@@ -94,7 +94,7 @@ public class Bootstrap {
     runtimeTopology.setName("Runtime topology");
     runtimeTopology.setType(TopologyComponentBundle.TopologyComponentType.TOPOLOGY);
     runtimeTopology.setTimestamp(System.currentTimeMillis());
-    runtimeTopology.setStreamingEngine("STORM");
+    runtimeTopology.setStreamingEngine("FLINK");
     runtimeTopology.setSubType("TOPOLOGY");
     runtimeTopology.setBundleJar("");
 

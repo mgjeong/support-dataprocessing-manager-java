@@ -37,6 +37,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyJobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +62,12 @@ public class TopologyController {
 
   private TopologyTableManager topologyTableManager = null;
   private TaskManager taskManager = null;
+  private EdgeInfo edgeInfo = null;
 
   public TopologyController() {
     this.topologyTableManager = TopologyTableManager.getInstance();
     this.taskManager = TaskManager.getInstance();
+    this.edgeInfo = new EdgeInfo();
   }
 
   @ApiOperation(value = "Sample get response", notes = "Returns response entity.")
@@ -610,7 +613,20 @@ public class TopologyController {
   public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Topology result = this.topologyTableManager.getTopology(topologyId);
-    return respond(result, HttpStatus.OK);
+
+    TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
+
+    TopologyData.EngineType engineType = topologyData.getEngineType();
+
+    if (engineType == TopologyData.EngineType.FLINK
+        || engineType == TopologyData.EngineType.KAPACITOR) {
+      return respond(result, HttpStatus.OK);
+    } else {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE,
+              "Query and Algorithm task can not be in the same workflow"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @ApiOperation(value = "Deploy topology", notes = "Deploys a topology")
@@ -688,6 +704,18 @@ public class TopologyController {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @ApiOperation(value = "Get edge group list", notes = "Get edge group list")
+  @RequestMapping(value = "/edge/groups", method = RequestMethod.GET)
+  public ResponseEntity getGroupList() {
+    return respondEntity(edgeInfo.getGroupList(), HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Get engine list", notes = "Get engine list")
+  @RequestMapping(value = "/edge/groups/{groupId}", method = RequestMethod.GET)
+  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId) {
+    return respondEntity(edgeInfo.getEngineList(groupId, "any"), HttpStatus.OK);
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {
