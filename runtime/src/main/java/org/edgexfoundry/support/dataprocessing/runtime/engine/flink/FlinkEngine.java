@@ -229,7 +229,7 @@ public class FlinkEngine extends AbstractEngine {
     JobResponseFormat responseFormat = new JobResponseFormat();
     try {
       Map<String, String> args = new HashMap<>();
-      args.put("program-args", String.format("--jobId %s", jobId));
+      args.put("program-args", String.format("--json %s", jobId));
       args.put("entry-class",
           "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
       args.put("parallelism", "1");
