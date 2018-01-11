@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Schema.Type;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
@@ -257,7 +258,7 @@ public class TopologyTableManagerTest {
     field.setUserInput(true);
     field.setTooltip(tooltip);
     field.setOptional(false);
-    field.setType("string");
+    field.setType(UIFieldType.STRING);
     componentUISpecification.addUIField(field);
   }
 

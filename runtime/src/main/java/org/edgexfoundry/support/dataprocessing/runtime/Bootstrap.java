@@ -1,6 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class Bootstrap {
     runtimeHost.setUserInput(true);
     runtimeHost.setTooltip("Enter hostname of runtime edge.");
     runtimeHost.setOptional(false);
-    runtimeHost.setType("string");
+    runtimeHost.setType(UIFieldType.STRING);
     runtimeHost.setDefaultValue("localhost:8082");
     componentUISpecification.addUIField(runtimeHost);
     ComponentUISpecification.UIField targetHost = new ComponentUISpecification.UIField();
@@ -113,7 +114,7 @@ public class Bootstrap {
     targetHost.setUserInput(true);
     targetHost.setTooltip("Enter hostname of target edge.");
     targetHost.setOptional(false);
-    targetHost.setType("string");
+    targetHost.setType(UIFieldType.STRING);
     targetHost.setDefaultValue("localhost:9092");
     componentUISpecification.addUIField(targetHost);
     runtimeTopology.setTopologyComponentUISpecification(componentUISpecification);
@@ -145,7 +146,7 @@ public class Bootstrap {
     field.setUserInput(true);
     field.setTooltip(tooltip);
     field.setOptional(false);
-    field.setType("string");
+    field.setType(UIFieldType.STRING);
     componentUISpecification.addUIField(field);
   }
 
