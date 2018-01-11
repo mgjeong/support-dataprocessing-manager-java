@@ -8,10 +8,7 @@ import com.google.gson.JsonParser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
@@ -699,8 +696,23 @@ public class TopologyController {
 
   @ApiOperation(value = "Get engine list", notes = "Get engine list")
   @RequestMapping(value = "/edge/groups/{groupId}", method = RequestMethod.GET)
-  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId) {
-    return respondEntity(edgeInfo.getEngineList(groupId, "any"), HttpStatus.OK);
+  public ResponseEntity getEngineList(@PathVariable("groupId") String groupId,
+                                      @RequestParam(value = "engineType", required = false) String engineType) {
+    List<String> engineList;
+
+    if (engineType == null) {
+      engineList = edgeInfo.getEngineList(groupId, "any");
+    } else {
+      engineList = edgeInfo.getEngineList(groupId, engineType);
+    }
+
+    JsonArray response = new JsonArray();
+
+    for (String engine : engineList) {
+      response.add(engine);
+    }
+
+    return respondEntity(response, HttpStatus.OK);
   }
   private ResponseEntity listTopologyComponentTopologyBundles() {
     // TEMP
