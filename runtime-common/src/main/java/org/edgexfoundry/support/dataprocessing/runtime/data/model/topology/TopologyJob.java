@@ -104,10 +104,10 @@ public class TopologyJob extends Format {
     }
   }
 
-  public static TopologyJob create(String jobGroupId) {
+  public static TopologyJob create(String jobGroupId, String jobId) {
     TopologyJob job = new TopologyJob();
-    job.setId(UUID.randomUUID().toString());
     job.setState(new TopologyJobState());
+    job.setId(jobId);
     job.setGroupId(jobGroupId);
     return job;
   }

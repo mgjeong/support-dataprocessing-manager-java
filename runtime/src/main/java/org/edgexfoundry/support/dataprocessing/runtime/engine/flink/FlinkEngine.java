@@ -223,6 +223,7 @@ public class FlinkEngine extends AbstractEngine {
   @Override
   public JobResponseFormat deploy(String jobId) {
     JobResponseFormat responseFormat = new JobResponseFormat();
+    String flinkJobId = null;
     try {
       Map<String, String> args = new HashMap<>();
       args.put("program-args", String.format("--json %s", jobId));
@@ -243,7 +244,7 @@ public class FlinkEngine extends AbstractEngine {
         return responseFormat;
       }
 
-      String flinkJobId = jsonResponse.get("jobid").getAsString(); // TODO: Exception handling
+      flinkJobId = jsonResponse.get("jobid").getAsString(); // TODO: Exception handling
 
       // Update database with flink's job Id
 
@@ -254,7 +255,7 @@ public class FlinkEngine extends AbstractEngine {
           e.getMessage()));
     } finally {
       // Make response
-      responseFormat.setJobId(jobId);
+      responseFormat.setJobId(flinkJobId);
       return responseFormat;
     }
   }

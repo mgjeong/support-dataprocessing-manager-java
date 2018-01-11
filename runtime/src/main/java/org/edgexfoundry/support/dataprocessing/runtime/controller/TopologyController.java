@@ -15,6 +15,7 @@ import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
@@ -659,34 +660,36 @@ public class TopologyController {
     // write to database
     TopologyJobTableManager.getInstance().addOrUpdateTopologyJobGroup(jobGroup);
 
-    List<String> targetHosts = new ArrayList<>();
-    targetHosts.add((String) topologyData.getConfig().get("targetHost"));
-    for (String targetHost : targetHosts) {
-      targetHost = "localhost:8081";
-      String[] splits = targetHost.split(":");
-      FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-      String engineId = engine.createJob(topologyData);
-      TopologyJob job = TopologyJob.create(jobGroup.getId());
-      job.setEngineId(engineId);
-      job.setConfig(topologyData.getConfig());
-      jobGroup.addJob(job);
+    String targetHost = (String) topologyData.getConfig().get("targetHost");
+    targetHost = "localhost:8081";
+    String[] splits = targetHost.split(":");
+    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    String jobId = engine.createJob(topologyData);
+    TopologyJob job = TopologyJob.create(jobGroup.getId(), jobId);
+    job.setConfig(topologyData.getConfig());
+    jobGroup.addJob(job);
 
-      // Write to database
-      TopologyJobTableManager.getInstance().addOrUpdateTopologyJob(job);
-
-      // Run
-      try {
-        engine.deploy(job.getEngineId());
-        job.getState().setState("RUNNING");
-        job.getState().setStartTime(System.currentTimeMillis());
-      } catch (Exception e) {
-        job.getState().setState("ERROR");
-      }
-      TopologyJobTableManager.getInstance().addOrUpdateTopologyJobState(jobGroup.getId(),
-          job.getId(), job.getState());
+    // Run
+    JobResponseFormat response = engine.deploy(job.getId());
+    if (response.getJobId() != null) {
+      job.setEngineId(response.getJobId());
+      job.getState().setState("RUNNING");
+      job.getState().setStartTime(System.currentTimeMillis());
+    } else {
+      job.getState().setState("ERROR");
     }
 
-    return respond(result, HttpStatus.OK);
+    // Write to database
+    TopologyJobTableManager.getInstance().addOrUpdateTopologyJob(job);
+
+    // Response by success/failure
+    if (job.getState().getState() == "RUNNING") {
+      return respond(result, HttpStatus.OK);
+    } else {
+      LOGGER.error("Failed to deploy topology.\n{}", response.getError().getResponseMessage());
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK,
+          "Failed to deploy topology"), HttpStatus.OK);
+    }
   }
 
   @ApiOperation(value = "Export topology", notes = "Exports a topology")
