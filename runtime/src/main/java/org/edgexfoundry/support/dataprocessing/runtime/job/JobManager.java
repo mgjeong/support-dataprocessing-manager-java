@@ -220,7 +220,7 @@ public final class JobManager {
 
         JobResponseFormat response = createGroupJob(groupId, request);
         if (response.getError().isError()) {
-            response.getError().setErrorMessage("Fail to Create Job.");
+            response.getError().setResponseMessage("Fail to Create Job.");
             response.getError().setErrorCode(ErrorType.DPFW_ERROR_FULL_JOB);
         }
 
@@ -244,7 +244,7 @@ public final class JobManager {
             response.addJobGroup(jobGroup);
         }
 
-        response.getError().setErrorMessage("Created job instance : " + response.getJobGroups().size());
+        response.getError().setResponseMessage("Created job instance : " + response.getJobGroups().size());
         return response;
     }
 
