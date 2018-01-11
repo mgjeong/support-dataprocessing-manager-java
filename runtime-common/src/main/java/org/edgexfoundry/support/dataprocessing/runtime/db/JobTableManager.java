@@ -71,6 +71,7 @@ public final class JobTableManager {
 
   //create "job" table
   private void createJobTable() throws Exception {
+    /*
     SqliteConnector.TableDesc td = new SqliteConnector.TableDesc(JOBTABLENAME);
 
     td.addColum(Entry.engineType.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
@@ -84,6 +85,7 @@ public final class JobTableManager {
     td.addColum(Entry.targetHost.name(), new SqliteConnector.ColumnDesc("TEXT", "NOT NULL"));
     td.addColum(Entry.runtimeHost.name(), new SqliteConnector.ColumnDesc("TEXT", ""));
     dbCon.createTable(td);
+    */
   }
 
 
@@ -92,6 +94,7 @@ public final class JobTableManager {
       String output, String taskinfo, String engineId, String targetHost,
       String runtimeHost)
       throws SQLException, InvalidParameterException {
+    /*
 
     if (SqliteConnector.Util.validateParams(jobId, gId, state, input, output, taskinfo, engineId)) {
       throw new InvalidParameterException();
@@ -117,13 +120,14 @@ public final class JobTableManager {
             runtimeHost);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
   //update a job to the table "job"
   public void updateJob(String jobId, String gId, String state, String input,
       String output, String taskInfo, String engineId)
       throws SQLException, InvalidParameterException {
-
+    /*
     if (SqliteConnector.Util.validateParams(jobId, gId, state, input, output, engineId)) {
       throw new InvalidParameterException();
     }
@@ -140,11 +144,13 @@ public final class JobTableManager {
         Entry.id.name(), jobId);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
   //Update state column by id
   public void updateState(String jobId, String state)
       throws SQLException, InvalidParameterException {
+    /*
     if (SqliteConnector.Util.validateParams(jobId, state)) {
       throw new InvalidParameterException();
     }
@@ -153,13 +159,14 @@ public final class JobTableManager {
         JOBTABLENAME, Entry.state.name(), state, Entry.id.name(), jobId);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
 
   //update Payload( input, output, taskinfo ) column by ID
   public void updatePayload(String jobId, String input, String output, String taskinfo)
       throws SQLException, InvalidParameterException {
-
+    /*
     if (SqliteConnector.Util.validateParams(jobId, input, output, taskinfo)) {
       throw new InvalidParameterException();
     }
@@ -169,12 +176,13 @@ public final class JobTableManager {
         Entry.taskinfo.name(), taskinfo, Entry.id.name(), jobId);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
   //update engineid column by ID
   public void updateEngineId(String jobId, String engineId) throws SQLException {
-
-    if (SqliteConnector.Util.validateParams(jobId/*, engineId*/)) {
+    /*
+    if (SqliteConnector.Util.validateParams(jobId/*, engineId*)) {
       throw new InvalidParameterException();
     }
 
@@ -182,11 +190,12 @@ public final class JobTableManager {
         JOBTABLENAME, Entry.engineid.name(), engineId, Entry.id.name(), jobId);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
   //update groupId column by id
   public void updateGroupId(String jobId, String gId) throws SQLException {
-
+    /*
     if (SqliteConnector.Util.validateParams(jobId, gId)) {
       throw new InvalidParameterException();
     }
@@ -195,11 +204,13 @@ public final class JobTableManager {
         JOBTABLENAME, Entry.groupId.name(), gId, Entry.id.name(), jobId);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
   //Select state column value by id
   public List<Map<String, String>> getStateById(String jobId) throws SQLException {
-
+    throw new UnsupportedOperationException();
+    /*
     if (SqliteConnector.Util.validateParams(jobId)) {
       throw new InvalidParameterException();
     }
@@ -208,11 +219,12 @@ public final class JobTableManager {
         Entry.state.name(), JOBTABLENAME, Entry.id.name(), jobId);
     LOGGER.info(query);
     return dbCon.executeSelect(query);
+    */
   }
 
   //select Payload( input, output, taskinfo ) column value by ID
   public List<Map<String, String>> getPayloadById(String jobId) throws SQLException {
-
+    /*
     if (SqliteConnector.Util.validateParams(jobId)) {
       throw new InvalidParameterException();
     }
@@ -223,11 +235,13 @@ public final class JobTableManager {
         jobId);
     LOGGER.info(query);
     return dbCon.executeSelect(query);
+    */
+    throw new UnsupportedOperationException();
   }
 
   //Select engineid column value by id
   public List<Map<String, String>> getEngineIdById(String jobId) throws SQLException {
-
+    /*
     if (SqliteConnector.Util.validateParams(jobId)) {
       throw new InvalidParameterException();
     }
@@ -236,11 +250,13 @@ public final class JobTableManager {
         Entry.engineid.name(), JOBTABLENAME, Entry.id.name(), jobId);
     LOGGER.info(query);
     return dbCon.executeSelect(query);
+    */
+    throw new UnsupportedOperationException();
   }
 
   //Select groupId column value by id
   public List<Map<String, String>> getGroupIdById(String jobId) throws SQLException {
-
+  /*
     if (SqliteConnector.Util.validateParams(jobId)) {
       throw new InvalidParameterException();
     }
@@ -249,11 +265,13 @@ public final class JobTableManager {
         Entry.groupId.name(), JOBTABLENAME, Entry.id.name(), jobId);
     LOGGER.info(query);
     return dbCon.executeSelect(query);
+    */
+    throw new UnsupportedOperationException();
   }
 
   //select all columns by id
   public List<Map<String, String>> getRowById(String jobId) throws SQLException {
-
+/*
     if (SqliteConnector.Util.validateParams(jobId)) {
       throw new InvalidParameterException();
     }
@@ -262,10 +280,13 @@ public final class JobTableManager {
         JOBTABLENAME, Entry.groupId.name(), jobId);
     LOGGER.info(query);
     return dbCon.executeSelect(query);
+    */
+    throw new UnsupportedOperationException();
   }
 
   //select id, state of all jobs
   public List<Map<String, String>> getAllJobs() throws SQLException {
+    /*
     String query = String.format(" SELECT %s, %s, %s, %s, %s, %s, %s, %s, %s FROM %s;",
         Entry.runtimeHost.name(),
         Entry.targetHost.name(), Entry.engineType.name(),
@@ -273,12 +294,14 @@ public final class JobTableManager {
         Entry.output.name(), Entry.taskinfo.name(), JOBTABLENAME);
     LOGGER.info(query);
     return dbCon.executeSelect(query);
+    */
+    throw new UnsupportedOperationException();
   }
 
 
   //delete a job to the table "Job"
   public void deleteJobById(String jobId) throws SQLException {
-
+/*
     if (SqliteConnector.Util.validateParams(jobId)) {
       throw new InvalidParameterException();
     }
@@ -287,17 +310,21 @@ public final class JobTableManager {
         JOBTABLENAME, Entry.groupId.name(), jobId);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
 
   //delete all from table "Job"
   public void deleteAllJob() throws SQLException {
+    /*
     String query = String.format(" DELETE FROM %s;", JOBTABLENAME);
     LOGGER.info(query);
     dbCon.executeUpdate(query);
+    */
   }
 
   public void deleteAllJob(String engineType) throws SQLException {
+    /*
     if (null != engineType) {
       String query = String
           .format(" DELETE FROM %s WHERE %s = %s;", JOBTABLENAME, Entry.engineType, engineType);
@@ -306,5 +333,6 @@ public final class JobTableManager {
     } else {
       deleteAllJob();
     }
+    */
   }
 }

@@ -128,7 +128,8 @@ public abstract class AbstractStorageManager {
 
       isTerminated = true;
       if (connection != null && !connection.isClosed()) {
-        connection.rollback();
+        //connection.rollback();
+        connection.commit();
         connection.close();
       }
     } catch (SQLException e) {

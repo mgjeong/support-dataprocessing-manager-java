@@ -22,8 +22,10 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 
 public interface Engine {
 
+  @Deprecated
   JobResponseFormat createJob();
 
+  @Deprecated
   JobResponseFormat createJob(String jobId);
 
   String createJob(TopologyData topology);
