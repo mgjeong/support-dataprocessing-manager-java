@@ -411,7 +411,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
         bundle.getName(), bundle.getType().name(), bundle.getSubType(), bundle.getStreamingEngine(),
-        bundle.getBundleJar(), bundle.getFieldHintProviderClass(),
+        bundle.getBundleJar(), bundle.getTransformationClass(),
         bundle.getTopologyComponentUISpecification().toString(),
         bundle.getTopologyComponentUISpecification().toString(),
         bundle.isBuiltin() ? "0" : "1")) {
@@ -455,7 +455,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
         bundle.getId(),
         bundle.getName(), bundle.getType().name(), bundle.getSubType(), bundle.getStreamingEngine(),
-        bundle.getBundleJar(), bundle.getFieldHintProviderClass(),
+        bundle.getBundleJar(), bundle.getTransformationClass(),
         bundle.getTopologyComponentUISpecification().toString(),
         bundle.getTopologyComponentUISpecification().toString(),
         bundle.isBuiltin() ? '0' : '1')) {
@@ -865,6 +865,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
         .append("topology_component.componentBundleId AS componentBundleId,")
         .append("topology_component.name AS name,")
         .append("topology_component.config as config,")
+        .append("topology_component_bundle.path as path,")
+        .append("topology_component_bundle.classname as classname,")
         .append("topology_component_bundle.type AS type, ")
         .append("topology_component_bundle.streamingEngine AS streamingEngine ")
         .append("FROM topology_component, topology_component_bundle ")
@@ -1145,6 +1147,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
     component.setName(rs.getString("name"));
     component.setEngineType(rs.getString("streamingEngine"));
     component.setConfigStr(rs.getString("config"));
+    component.setPath(rs.getString("path"));
+    component.setClassname(rs.getString("classname"));
 
     return component;
   }
@@ -1203,6 +1207,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
         .append("topology_component.componentBundleId AS componentBundleId,")
         .append("topology_component.name AS name,")
         .append("topology_component.config as config,")
+        .append("topology_component_bundle.path as path,")
+        .append("topology_component_bundle.classname as classname,")
         .append("topology_component_bundle.type AS type, ")
         .append("topology_component_bundle.streamingEngine AS streamingEngine ")
         .append("FROM topology_component, topology_component_bundle ")

@@ -18,6 +18,8 @@ public class TopologyComponent extends Format {
   private String name = StringUtils.EMPTY;
   private String description = StringUtils.EMPTY;
   private String engineType = StringUtils.EMPTY;
+  private String path = StringUtils.EMPTY;
+  private String classname = StringUtils.EMPTY;
   private Boolean reconfigure = false;
   private Long timestamp;
   private Config config = new Config();
@@ -39,6 +41,22 @@ public class TopologyComponent extends Format {
 
   public void setTopologyId(Long topologyId) {
     this.topologyId = topologyId;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
+
+  public String getClassname() {
+    return classname;
+  }
+
+  public void setClassname(String classname) {
+    this.classname = classname;
   }
 
   public Long getVersionId() {

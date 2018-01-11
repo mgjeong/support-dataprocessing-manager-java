@@ -124,6 +124,7 @@ public abstract class AbstractStorageManager {
 
       this.isTerminated = true;
       if (this.connection != null && !this.connection.isClosed()) {
+        this.connection.rollback();
         this.connection.close();
       }
     } catch (SQLException e) {

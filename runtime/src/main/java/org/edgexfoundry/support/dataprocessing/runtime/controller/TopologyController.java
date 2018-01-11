@@ -608,9 +608,9 @@ public class TopologyController {
     return respond(cs, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Validate topology", notes = "Validates a topology")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
-  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
+  @ApiOperation(value = "Check topology whether unique engine type", notes = "Check topology whether unique engine type")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/enginetype", method = RequestMethod.GET)
+  public ResponseEntity checkEngineType(@PathVariable("topologyId") Long topologyId,
       @PathVariable("versionId") Long versionId) {
     Topology result = this.topologyTableManager.getTopology(topologyId);
 
@@ -627,6 +627,15 @@ public class TopologyController {
               "Query and Algorithm task can not be in the same workflow"),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @ApiOperation(value = "Validate topology", notes = "Validates a topology")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
+  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("versionId") Long versionId) {
+    Topology result = this.topologyTableManager.getTopology(topologyId);
+
+    return respond(result, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Deploy topology", notes = "Deploys a topology")
@@ -648,6 +657,7 @@ public class TopologyController {
     List<String> targetHosts = new ArrayList<>();
     targetHosts.add((String) topologyData.getConfig().get("targetHost"));
     for (String targetHost : targetHosts) {
+      targetHost = "localhost:8081";
       String[] splits = targetHost.split(":");
       FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
       String engineId = engine.createJob(topologyData);
