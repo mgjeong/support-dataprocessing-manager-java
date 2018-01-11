@@ -1,12 +1,14 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.task;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
-import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,22 +18,29 @@ public class FlatMapTask extends RichFlatMapFunction<DataSet, DataSet> {
 
   private TaskModel task;
 
-  private TaskFormat taskFormat;
+  private Map<String, Object> properties;
 
-  public FlatMapTask(TaskFormat taskFormat) {
-    this.taskFormat = taskFormat;
+  public FlatMapTask(Map<String, Object> properties) {
+    this.properties = properties;
   }
 
   @Override
   public void open(Configuration parameters) throws Exception {
     super.open(parameters);
 
-    LOGGER.info("Attempting to create task for {}", this.taskFormat.getName());
     // Create task using TaskFactory which is made up by factory pattern.
-    String jarPath = this.taskFormat.getJar();
+    String jarPath = (String) properties.get("jar");
     ClassLoader classLoader = getRuntimeContext().getUserCodeClassLoader();
-    String targetClass = this.taskFormat.getClassName();
-    this.task = new TaskModelLoader(jarPath, classLoader).newInstance(targetClass);
+    String targetClass = (String) properties.get("className");
+    this.task = new ModelLoader(jarPath, classLoader).newInstance(targetClass);
+    if (this.task != null) {
+      TaskModelParam taskModelParam = new TaskModelParam();
+      taskModelParam.putAll(properties);
+
+      this.task.setParam(taskModelParam);
+      this.task.setInRecordKeys((List<String>) properties.get("inrecord"));
+      this.task.setOutRecordKeys((List<String>) properties.get("outrecord"));
+    }
   }
 
   @Override

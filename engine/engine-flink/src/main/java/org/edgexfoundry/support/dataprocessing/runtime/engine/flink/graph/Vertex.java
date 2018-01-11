@@ -4,7 +4,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public interface Vertex {
-  int getId();
+  Long getId();
 
   DataStream<DataSet> serve();
 

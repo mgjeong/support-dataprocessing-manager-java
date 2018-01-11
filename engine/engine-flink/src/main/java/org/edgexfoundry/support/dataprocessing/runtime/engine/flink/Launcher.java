@@ -18,10 +18,11 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 import com.google.gson.Gson;
-import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Parameter;
+import java.io.Reader;
+import java.net.URL;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
@@ -35,6 +36,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSin
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.task.ModelLoader;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator.TaskFlatMap;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
@@ -51,7 +53,7 @@ public class Launcher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
 
-  private static final String CONFIGPATH = "/config3.json";
+  private static final String CONFIGPATH = "/config.json";
 
   private JobTableManager jobTableManager = null;
 
@@ -71,18 +73,10 @@ public class Launcher {
     }
 
     env.getConfig().setGlobalJobParameters(params);
-    LOGGER.info("KRKIM Current position: {}", System.getProperty("user.dir"));
-    String userConfig = params.get("config");
-    InputStreamReader jsonReader;
-    if (userConfig != null) {
-      LOGGER.info("Reading {}", userConfig);
-      jsonReader = new InputStreamReader(getClass().getResourceAsStream(userConfig));
-    } else {
-      LOGGER.info("Reading default configurations");
-      jsonReader = new InputStreamReader(getClass().getResourceAsStream(CONFIGPATH));
-    }
-
+    Reader jsonReader = new InputStreamReader(getClass().getResourceAsStream(CONFIGPATH));
     JobGraph jobGraph = new JobGraphBuilder().getInstance(env, jsonReader).initialize();
+
+    jsonReader.close();
     jobGraph.execute();
   }
 

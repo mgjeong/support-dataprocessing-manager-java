@@ -127,7 +127,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>install-core-domain</id>
+                        <id>install-support-logging</id>
                         <phase>validate</phase>
                         <goals>
                             <goal>install-file</goal>

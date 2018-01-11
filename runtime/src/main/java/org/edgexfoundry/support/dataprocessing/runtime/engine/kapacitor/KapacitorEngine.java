@@ -12,6 +12,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.ScriptFactory;
@@ -37,6 +38,16 @@ public class KapacitorEngine extends AbstractEngine {
     public JobResponseFormat createJob(String jobId) {
         LOGGER.info("Kapacitor job {} is created", jobId);
         return createJob().setJobId(jobId);
+    }
+
+    @Override
+    public String createJob(TopologyData topology) {
+        return null;
+    }
+
+    @Override
+    public JobResponseFormat deploy(String topologyName) {
+        return null;
     }
 
     @Override

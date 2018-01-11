@@ -10,6 +10,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class JobGraph {
+  private String jobId;
   private StreamExecutionEnvironment env;
   private List<Vertex> processingOrder;
   private Map<Vertex, List<Vertex>> edges;
@@ -19,9 +20,18 @@ public class JobGraph {
     UNVISITED
   }
 
-  public JobGraph(StreamExecutionEnvironment env, Map<Vertex, List<Vertex>> edges) {
+  public JobGraph(String jobId, StreamExecutionEnvironment env, Map<Vertex, List<Vertex>> edges) {
+    this.jobId = jobId;
     this.env = env;
     this.edges = edges;
+  }
+
+  public String getJobId() {
+    return jobId;
+  }
+
+  public void setJobId(String jobId) {
+    this.jobId = jobId;
   }
 
   public JobGraph initialize() {
@@ -75,7 +85,7 @@ public class JobGraph {
         }
       }
     }
-    this.env.execute();
+    this.env.execute(this.jobId);
   }
 
 }

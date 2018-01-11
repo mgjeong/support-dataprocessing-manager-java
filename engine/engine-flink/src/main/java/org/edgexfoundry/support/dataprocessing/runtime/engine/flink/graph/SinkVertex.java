@@ -1,7 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph;
 
+import java.util.Map;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
@@ -14,23 +16,25 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SinkVertex implements Vertex {
 
-  DataFormat dataConfig;
+  TopologySink config;
   DataStream<DataSet> influx;
 
-  public SinkVertex(DataFormat dataConfig) {
-    this.dataConfig = dataConfig;
+  public SinkVertex(TopologySink config) {
+    this.config = config;
   }
 
   @Override
-  public int getId() {
-    return this.dataConfig.getId();
+  public Long getId() {
+    return (Long) this.config.getId();
   }
 
   @Override
   public DataStream<DataSet> serve() {
-    String dataType = dataConfig.getDataType().toLowerCase();
-    if (dataType.equals("zmq")) {
-      String[] dataSource = dataConfig.getDataSource().split(":");
+    Map<String, Object> properties = this.config.getConfig().getProperties();
+    String type = ((String) properties.get("dataType")).toLowerCase();
+    String source = ((String) properties.get("dataSource"));
+    if (type.equals("zmq")) {
+      String[] dataSource = source.split(":");
       ZMQConnectionConfig zmqConnectionConfig = new Builder()
           .setHost(dataSource[0].trim())
           .setPort(Integer.parseInt(dataSource[1].trim()))
@@ -39,25 +43,26 @@ public class SinkVertex implements Vertex {
 
       influx.addSink(new ZMQSink<>(zmqConnectionConfig, dataSource[2], new DataSetSchema()))
           .setParallelism(1);
-    } else if (dataType.equals("ws")) {
-      String[] dataSource = dataConfig.getDataSource().split(":");
+    } else if (type.equals("ws")) {
+      String[] dataSource = source.split(":");
       influx.addSink(new WebSocketServerSink(Integer.parseInt(dataSource[1])))
           .setParallelism(1);
-    } else if (dataType.equals("ezmq")) {
-      String[] dataSource = dataConfig.getDataSource().split(":");
+    } else if (type.equals("ezmq")) {
+      String[] dataSource = source.split(":");
       int port = Integer.parseInt(dataSource[1].trim());
       influx.addSink(new EZMQSink(port)).setParallelism(1);
-    } else if (dataType.equals("f")) {
-      String outputFilePath = dataConfig.getDataSource();
+    } else if (type.equals("f")) {
+      String outputFilePath = source;
       if (!outputFilePath.endsWith(".txt")) {
         outputFilePath += ".txt";
       }
       influx.addSink(new FileOutputSink(outputFilePath));
-    } else if (dataType.equals("mongodb")) {
-      influx.addSink(new MongoDBSink(dataConfig.getDataSource(), dataConfig.getName()))
+    } else if (type.equals("mongodb")) {
+      String name = ((String) properties.get("name"));
+      influx.addSink(new MongoDBSink(source, name))
           .setParallelism(1);
     } else {
-      throw new RuntimeException("Unsupported output data type: " + dataType);
+      throw new RuntimeException("Unsupported output data type: " + type);
     }
 
     return null;

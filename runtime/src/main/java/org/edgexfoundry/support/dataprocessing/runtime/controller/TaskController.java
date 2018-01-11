@@ -79,7 +79,6 @@ public class TaskController {
 //                new TaskResponseFormat((ArrayList<TaskFormat>)
 //                        taskManager.getTaskModel(name));
 
-
         LOGGER.debug(response.toString());
         return response;
     }
