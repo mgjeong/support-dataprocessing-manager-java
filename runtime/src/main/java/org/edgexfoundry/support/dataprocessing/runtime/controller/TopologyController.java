@@ -605,10 +605,10 @@ public class TopologyController {
     return respond(cs, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Validate topology", notes = "Validates a topology")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
-  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
+  @ApiOperation(value = "Check topology whether unique engine type", notes = "Check topology whether unique engine type")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/enginetype", method = RequestMethod.GET)
+  public ResponseEntity checkEngineType(@PathVariable("topologyId") Long topologyId,
+                                         @PathVariable("versionId") Long versionId) {
     Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
 
     TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
@@ -622,6 +622,15 @@ public class TopologyController {
               new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE, "Query and Algorithm task can not be in the same workflow"),
               HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  @ApiOperation(value = "Validate topology", notes = "Validates a topology")
+  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
+  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("versionId") Long versionId) {
+    Topology result = this.topologyTableManager.getTopology(topologyId, versionId);
+
+    return respond(result, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Deploy topology", notes = "Deploys a topology")
