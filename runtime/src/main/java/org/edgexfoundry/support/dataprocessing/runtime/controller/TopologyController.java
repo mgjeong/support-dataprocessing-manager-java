@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
@@ -29,7 +31,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobGroup;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
@@ -53,6 +54,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -63,11 +65,13 @@ public class TopologyController {
   private static final Logger LOGGER = LoggerFactory.getLogger(TopologyController.class);
 
   private TopologyTableManager topologyTableManager = null;
+  private TopologyJobTableManager topologyJobTableManager = null;
   private TaskManager taskManager = null;
   private EdgeInfo edgeInfo = null;
 
   public TopologyController() {
     this.topologyTableManager = TopologyTableManager.getInstance();
+    this.topologyJobTableManager = TopologyJobTableManager.getInstance();
     this.taskManager = TaskManager.getInstance();
     this.edgeInfo = new EdgeInfo();
   }
@@ -656,23 +660,21 @@ public class TopologyController {
     LOGGER.info("TopologyData: " + topologyData.getConfigStr());
 
     // Create
-    TopologyJobGroup jobGroup = TopologyJobGroup.create(topologyData);
-    // write to database
-    TopologyJobTableManager.getInstance().addOrUpdateTopologyJobGroup(jobGroup);
-
     String targetHost = (String) topologyData.getConfig().get("targetHost");
-    targetHost = "localhost:8081";
+    // targetHost = "localhost:8081";
+    topologyData.getConfig().put("targetHost", targetHost);
     String[] splits = targetHost.split(":");
     FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
     String jobId = engine.createJob(topologyData);
-    TopologyJob job = TopologyJob.create(jobGroup.getId(), jobId);
+    TopologyJob job = TopologyJob.create(topologyId, jobId);
     job.setConfig(topologyData.getConfig());
-    jobGroup.addJob(job);
 
     // Run
     JobResponseFormat response = engine.deploy(job.getId());
+    //TODO: job id should be unique! (Flink returns job name as its job id)
+    job.setId(UUID.randomUUID().toString()); // TODO: TEMP. Assign a random job id
     if (response.getJobId() != null) {
-      job.setEngineId(response.getJobId());
+      job.getState().setEngineId(response.getJobId()); // engine id
       job.getState().setState("RUNNING");
       job.getState().setStartTime(System.currentTimeMillis());
     } else {
@@ -749,6 +751,41 @@ public class TopologyController {
     }
 
     return respondEntity(response, HttpStatus.OK);
+  }
+
+  /**
+   * TEMPORARY
+   **/
+  @ApiOperation(value = "Get topology jobs", notes = "Get topology jos")
+  @RequestMapping(value = "/topologies/{topologyId}/jobs", method = RequestMethod.GET)
+  public ResponseEntity getTopologyJobs(@PathVariable("topologyId") Long topologyId) {
+    try {
+      Collection<TopologyJob> jobs = topologyJobTableManager.listTopologyJobs(topologyId);
+      jobs = jobs.stream().filter(
+          topologyJob -> topologyJob.getState().getState().equalsIgnoreCase("RUNNING"))
+          .collect(Collectors.toSet());
+      return respondEntity(jobs, HttpStatus.OK);
+    } catch (Exception e) {
+      return respondEntity(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  /**
+   * TEMPORARY
+   **/
+  @ApiOperation(value = "Stop job", notes = "Stop job")
+  @RequestMapping(value = "/topologies/{topologyId}/jobs/{jobId}/stop", method = RequestMethod.GET)
+  public ResponseEntity stopJob(@PathVariable("topologyId") Long topologyId,
+      @PathVariable("jobId") String jobId, RedirectAttributes redirectAttributes) {
+    TopologyJob job = topologyJobTableManager.getTopologyJob(topologyId, jobId);
+    String targetHost = (String) job.getConfig("targetHost");
+    String[] splits = targetHost.split(":");
+    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    JobResponseFormat response = engine.stop(job.getState().getEngineId());
+    job.getState().setState("STOPPED");
+    TopologyJobTableManager.getInstance().addOrUpdateTopologyJobState(job.getId(), job.getState());
+
+    return respond(response, HttpStatus.OK);
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {

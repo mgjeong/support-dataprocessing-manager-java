@@ -62,44 +62,26 @@ CREATE TABLE IF NOT EXISTS `topology_edge` (
 );
 
 -- -----------------------------------------------------
--- Table `job_group`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `job_group` (
-  `id` TEXT NOT NULL,
-  `topologyId` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`)
-);
-
--- -----------------------------------------------------
 -- Table `job`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `job` (
   `id` TEXT NOT NULL,
-  `groupId` TEXT NOT NULL,
-  `engineId` TEXT,
+  `topologyId` INTEGER NOT NULL,
   `config` TEXT,
-  `input` TEXT,
-  `output` TEXT,
-  `taskinfo` TEXT,
-  `state` TEXT,
-  `targetHost` TEXT,
-  `runtimeHost` TEXT,
-  `engineType` TEXT,
-  PRIMARY KEY (`id`, `groupId`),
-  FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`)
+  PRIMARY KEY (`id`, `topologyId`),
+  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`)
 );
 
 -- -----------------------------------------------------
 -- Table `job_state`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `job_state` (
-  `groupId` TEXT NOT NULL,
   `jobId` TEXT NOT NULL,
   `state` TEXT,
   `startTime` LONG,
-  PRIMARY KEY (`groupId`, `jobId`),
-  FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`),
+  `engineId` TEXT,
+  `engineType` TEXT,
+  PRIMARY KEY (`jobId`),
   FOREIGN KEY (`jobId`) REFERENCES `job` (`id`)
 );
 

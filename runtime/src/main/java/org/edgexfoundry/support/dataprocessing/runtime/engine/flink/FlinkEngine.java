@@ -22,9 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,13 +39,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyJobTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,7 +106,7 @@ public class FlinkEngine extends AbstractEngine {
     Path configJson = Paths.get(targetPath);
     File configJsonFile = configJson.toFile();
     try {
-     // OutputStreamWriter fileWriter = null;
+      // OutputStreamWriter fileWriter = null;
 
       if (configJsonFile.exists()) {
         if (!configJsonFile.delete()) {
@@ -342,18 +336,13 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public JobResponseFormat stop(String jobId) {
+  public JobResponseFormat stop(String flinkJobId) {
     try {
-      List<Map<String, String>> result = JobTableManager.getInstance().getEngineIdById(jobId);
-      String flinkJobId = null;
-      if (!result.isEmpty()) {
-        flinkJobId = result.get(0).get(JobTableManager.Entry.engineid.name());
-      }
-
+      //List<Map<String, String>> result = JobTableManager.getInstance().getEngineIdById(jobId);
       if (flinkJobId != null) {
         this.httpClient.delete("/jobs/" + flinkJobId + "/cancel"); // TODO: Exception handling
 
-        JobTableManager.getInstance().updateEngineId(jobId, null);
+        //JobTableManager.getInstance().updateEngineId(jobId, null);
       }
 
     } catch (Exception e) {
@@ -361,7 +350,7 @@ public class FlinkEngine extends AbstractEngine {
     } finally {
       // Make response
       JobResponseFormat responseFormat = new JobResponseFormat();
-      responseFormat.setJobId(jobId);
+      responseFormat.setJobId(flinkJobId);
       return responseFormat;
     }
   }

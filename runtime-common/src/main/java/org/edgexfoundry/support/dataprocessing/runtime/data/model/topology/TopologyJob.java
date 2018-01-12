@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
@@ -17,8 +16,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 public class TopologyJob extends Format {
 
   private String id;
-  private String groupId;
-  private String engineId;
+  private Long topologyId;
   private Map<String, Object> config = new HashMap<>();
 
   private TopologyJobState state;
@@ -36,28 +34,22 @@ public class TopologyJob extends Format {
     this.state = state;
   }
 
+  @JsonProperty("jobId")
   public String getId() {
     return id;
   }
 
+  @JsonProperty("jobId")
   public void setId(String id) {
     this.id = id;
   }
 
-  public String getGroupId() {
-    return groupId;
+  public Long getTopologyId() {
+    return topologyId;
   }
 
-  public void setGroupId(String groupId) {
-    this.groupId = groupId;
-  }
-
-  public String getEngineId() {
-    return engineId;
-  }
-
-  public void setEngineId(String engineId) {
-    this.engineId = engineId;
+  public void setTopologyId(Long topologyId) {
+    this.topologyId = topologyId;
   }
 
   @JsonIgnore
@@ -104,11 +96,11 @@ public class TopologyJob extends Format {
     }
   }
 
-  public static TopologyJob create(String jobGroupId, String jobId) {
+  public static TopologyJob create(Long topologyId, String jobId) {
     TopologyJob job = new TopologyJob();
     job.setState(new TopologyJobState());
+    job.setTopologyId(topologyId);
     job.setId(jobId);
-    job.setGroupId(jobGroupId);
     return job;
   }
 }
