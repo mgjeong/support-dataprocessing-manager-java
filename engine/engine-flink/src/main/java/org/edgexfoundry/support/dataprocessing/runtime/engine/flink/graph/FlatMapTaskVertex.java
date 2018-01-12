@@ -1,14 +1,13 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph;
 
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.task.FlatMapTask;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator.TaskFlatMap;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class FlatMapTaskVertex implements Vertex {
-  private DataStream<DataSet> influx;
+
+  private DataStream<DataSet> influx = null;
   private TopologyProcessor taskInfo;
 
   public FlatMapTaskVertex(TopologyProcessor taskInfo) {
@@ -29,5 +28,4 @@ public class FlatMapTaskVertex implements Vertex {
   public void setFluxIn(DataStream<DataSet> influx) {
     this.influx = influx;
   }
-
 }

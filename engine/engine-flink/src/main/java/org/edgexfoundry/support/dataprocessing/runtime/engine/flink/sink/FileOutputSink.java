@@ -17,36 +17,36 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
-import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
-
 import java.io.File;
 import java.io.PrintWriter;
+import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class FileOutputSink extends RichSinkFunction<DataSet> {
-    private File outputFile = null;
 
-    private PrintWriter writer = null;
+  private File outputFile = null;
 
-    public FileOutputSink(String outputFilePath) {
-        this.outputFile = new File(outputFilePath);
+  private PrintWriter writer = null;
+
+  public FileOutputSink(String outputFilePath) {
+    this.outputFile = new File(outputFilePath);
+  }
+
+  @Override
+  public void invoke(DataSet dataSet) throws Exception {
+    if (this.writer == null) {
+      this.writer = new PrintWriter(this.outputFile);
     }
 
-    @Override
-    public void invoke(DataSet dataSet) throws Exception {
-        if (this.writer == null) {
-            this.writer = new PrintWriter(this.outputFile);
-        }
+    this.writer.println(dataSet.toString());
+    this.writer.flush();
+  }
 
-        this.writer.println(dataSet.toString());
-        this.writer.flush();
+  @Override
+  public void close() throws Exception {
+    if (this.writer != null) {
+      this.writer.close();
     }
-
-    @Override
-    public void close() throws Exception {
-        if (this.writer != null) {
-            this.writer.close();
-        }
-        super.close();
-    }
+    super.close();
+  }
 }

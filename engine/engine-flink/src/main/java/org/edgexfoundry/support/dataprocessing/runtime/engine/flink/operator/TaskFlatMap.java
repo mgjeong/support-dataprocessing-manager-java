@@ -17,63 +17,61 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator;
 
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.util.Collector;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskFactory;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
-import org.apache.flink.api.common.functions.RichFlatMapFunction;
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TaskFlatMap extends RichFlatMapFunction<DataSet, DataSet> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskFlatMap.class);
 
-    private TaskModel task;
+  private static final Logger LOGGER = LoggerFactory.getLogger(TaskFlatMap.class);
+  private TaskModel task;
+  private TaskFormat taskFormat;
+  private transient TaskFactory taskFactory;
+  private String host = null;
 
-    private TaskFormat taskFormat;
+  public TaskFlatMap(TaskFormat taskFormat) {
+    this(taskFormat, null);
+  }
 
-    private transient TaskFactory taskFactory;
+  public TaskFlatMap(TaskFormat taskFormat, String host) {
+    this.taskFormat = taskFormat;
+    this.host = host;
+  }
 
-    private String host = null;
+  @Override
+  public void open(Configuration parameters) throws Exception {
+    super.open(parameters);
 
-    public TaskFlatMap(TaskFormat taskFormat) {
-        this(taskFormat, null);
+    LOGGER
+        .info("Attempting to create task for {} / {}", taskFormat.getType(), taskFormat.getName());
+    // Create task using TaskFactory which is made up by factory pattern.
+    this.task = getTaskFactory().createTaskModelInst(taskFormat.getType(), taskFormat.getName(),
+        getRuntimeContext().getUserCodeClassLoader(), this.host);
+    if (null != this.task) {
+      this.task.setParam(taskFormat.getParams());
+      this.task.setInRecordKeys(taskFormat.getInrecord());
+      this.task.setOutRecordKeys(taskFormat.getOutrecord());
     }
+  }
 
-    public TaskFlatMap(TaskFormat taskFormat, String host) {
-        this.taskFormat = taskFormat;
-        this.host = host;
+  @Override
+  public void flatMap(DataSet dataSet, Collector<DataSet> collector) throws Exception {
+    dataSet = this.task.calculate(dataSet);
+    if (dataSet != null) {
+      collector.collect(dataSet);
     }
+  }
 
-    @Override
-    public void open(Configuration parameters) throws Exception {
-        super.open(parameters);
-
-        LOGGER.info("Attempting to create task for {} / {}", taskFormat.getType(), taskFormat.getName());
-        // Create task using TaskFactory which is made up by factory pattern.
-        this.task = getTaskFactory().createTaskModelInst(taskFormat.getType(), taskFormat.getName(),
-                getRuntimeContext().getUserCodeClassLoader(), this.host);
-        if (null != this.task) {
-            this.task.setParam(taskFormat.getParams());
-            this.task.setInRecordKeys(taskFormat.getInrecord());
-            this.task.setOutRecordKeys(taskFormat.getOutrecord());
-        }
+  private synchronized TaskFactory getTaskFactory() {
+    if (this.taskFactory == null) {
+      this.taskFactory = TaskFactory.getInstance();
     }
-
-    @Override
-    public void flatMap(DataSet dataSet, Collector<DataSet> collector) throws Exception {
-        dataSet = this.task.calculate(dataSet);
-        if (dataSet != null) {
-            collector.collect(dataSet);
-        }
-    }
-
-    private synchronized TaskFactory getTaskFactory() {
-        if (this.taskFactory == null) {
-            this.taskFactory = TaskFactory.getInstance();
-        }
-        return this.taskFactory;
-    }
+    return this.taskFactory;
+  }
 }

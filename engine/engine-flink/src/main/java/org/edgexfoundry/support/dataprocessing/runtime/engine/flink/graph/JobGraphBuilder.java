@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
@@ -19,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JobGraphBuilder {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JobGraphBuilder.class);
   private TopologyData jobConfig;
 
@@ -36,7 +34,7 @@ public class JobGraphBuilder {
     return new JobGraph(jobConfig.getTopologyName(), env, edges);
   }
 
-  private void initConfig(StreamExecutionEnvironment env) throws Exception{
+  private void initConfig(StreamExecutionEnvironment env) throws Exception {
     if (this.jobConfig == null) {
       throw new RuntimeException("Job configuration is null");
     }

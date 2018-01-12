@@ -36,7 +36,7 @@ public class EZMQSinkTest {
 
     @Test(timeout = 3000L)
     public void testInvoke() throws Exception {
-        EZMQSink sink = new EZMQSink(EZMQ_PORT);
+        EzmqSink sink = new EzmqSink(EZMQ_PORT);
         try {
             sink.open(null);
             sink.onStartCB(EZMQErrorCode.EZMQ_OK);
@@ -51,7 +51,7 @@ public class EZMQSinkTest {
 
     @Test(timeout = 3000L)
     public void testOpenClose() throws Exception {
-        EZMQSink sink = new EZMQSink(EZMQ_PORT);
+        EzmqSink sink = new EzmqSink(EZMQ_PORT);
         try {
             sink.open(null);
             Thread.sleep(50L);

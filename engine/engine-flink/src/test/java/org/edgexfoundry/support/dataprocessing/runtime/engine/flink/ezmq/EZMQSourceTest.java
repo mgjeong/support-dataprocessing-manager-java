@@ -41,7 +41,7 @@ public class EZMQSourceTest {
 
 //    @Test
 //    public void testEmfErrorCode() throws Exception{
-//        EZMQSource sourceA = new EZMQSource(EZMQ_HOST, -1, EZMQMessageType.PROTOBUF_MSG);
+//        EzmqSource sourceA = new EzmqSource(EZMQ_HOST, -1, EZMQMessageType.PROTOBUF_MSG);
 //
 //        try{
 //            sourceA.open(null);
@@ -52,7 +52,7 @@ public class EZMQSourceTest {
 
     //FIXLATER: @Test(timeout = 3000L)
     public void testEmfMessageCB() throws Exception {
-        EZMQSource source = new EZMQSource(EZMQ_HOST, EZMQ_PORT);
+        EzmqSource source = new EzmqSource(EZMQ_HOST, EZMQ_PORT);
         Thread temp = null;
         try {
             source.open(null);
@@ -86,7 +86,7 @@ public class EZMQSourceTest {
 
     @Test(timeout = 3000L)
     public void testOpenClose() throws Exception {
-        EZMQSource source = new EZMQSource(EZMQ_HOST, EZMQ_PORT);
+        EzmqSource source = new EzmqSource(EZMQ_HOST, EZMQ_PORT);
         try {
             source.open(null);
             Thread.sleep(50L);

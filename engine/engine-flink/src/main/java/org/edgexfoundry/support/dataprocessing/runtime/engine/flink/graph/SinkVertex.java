@@ -1,23 +1,22 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph;
 
 import java.util.Map;
-import org.apache.flink.shaded.com.google.common.base.Strings;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSink;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EzmqSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.MongoDBSink;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.MongoDbSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.WebSocketServerSink;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.ZMQSink;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZMQConnectionConfig;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZMQConnectionConfig.Builder;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.ZmqSink;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZmqConnectionConfig;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZmqConnectionConfig.Builder;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SinkVertex implements Vertex {
-  TopologySink config;
-  DataStream<DataSet> influx;
+
+  private TopologySink config;
+  private DataStream<DataSet> influx = null;
 
   public SinkVertex(TopologySink config) {
     this.config = config;
@@ -44,13 +43,13 @@ public class SinkVertex implements Vertex {
 
     if (type.equals("zmq")) {
       String[] dataSource = sink.split(":");
-      ZMQConnectionConfig zmqConnectionConfig = new Builder()
+      ZmqConnectionConfig zmqConnectionConfig = new Builder()
           .setHost(dataSource[0].trim())
           .setPort(Integer.parseInt(dataSource[1].trim()))
-          .setIOThreads(1)
+          .setIoThreads(1)
           .build();
 
-      influx.addSink(new ZMQSink<>(zmqConnectionConfig, dataSource[2], new DataSetSchema()))
+      influx.addSink(new ZmqSink<>(zmqConnectionConfig, dataSource[2], new DataSetSchema()))
           .setParallelism(1);
     } else if (type.equals("ws")) {
       String[] dataSource = sink.split(":");
@@ -59,7 +58,7 @@ public class SinkVertex implements Vertex {
     } else if (type.equals("ezmq")) {
       String[] dataSource = sink.split(":");
       int port = Integer.parseInt(dataSource[1].trim());
-      influx.addSink(new EZMQSink(port)).setParallelism(1);
+      influx.addSink(new EzmqSink(port)).setParallelism(1);
     } else if (type.equals("f")) {
       String outputFilePath = sink;
       if (!outputFilePath.endsWith(".txt")) {
@@ -68,7 +67,7 @@ public class SinkVertex implements Vertex {
       influx.addSink(new FileOutputSink(outputFilePath));
     } else if (type.equals("mongodb")) {
       String name = ((String) properties.get("name"));
-      influx.addSink(new MongoDBSink(sink, name))
+      influx.addSink(new MongoDbSink(sink, name))
           .setParallelism(1);
     } else {
       throw new RuntimeException("Unsupported output data type: " + type);

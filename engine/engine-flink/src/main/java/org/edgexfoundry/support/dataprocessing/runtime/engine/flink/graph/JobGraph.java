@@ -35,11 +35,11 @@ public class JobGraph {
   }
 
   public JobGraph initialize() {
-    this.processingOrder = TopologicalSort();
+    this.processingOrder = topologicalSort();
     return this;
   }
 
-  private List<Vertex> TopologicalSort() {
+  private List<Vertex> topologicalSort() {
     Map<Vertex, State> state = new HashMap<>();
     List<Vertex> res = new ArrayList<>();
     for (Vertex component : edges.keySet()) {

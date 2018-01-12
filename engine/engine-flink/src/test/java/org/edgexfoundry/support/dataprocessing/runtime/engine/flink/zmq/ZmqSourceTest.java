@@ -1,6 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq;
 
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZMQConnectionConfig;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.common.ZmqConnectionConfig;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.junit.Assert;
@@ -10,32 +10,32 @@ import java.nio.charset.Charset;
 
 import static org.mockito.Mockito.mock;
 
-public class ZMQSourceTest {
+public class ZmqSourceTest {
     @Test
     public void testConstructor() {
-        ZMQConnectionConfig.Builder builder = new ZMQConnectionConfig.Builder();
-        builder.setHost("localhost").setPort(5588).setIOThreads(1);
-        ZMQConnectionConfig config = builder.build();
-        new ZMQSource(config, "topic", new SimpleStringSchema(Charset.defaultCharset()));
+        ZmqConnectionConfig.Builder builder = new ZmqConnectionConfig.Builder();
+        builder.setHost("localhost").setPort(5588).setIoThreads(1);
+        ZmqConnectionConfig config = builder.build();
+        new ZmqSource(config, "topic", new SimpleStringSchema(Charset.defaultCharset()));
     }
 
     @Test
     public void testProducedType() {
-        ZMQConnectionConfig.Builder builder = new ZMQConnectionConfig.Builder();
-        builder.setHost("localhost").setPort(5588).setIOThreads(1);
-        ZMQConnectionConfig config = builder.build();
+        ZmqConnectionConfig.Builder builder = new ZmqConnectionConfig.Builder();
+        builder.setHost("localhost").setPort(5588).setIoThreads(1);
+        ZmqConnectionConfig config = builder.build();
         SimpleStringSchema schema = new SimpleStringSchema(Charset.defaultCharset());
-        ZMQSource source = new ZMQSource(config, "topic", schema);
+        ZmqSource source = new ZmqSource(config, "topic", schema);
         Assert.assertNotNull(source.getProducedType());
         Assert.assertEquals(schema.getProducedType(), source.getProducedType());
     }
 
     @Test
     public void testConnection() throws Exception {
-        ZMQConnectionConfig.Builder builder = new ZMQConnectionConfig.Builder();
-        builder.setHost("localhost").setPort(5588).setIOThreads(1);
-        ZMQConnectionConfig config = builder.build();
-        ZMQSource source = new ZMQSource(config, "topic", new SimpleStringSchema(Charset.defaultCharset()));
+        ZmqConnectionConfig.Builder builder = new ZmqConnectionConfig.Builder();
+        builder.setHost("localhost").setPort(5588).setIoThreads(1);
+        ZmqConnectionConfig config = builder.build();
+        ZmqSource source = new ZmqSource(config, "topic", new SimpleStringSchema(Charset.defaultCharset()));
         source.open(null);
         source.cancel();
         source.close();
@@ -43,9 +43,9 @@ public class ZMQSourceTest {
 
     @Test(timeout = 3000L)
     public void testRun() throws Exception {
-        ZMQConnectionConfig.Builder builder = new ZMQConnectionConfig.Builder();
-        builder.setHost("localhost").setPort(5588).setIOThreads(1);
-        final ZMQConnectionConfig config = builder.build();
+        ZmqConnectionConfig.Builder builder = new ZmqConnectionConfig.Builder();
+        builder.setHost("localhost").setPort(5588).setIoThreads(1);
+        final ZmqConnectionConfig config = builder.build();
 
         SourceFunction.SourceContext sourceContext = mock(SourceFunction.SourceContext.class);
         SourceThread sourceThread = new SourceThread(config, sourceContext);
@@ -68,11 +68,11 @@ public class ZMQSourceTest {
     }
 
     private static class SourceThread extends Thread {
-        private ZMQSource source = null;
-        private final ZMQConnectionConfig config;
+        private ZmqSource source = null;
+        private final ZmqConnectionConfig config;
         private final SourceFunction.SourceContext sourceContext;
 
-        public SourceThread(ZMQConnectionConfig config, SourceFunction.SourceContext sourceContext) {
+        public SourceThread(ZmqConnectionConfig config, SourceFunction.SourceContext sourceContext) {
             this.config = config;
             this.sourceContext = sourceContext;
         }
@@ -80,7 +80,7 @@ public class ZMQSourceTest {
         @Override
         public void run() {
             try {
-                this.source = new ZMQSource(config, "topic", new SimpleStringSchema());
+                this.source = new ZmqSource(config, "topic", new SimpleStringSchema());
                 this.source.open(null);
                 this.source.run(this.sourceContext);
             } catch (Exception e) {
@@ -103,11 +103,11 @@ public class ZMQSourceTest {
     }
 
     private static class SinkThread extends Thread {
-        private ZMQSink sink = null;
-        private final ZMQConnectionConfig config;
+        private ZmqSink sink = null;
+        private final ZmqConnectionConfig config;
         private boolean running = false;
 
-        public SinkThread(ZMQConnectionConfig config) {
+        public SinkThread(ZmqConnectionConfig config) {
             this.config = config;
         }
 
@@ -118,7 +118,7 @@ public class ZMQSourceTest {
         @Override
         public void run() {
             try {
-                sink = new ZMQSink(config, "topic", new SimpleStringSchema());
+                sink = new ZmqSink(config, "topic", new SimpleStringSchema());
                 sink.open(null);
 
                 this.running = true;

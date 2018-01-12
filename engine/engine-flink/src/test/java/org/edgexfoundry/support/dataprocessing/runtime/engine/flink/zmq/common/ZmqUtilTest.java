@@ -7,11 +7,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class ZMQUtilTest {
+public class ZmqUtilTest {
 
     @Test
     public void testPrivateConstructor() throws Exception {
-        Constructor<ZMQUtil> c = ZMQUtil.class.getDeclaredConstructor();
+        Constructor<ZmqUtil> c = ZmqUtil.class.getDeclaredConstructor();
         c.setAccessible(true);
 
         try {
@@ -26,7 +26,7 @@ public class ZMQUtilTest {
     @Test
     public void testDecode() {
         String testString = "Hello World!";
-        byte[] decoded = ZMQUtil.decode(testString);
+        byte[] decoded = ZmqUtil.decode(testString);
 
         Assert.assertNotNull(decoded);
         Assert.assertTrue(decoded.length > 0);
@@ -36,7 +36,7 @@ public class ZMQUtilTest {
     public void testDecodeInvalid() throws Exception {
         String testString = "Hello World!";
 
-        Method m = ZMQUtil.class.getDeclaredMethod("decode", String.class, String.class);
+        Method m = ZmqUtil.class.getDeclaredMethod("decode", String.class, String.class);
         m.setAccessible(true);
         try {
             m.invoke(null, testString, "InvalidCharset");
@@ -50,12 +50,12 @@ public class ZMQUtilTest {
     @Test
     public void testEncode() {
         String testString = "Hello World!";
-        byte[] decoded = ZMQUtil.decode(testString);
+        byte[] decoded = ZmqUtil.decode(testString);
 
         Assert.assertNotNull(decoded);
         Assert.assertTrue(decoded.length > 0);
 
-        String encoded = ZMQUtil.encode(decoded);
+        String encoded = ZmqUtil.encode(decoded);
 
         Assert.assertNotNull(encoded);
         Assert.assertEquals(testString, encoded);
@@ -64,12 +64,12 @@ public class ZMQUtilTest {
     @Test
     public void testEncodingInvalid() throws Exception {
         String testString = "Hello World!";
-        byte[] decoded = ZMQUtil.decode(testString);
+        byte[] decoded = ZmqUtil.decode(testString);
 
         Assert.assertNotNull(decoded);
         Assert.assertTrue(decoded.length > 0);
 
-        Method m = ZMQUtil.class.getDeclaredMethod("encode", byte[].class, String.class);
+        Method m = ZmqUtil.class.getDeclaredMethod("encode", byte[].class, String.class);
         m.setAccessible(true);
         try {
             m.invoke(null, decoded, "InvalidCharset");
