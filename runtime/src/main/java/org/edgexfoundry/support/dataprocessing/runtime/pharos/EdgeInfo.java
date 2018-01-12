@@ -45,6 +45,10 @@ public class EdgeInfo {
             String edgeId = iter.next();
             Map<String, ?> edgeInfo = restClient.getEdgeInfo(edgeId);
 
+            if (edgeInfo == null) {
+                continue;
+            }
+
             List<String> apps = (List<String>)edgeInfo.get("apps");
             Iterator<String> appIter = apps.iterator();
 

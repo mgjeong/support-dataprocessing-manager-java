@@ -1,9 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.pharos;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.http.client.HttpResponseException;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +18,10 @@ public class RestClient {
     public static final String APPS_URL = "/apps";
 
     private HTTP httpClient;
-    private Gson gson;
 
     public RestClient() {
         httpClient = new HTTP();
         httpClient.initialize(PharosConstants.PHAROS_HOST, PharosConstants.PHAROS_PORT, "http");
-        gson = new Gson();
     }
 
     public List<String> getGroupList() {
@@ -32,6 +30,11 @@ public class RestClient {
         List<String> groupList = new ArrayList<String>();
 
         JsonObject response = httpGet(GROUP_API_BASE);
+
+        if (response == null) {
+            return groupList;
+        }
+
         JsonArray groups = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_GROUPS);
         Iterator<JsonElement> iter = groups.iterator();
 
@@ -51,6 +54,11 @@ public class RestClient {
         List<String> edgeList = new ArrayList<String>();
 
         JsonObject response = httpGet(GROUP_API_BASE + "/" + groupId);
+
+        if (response == null) {
+            return edgeList;
+        }
+
         JsonArray members = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_GROUP_MEMBERS);
         Iterator<JsonElement> iter = members.iterator();
 
@@ -69,6 +77,10 @@ public class RestClient {
         Map<String, Object> edgeInfo = new HashMap<String, Object>();
 
         JsonObject response = httpGet(AGENT_API_BASE + "/" + edgeId);
+
+        if (response == null) {
+            return null;
+        }
 
         edgeInfo.put("id", edgeId);
         edgeInfo.put("host", response.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME).getAsString());
@@ -95,6 +107,11 @@ public class RestClient {
         List<String> serviceList = new ArrayList<String>();
 
         JsonObject response = httpGet(AGENT_API_BASE + "/" + edgeId + APPS_URL + "/" + appId);
+
+        if (response == null) {
+            return serviceList;
+        }
+
         JsonArray services = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_SERVICES);
 
         Iterator<JsonElement> iter = services.iterator();
@@ -117,8 +134,12 @@ public class RestClient {
 
     private JsonObject httpGet(String url) {
         JsonElement jsonElem = this.httpClient.get(url);
-        JsonObject jsonResponse = jsonElem.getAsJsonObject();
 
-        return jsonResponse;
+        if (jsonElem == null) {
+            return null;
+        }
+        else {
+            return jsonElem.getAsJsonObject();
+        }
     }
 }
