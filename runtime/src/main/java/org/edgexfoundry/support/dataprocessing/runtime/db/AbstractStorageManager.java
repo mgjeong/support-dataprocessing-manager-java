@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.locks.ReentrantLock;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,17 +15,10 @@ public abstract class AbstractStorageManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageManager.class);
   protected static final Object writeLock = new Object();
-  protected static final ReentrantLock connectionLock = new ReentrantLock(false);
 
   private static Connection connection;
   private static transient boolean isTerminated = false;
-
-  /**
-   * Used to control transaction.
-   *
-   * Commits/rollbacks only if transaction number match.
-   */
-  private static int tNumber = -1;
+  private static int transactionCounter = 0;
 
   private static String getJdbcUrl() {
     return "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH;
@@ -37,18 +29,12 @@ public abstract class AbstractStorageManager {
   }
 
   protected synchronized static Connection getConnection() throws SQLException {
-    return getConnection(-1);
-  }
-
-  protected synchronized static Connection getConnection(int transactionNumber)
-      throws SQLException {
     if (isTerminated) {
       return null;
     }
 
-    if (tNumber == -1) {
-      tNumber = transactionNumber;
-    }
+    // increment transaction counter
+    transactionCounter++;
 
     if (connection != null && !connection.isClosed()) {
       return connection; // valid connection already exists
@@ -69,45 +55,41 @@ public abstract class AbstractStorageManager {
       throw new RuntimeException("Resource is null.");
     }
 
-    int transactionNumber = 5;
     try {
-      ScriptUtils.executeSqlScript(getConnection(transactionNumber), resource);
-      commit(transactionNumber);
+      ScriptUtils.executeSqlScript(getConnection(), resource);
+      commit();
     } catch (SQLException e) {
-      rollback(transactionNumber);
+      rollback();
       throw new RuntimeException(e);
     }
   }
 
-  protected static void commit() {
-    commit(-1);
-  }
-
-  protected static void commit(int transactionNumber) {
+  protected synchronized static void commit() {
     try {
-      if (tNumber == transactionNumber) {
-        getConnection().commit();
-        tNumber = -1;
+      if (transactionCounter > 0) {
+        transactionCounter--;
       }
+
+      if (transactionCounter == 0 && connection != null && !connection.isClosed()) {
+        connection.commit();
+      }
+
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);
-      tNumber = -1;
     }
   }
 
-  protected static void rollback() {
-    rollback(-1);
-  }
-
-  protected static void rollback(int transactionNumber) {
+  protected synchronized static void rollback() {
     try {
-      if (tNumber == transactionNumber) {
-        getConnection().rollback();
-        tNumber = -1;
+      if (transactionCounter > 0) {
+        transactionCounter--;
+      }
+
+      if (transactionCounter == 0 && connection != null && !connection.isClosed()) {
+        connection.rollback();
       }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);
-      tNumber = -1;
     }
   }
 

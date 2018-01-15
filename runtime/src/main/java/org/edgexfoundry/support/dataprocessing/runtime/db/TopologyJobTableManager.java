@@ -51,9 +51,8 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO job (id, topologyId, config) VALUES (?, ?, ?)";
-    int transactionKey = 2;
     synchronized (writeLock) {
-      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
           topologyJob.getId(), topologyJob.getTopologyId(),
           topologyJob.getConfigStr())) {
         int affectedRows;
@@ -62,11 +61,11 @@ public class TopologyJobTableManager extends AbstractStorageManager {
           throw new RuntimeException("Failed to insert job.");
         } else {
           addOrUpdateTopologyJobState(topologyJob.getId(), topologyJob.getState());
-          commit(transactionKey);
+          commit();
           return topologyJob;
         }
       } catch (SQLException e) {
-        rollback(transactionKey);
+        rollback();
         throw new RuntimeException(e);
       }
     }

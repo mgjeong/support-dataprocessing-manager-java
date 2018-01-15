@@ -957,9 +957,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_component (topologyId, componentBundleId, name, config) "
         + "VALUES (?, ?, ?, ?)";
-    int transactionKey = 31;
     synchronized (writeLock) {
-      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
           topologyId, topologyComponent.getTopologyComponentBundleId(),
           topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
@@ -990,7 +989,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
               }
             }
 
-            commit(transactionKey);
+            commit();
             return (T) topologyComponent;
           } else {
             throw new RuntimeException("Creating component failed, no ID obtained.");
@@ -999,7 +998,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
           throw new RuntimeException(e);
         }
       } catch (SQLException e) {
-        rollback(transactionKey);
+        rollback();
         throw new RuntimeException(e);
       }
     }
@@ -1025,9 +1024,8 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_component (id, topologyId, componentBundleId, name, config) "
             + "VALUES (?, ?, ?, ?, ?)";
-    int transactionKey = 31;
     synchronized (writeLock) {
-      try (PreparedStatement ps = createPreparedStatement(getConnection(transactionKey), sql,
+      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
           topologyComponentId,
           topologyId, topologyComponent.getTopologyComponentBundleId(),
           topologyComponent.getName(), topologyComponent.getConfigStr())) {
@@ -1054,10 +1052,10 @@ public final class TopologyTableManager extends AbstractStorageManager {
           }
         }
 
-        commit(transactionKey);
+        commit();
         return (T) topologyComponent;
       } catch (SQLException e) {
-        rollback(transactionKey);
+        rollback();
         throw new RuntimeException(e);
       }
     }
