@@ -18,11 +18,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFor
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyDetailed;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
@@ -32,9 +29,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyJobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
@@ -133,32 +128,6 @@ public class TopologyController {
     return respond(topology, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get topology versions", notes = "Returns a list of versions of a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions")
-  public ResponseEntity listTopologyVersions(@PathVariable("topologyId") Long topologyId) {
-    Collection<TopologyVersion> versions = this.topologyTableManager
-        .listTopologyVersionInfos(topologyId);
-    return respondEntity(versions, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get namespaces", notes = "Returns a list of all namespaces.")
-  @RequestMapping(value = "/namespaces", method = RequestMethod.GET)
-  public ResponseEntity listNamespaces(
-      @RequestParam("detail") Boolean detail
-  ) {
-    Collection<Namespace> namespaces = this.topologyTableManager.listNamespaces();
-    return respondEntity(namespaces, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get namespace detail", notes = "Returns a detailed namespace")
-  @RequestMapping(value = "/namespaces/{namespaceId}", method = RequestMethod.GET)
-  public ResponseEntity getNamespaceById(@PathVariable("namespaceId") Long namespaceId,
-      @RequestParam(value = "detail", required = false) Boolean detail) {
-    Collection<Namespace> namespaces = this.topologyTableManager.listNamespaces();
-    Namespace namespace = namespaces.iterator().next();
-    return respond(namespace, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get component bundles", notes = "Returns a list of bundles by component.")
   @RequestMapping(value = "/streams/componentbundles/{component}", method = RequestMethod.GET)
   public ResponseEntity listTopologyComponentBundles(
@@ -244,16 +213,6 @@ public class TopologyController {
     TopologyEditorMetadata metadata = this.topologyTableManager
         .getTopologyEditorMetadata(topologyId);
     return respond(metadata, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get deployment state", notes = "Returns a deployment state of a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/deploymentstate", method = RequestMethod.GET)
-  public ResponseEntity topologyDeploymentState(@PathVariable("topologyId") Long topologyId) {
-    TopologyState state = new TopologyState();
-    state.setTopologyId(topologyId);
-    state.setName("TOPOLOGY_STATE_INITIAL");
-    state.setDescription("Topology deployed.");
-    return respond(state, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Get topology editor toolbar", notes = "Returns a list of components for editor toolbar.")
@@ -420,29 +379,6 @@ public class TopologyController {
     return respond(removed, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get field hints", notes = "Returns field hints of a component.")
-  @RequestMapping(value = "/streams/componentbundles/{component}/{id}/hints", method = RequestMethod.GET)
-  public ResponseEntity getFieldHints(
-      @PathVariable("component") TopologyComponentType componentType,
-      @PathVariable("id") Long id) {
-    return respond("{}", HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Reconfigure", notes = "Returns whether a component needs to be reconfigured or not.")
-  @RequestMapping(value = "/topologies/{topologyId}/reconfigure", method = RequestMethod.GET)
-  public ResponseEntity getComponentsToReconfigure(@PathVariable("topologyId") Long topologyId) {
-    // Nothing to reconfigure, always.
-    return respond("{\"BRANCH\":[],\"PROCESSOR\":[],\"SINK\":[],\"RULE\":[],\"WINDOW\":[]}",
-        HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get notifiers", notes = "Returns a list of available notifiers.")
-  @RequestMapping(value = "/notifiers", method = RequestMethod.GET)
-  public ResponseEntity listNotifiers() {
-    // returns an empty list
-    return respondEntity(new JsonArray(), HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get streams", notes = "Returns a list of streams for topology.")
   @RequestMapping(value = "/topologies/{topologyId}/streams", method = RequestMethod.GET)
   public ResponseEntity listStreamInfos(@PathVariable("topologyId") Long topologyId) {
@@ -464,31 +400,6 @@ public class TopologyController {
       @PathVariable("streamId") Long streamId) {
     TopologyStream removed = this.topologyTableManager.removeTopologyStream(topologyId, streamId);
     return respond(removed, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get storm URL", notes = "Returns URL running storm.")
-  @RequestMapping(value = "/clusters/{clusterId}/services/storm/mainpage/url", method = RequestMethod.GET)
-  public ResponseEntity getMainPageByClusterId(@PathVariable("clusterId") Long clusterId) {
-    JsonObject obj = new JsonObject();
-    obj.addProperty("url", "http://localhost:9090");
-    return respond(obj, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get clusters", notes = "Returns a list of clusters.")
-  @RequestMapping(value = "/clusters", method = RequestMethod.GET)
-  public ResponseEntity listClusters(
-      @RequestParam(value = "detail", required = false) Boolean detail) {
-    Collection<ClusterWithService> clusterWithServices = this.topologyTableManager
-        .listClusterWithServices();
-    return respondEntity(clusterWithServices, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get cluster by id", notes = "Returns a cluster by id.")
-  @RequestMapping(value = "/clusters/{clusterId}", method = RequestMethod.GET)
-  public ResponseEntity getClusterById(@PathVariable("clusterId") Long clusterId,
-      @RequestParam(value = "detail", required = false) Boolean detail) {
-    ClusterWithService cs = this.topologyTableManager.listClusterWithServices().iterator().next();
-    return respond(cs, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Check topology whether unique engine type", notes = "Check topology whether unique engine type")
@@ -585,7 +496,6 @@ public class TopologyController {
   @ApiOperation(value = "Import topology", notes = "Imports a topology")
   @RequestMapping(value = "/topologies/actions/import", method = RequestMethod.POST)
   public ResponseEntity importTopology(@RequestParam("file") Part part,
-      @RequestParam("namespaceId") final Long namespaceId,
       @RequestParam("topologyName") final String topologyName) {
     try {
       TopologyData topologyData = new ObjectMapper()
