@@ -18,11 +18,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFor
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
@@ -76,12 +74,6 @@ public class TopologyController {
     this.edgeInfo = new EdgeInfo();
   }
 
-  @ApiOperation(value = "Sample get response", notes = "Returns response entity.")
-  @RequestMapping(value = "/ping", method = RequestMethod.GET)
-  public ResponseEntity getResponse() {
-    return respondEntity(new ResponseFormat(), HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get topologies", notes = "Returns a list of all topologies.")
   @RequestMapping(value = "/topologies", method = RequestMethod.GET)
   public ResponseEntity listTopologies(
@@ -112,15 +104,6 @@ public class TopologyController {
   @ApiOperation(value = "Get topology by Id", notes = "Returns topology detail by Id.")
   @RequestMapping(value = "/topologies/{topologyId}", method = RequestMethod.GET)
   public ResponseEntity getTopologyById(@PathVariable("topologyId") Long topologyId,
-      @RequestParam(value = "detail", required = false) Boolean detail,
-      @RequestParam(value = "latencyTopN", required = false) Integer latencyTopN) {
-    return getTopologyByIdAndVersionId(topologyId, 1L, detail, latencyTopN);
-  }
-
-  @ApiOperation(value = "Get topology by id and version", notes = "Returns a topology by id and its version.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}")
-  public ResponseEntity getTopologyByIdAndVersionId(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId,
       @RequestParam(value = "detail", required = false) Boolean detail,
       @RequestParam(value = "latencyTopN", required = false) Integer latencyTopN) {
     Topology topology = this.topologyTableManager.getTopology(topologyId);
@@ -232,28 +215,9 @@ public class TopologyController {
     return respondEntity(sources, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get topology sources by version", notes = "Returns a list of sources in use in a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/sources", method = RequestMethod.GET)
-  public ResponseEntity listTopologySourcesForVersion(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
-    Collection<TopologySource> sources = this.topologyTableManager
-        .listSources(topologyId);
-    return respondEntity(sources, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get topology processors", notes = "Returns a list of processors in use in a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/processors", method = RequestMethod.GET)
   public ResponseEntity listTopologyProcessors(@PathVariable("topologyId") Long topologyId) {
-    Collection<TopologyProcessor> processors = this.topologyTableManager
-        .listProcessors(topologyId);
-    return respondEntity(processors, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get topology processors by version", notes = "Returns a list of processors in use in a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/processors", method = RequestMethod.GET)
-  public ResponseEntity listTopologyProcessorsForVersion(
-      @PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
     Collection<TopologyProcessor> processors = this.topologyTableManager
         .listProcessors(topologyId);
     return respondEntity(processors, HttpStatus.OK);
@@ -266,14 +230,6 @@ public class TopologyController {
     return respondEntity(sinks, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get topology sinks by version", notes = "Returns a list of sinks in use in a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/sinks", method = RequestMethod.GET)
-  public ResponseEntity listTopologySinksForVersion(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
-    Collection<TopologySink> sinks = this.topologyTableManager.listSinks(topologyId);
-    return respondEntity(sinks, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get topology edges", notes = "Returns a list of edges in use in a topology.")
   @RequestMapping(value = "/topologies/{topologyId}/edges", method = RequestMethod.GET)
   public ResponseEntity listTopologyEdges(@PathVariable("topologyId") Long topologyId) {
@@ -281,27 +237,9 @@ public class TopologyController {
     return respondEntity(edges, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get topology edges by version", notes = "Returns a list of edges in use in a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/edges", method = RequestMethod.GET)
-  public ResponseEntity listTopologyEdgesForVersion(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
-    Collection<TopologyEdge> edges = this.topologyTableManager.listTopologyEdges(topologyId);
-    return respondEntity(edges, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get editor meta data", notes = "Returns meta data required to edit a topology.")
   @RequestMapping(value = "/system/topologyeditormetadata/{topologyId}", method = RequestMethod.GET)
   public ResponseEntity getTopologyEditorMetadataByTopologyId(
-      @PathVariable("topologyId") Long topologyId) {
-    TopologyEditorMetadata metadata = this.topologyTableManager
-        .getTopologyEditorMetadata(topologyId);
-    return respond(metadata, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get editor meta data by version", notes = "Returns meta data required to edit a topology.")
-  @RequestMapping(value = "/system/versions/{versionId}/topologyeditormetadata/{topologyId}", method = RequestMethod.GET)
-  public ResponseEntity getTopologyEditorMetadataByTopologyIdAndVersionId(
-      @PathVariable("versionId") Long versionId,
       @PathVariable("topologyId") Long topologyId) {
     TopologyEditorMetadata metadata = this.topologyTableManager
         .getTopologyEditorMetadata(topologyId);
@@ -351,16 +289,6 @@ public class TopologyController {
     return respond(source, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get topology source by id and version", notes = "Returns topology source by id and its version")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/sources/{sourceId}")
-  public ResponseEntity getTopologySourceByIdAndVersion(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId,
-      @PathVariable("sourceId") Long sourceId) {
-    TopologyComponent component = this.topologyTableManager
-        .getTopologyComponent(topologyId, sourceId);
-    return respond(component, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Update topology source", notes = "Updates a topology source.")
   @RequestMapping(value = "/topologies/{topologyId}/sources/{sourceId}", method = RequestMethod.PUT)
   public ResponseEntity addOrUpdateTopologySource(@PathVariable("topologyId") Long topologyId,
@@ -391,23 +319,12 @@ public class TopologyController {
   }
 
   @ApiOperation(value = "Get topology processor by id", notes = "Returns topology processor by id.")
-  @RequestMapping(value = "/topologies/{topologyId}/processor/{processorId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/topologies/{topologyId}/processors/{processorId}", method = RequestMethod.GET)
   public ResponseEntity getTopologyProcessorById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("processorId") Long processorId) {
     TopologyProcessor processor = (TopologyProcessor) this.topologyTableManager
         .getTopologyComponent(topologyId, processorId);
     return respond(processor, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get topology processor by id and version", notes = "Returns topology processor by id and its version")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/processors/{processorId}")
-  public ResponseEntity getTopologyProcessorByIdAndVersion(
-      @PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId,
-      @PathVariable("processorId") Long processorId) {
-    TopologyComponent component = this.topologyTableManager
-        .getTopologyComponent(topologyId, processorId);
-    return respond(component, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Update topology processor", notes = "Updates a topology processor.")
@@ -450,23 +367,12 @@ public class TopologyController {
   }
 
   @ApiOperation(value = "Get topology sink by id", notes = "Returns topology sink by id.")
-  @RequestMapping(value = "/topologies/{topologyId}/sink/{sinkId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/topologies/{topologyId}/sinks/{sinkId}", method = RequestMethod.GET)
   public ResponseEntity getTopologySinkById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("sinkId") Long sinkId) {
     TopologySink sink = (TopologySink) this.topologyTableManager
         .getTopologyComponent(topologyId, sinkId);
     return respond(sink, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get topology sink by id and version", notes = "Returns topology sink by id and its version")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/sinks/{sinkId}")
-  public ResponseEntity getTopologySinkByIdAndVersion(
-      @PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId,
-      @PathVariable("sinkId") Long sinkId) {
-    TopologyComponent component = this.topologyTableManager
-        .getTopologyComponent(topologyId, sinkId);
-    return respond(component, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Update topology sink", notes = "Updates a topology sink.")
@@ -496,16 +402,6 @@ public class TopologyController {
     return respond(edge, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get topology edge by id and version", notes = "Returns topology edge by id and its version")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/edges/{edgeId}")
-  public ResponseEntity getTopologyEdgeByIdAndVersion(
-      @PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId,
-      @PathVariable("edgeId") Long edgeId) {
-    TopologyEdge edge = this.topologyTableManager.getTopologyEdge(topologyId, edgeId);
-    return respond(edge, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Update topology edge", notes = "Updates a topology edge.")
   @RequestMapping(value = "/topologies/{topologyId}/edges/{edgeId}", method = RequestMethod.PUT)
   public ResponseEntity addOrUpdateTopologyEdge(@PathVariable("topologyId") Long topologyId,
@@ -525,10 +421,10 @@ public class TopologyController {
   }
 
   @ApiOperation(value = "Get field hints", notes = "Returns field hints of a component.")
-  @RequestMapping(value = "/streams/componentbundles/{component}/{id}/hints/namespaces/{namespaceId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/streams/componentbundles/{component}/{id}/hints", method = RequestMethod.GET)
   public ResponseEntity getFieldHints(
       @PathVariable("component") TopologyComponentType componentType,
-      @PathVariable("id") Long id, @PathVariable("namespaceId") Long namespaceId) {
+      @PathVariable("id") Long id) {
     return respond("{}", HttpStatus.OK);
   }
 
@@ -547,15 +443,6 @@ public class TopologyController {
     return respondEntity(new JsonArray(), HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Get streams by version", notes = "Returns a list of streams for a topology.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/streams", method = RequestMethod.GET)
-  public ResponseEntity listStreamInfosForVersion(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
-    Collection<TopologyStream> streams = this.topologyTableManager
-        .listTopologyStreams(topologyId);
-    return respondEntity(streams, HttpStatus.OK);
-  }
-
   @ApiOperation(value = "Get streams", notes = "Returns a list of streams for topology.")
   @RequestMapping(value = "/topologies/{topologyId}/streams", method = RequestMethod.GET)
   public ResponseEntity listStreamInfos(@PathVariable("topologyId") Long topologyId) {
@@ -568,16 +455,6 @@ public class TopologyController {
   public ResponseEntity getStreamInfoById(@PathVariable("topologyId") Long topologyId,
       @PathVariable("streamId") Long streamId) {
     TopologyStream stream = this.topologyTableManager.getTopologyStream(topologyId, streamId);
-    return respond(stream, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Get stream by version", notes = "Returns a stream info.")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/streams/{streamId}", method = RequestMethod.GET)
-  public ResponseEntity getStreamInfoById(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId,
-      @PathVariable("streamId") Long streamId) {
-    TopologyStream stream = this.topologyTableManager
-        .getTopologyStream(topologyId, streamId);
     return respond(stream, HttpStatus.OK);
   }
 
@@ -615,9 +492,8 @@ public class TopologyController {
   }
 
   @ApiOperation(value = "Check topology whether unique engine type", notes = "Check topology whether unique engine type")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/enginetype", method = RequestMethod.GET)
-  public ResponseEntity checkEngineType(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
+  @RequestMapping(value = "/topologies/{topologyId}/actions/enginetype", method = RequestMethod.GET)
+  public ResponseEntity checkEngineType(@PathVariable("topologyId") Long topologyId) {
     Topology result = this.topologyTableManager.getTopology(topologyId);
     TopologyData topologyData = this.topologyTableManager.doExportTopology(result);
     TopologyData.EngineType engineType = topologyData.getEngineType();
@@ -640,18 +516,16 @@ public class TopologyController {
   }
 
   @ApiOperation(value = "Validate topology", notes = "Validates a topology")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/validate", method = RequestMethod.POST)
-  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
+  @RequestMapping(value = "/topologies/{topologyId}/actions/validate", method = RequestMethod.POST)
+  public ResponseEntity validateTopology(@PathVariable("topologyId") Long topologyId) {
     Topology result = this.topologyTableManager.getTopology(topologyId);
 
     return respond(result, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Deploy topology", notes = "Deploys a topology")
-  @RequestMapping(value = "/topologies/{topologyId}/versions/{versionId}/actions/deploy", method = RequestMethod.POST)
-  public ResponseEntity deployTopology(@PathVariable("topologyId") Long topologyId,
-      @PathVariable("versionId") Long versionId) {
+  @RequestMapping(value = "/topologies/{topologyId}/actions/deploy", method = RequestMethod.POST)
+  public ResponseEntity deployTopology(@PathVariable("topologyId") Long topologyId) {
     Topology result = this.topologyTableManager.getTopology(topologyId);
 
     // flink result
