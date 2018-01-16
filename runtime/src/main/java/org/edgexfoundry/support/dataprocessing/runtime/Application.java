@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,40 +25,44 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
 
-    private static TaskManager taskManager = null;
-    private static JobManager jobManager = null;
+  private static TaskManager taskManager = null;
+  //private static JobManager jobManager = null;
 
-    private static void initialize() {
+  private static void initialize() {
 
-        try {
-            taskManager = TaskManager.getInstance();
+    try {
+      taskManager = TaskManager.getInstance();
 
-            taskManager.scanTaskModel(Settings.FW_JAR_PATH);
+      taskManager.scanTaskModel(Settings.FW_JAR_PATH);
 
-            jobManager = JobManager.getInstance();
-            jobManager.initialize();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+      //jobManager = JobManager.getInstance();
+      //jobManager.initialize();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static void terminate() {
+    // TaskManager related
+    if (taskManager != null) {
+      taskManager.terminate();
     }
 
-    private static void terminate() {
-        // TaskManager related
-        if (taskManager != null) {
-            taskManager.terminate();
-        }
+    if (TopologyTableManager.getInstance() != null) {
+      TopologyTableManager.getInstance().terminate();
     }
+  }
 
-    public static void main(String[] args) throws Exception {
-        SpringApplication.run(Application.class, args);
+  public static void main(String[] args) throws Exception {
+    SpringApplication.run(Application.class, args);
 
-        initialize();
+    initialize();
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                terminate();
-            }
-        });
-    }
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        terminate();
+      }
+    });
+  }
 }

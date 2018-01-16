@@ -79,7 +79,6 @@ public class TaskController {
 //                new TaskResponseFormat((ArrayList<TaskFormat>)
 //                        taskManager.getTaskModel(name));
 
-
         LOGGER.debug(response.toString());
         return response;
     }
@@ -128,7 +127,7 @@ public class TaskController {
             data = inputFile.getBytes();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-            result.setErrorMessage(e.getMessage());
+            result.setResponseMessage(e.getMessage());
             result.setErrorCode(ErrorType.DPFW_ERROR_INVALID_PARAMS);
             response.setError(result);
             return response;

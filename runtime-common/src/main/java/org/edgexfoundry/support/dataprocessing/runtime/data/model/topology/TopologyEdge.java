@@ -1,8 +1,14 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Stream.Grouping;
 
@@ -80,7 +86,36 @@ public class TopologyEdge extends Format {
     this.streamGroupings = streamGroupings;
   }
 
-  public static class StreamGrouping {
+  @JsonIgnore
+  public String getStreamGroupingsStr() {
+    if (this.streamGroupings.isEmpty()) {
+      return "[]";
+    } else {
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this.streamGroupings);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  @JsonIgnore
+  public void setStreamGroupingsStr(String groupings) {
+    try {
+      if (!StringUtils.isEmpty(groupings)) {
+        ObjectMapper mapper = new ObjectMapper();
+        this.streamGroupings = mapper
+            .readValue(groupings, new TypeReference<List<StreamGrouping>>() {
+            });
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @JsonInclude(Include.NON_NULL)
+  public static class StreamGrouping extends Format {
 
     private Long streamId;
     private Grouping grouping;

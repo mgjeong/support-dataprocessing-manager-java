@@ -7,7 +7,16 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 public class TopologyComponentBundle extends Format {
 
   public enum TopologyComponentType {
-    SOURCE, PROCESSOR, SINK, TOPOLOGY, LINK
+    SOURCE, PROCESSOR, SINK, TOPOLOGY, LINK;
+
+    public static TopologyComponentType toTopologyComponentType(String type) {
+      for (TopologyComponentType t : TopologyComponentType.values()) {
+        if (t.name().equalsIgnoreCase(type)) {
+          return t;
+        }
+      }
+      return null;
+    }
   }
 
   private Long id;
