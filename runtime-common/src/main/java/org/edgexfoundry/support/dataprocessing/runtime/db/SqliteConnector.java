@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import org.sqlite.SQLiteErrorCode;
 
+@Deprecated
 public final class SqliteConnector {
   private static final Logger LOGGER = LoggerFactory.getLogger(SqliteConnector.class);
 

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public final class TaskFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskFactory.class);
 
