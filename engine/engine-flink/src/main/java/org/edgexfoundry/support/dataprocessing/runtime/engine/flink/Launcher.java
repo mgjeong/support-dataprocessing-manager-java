@@ -33,7 +33,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSou
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.file.FileInputSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator.TaskFlatMap;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.file.FileOutputSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.WebSocketServerSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.MongoDBSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.zmq.ZMQSink;
@@ -173,8 +173,8 @@ public class Launcher {
             }
         } else if (dataType.equals("file")) {
             String dataSource = input.getDataSource();
-            String[] meta = input.getName().split(":");
-            return env.addSource(new FileInputSource(dataSource,meta[0],meta[1],meta[2]))
+            String meta = input.getName();
+            return env.addSource(new FileInputSource(dataSource,meta))
                     .setParallelism(1);
         } else {
             throw new RuntimeException("Unsupported input data type: " + dataType);
