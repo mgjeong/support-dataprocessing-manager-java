@@ -82,7 +82,6 @@ public class TopologyController {
       TopologyDetailed detailed = new TopologyDetailed();
       detailed.setTopology(topology);
       detailed.setRunning(TopologyDetailed.TopologyRunningStatus.NOT_RUNNING);
-      detailed.setNamespaceName("Dover");
       topologyDetailedList.add(detailed);
     }
     return respondEntity(topologyDetailedList, HttpStatus.OK);
@@ -111,7 +110,6 @@ public class TopologyController {
       // Enrich topology
       TopologyDetailed detailed = new TopologyDetailed();
       detailed.setTopology(topology);
-      detailed.setNamespaceName("Dover");
       detailed.setRunning(TopologyDetailed.TopologyRunningStatus.NOT_RUNNING);
       return respond(detailed, HttpStatus.OK);
     } else {

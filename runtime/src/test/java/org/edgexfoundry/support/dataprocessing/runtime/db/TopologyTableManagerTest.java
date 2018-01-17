@@ -168,7 +168,6 @@ public class TopologyTableManagerTest {
     TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
     dpfwSource.setName("DPFW-SOURCE");
     dpfwSource.setType(TopologyComponentType.SOURCE);
-    dpfwSource.setTimestamp(System.currentTimeMillis());
     dpfwSource.setStreamingEngine("STORM");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("a");
@@ -179,10 +178,8 @@ public class TopologyTableManagerTest {
     addUIField(componentUISpecification, "Data Source", "dataSource", "Enter data source");
     dpfwSource.setTopologyComponentUISpecification(componentUISpecification);
 
-    dpfwSource.setFieldHintProviderClass("a");
     dpfwSource.setTransformationClass("a");
     dpfwSource.setBuiltin(true);
-    dpfwSource.setMavenDeps(" ");
 
     // Test insert
     TopologyComponentBundle bundle = storageManager

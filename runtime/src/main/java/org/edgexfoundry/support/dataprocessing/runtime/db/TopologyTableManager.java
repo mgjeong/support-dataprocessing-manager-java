@@ -28,7 +28,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
 
 public final class TopologyTableManager extends AbstractStorageManager {
 
@@ -1097,13 +1096,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     topology.setId(rs.getLong("id"));
     topology.setName(rs.getString("name"));
     topology.setConfigStr(rs.getString("config"));
-
-    //TODO: hard-coded. Delete them or use them
-    topology.setNamespaceId(1L);
-    topology.setVersionId(1L);
-    topology.setTimestamp(System.currentTimeMillis());
-    topology.setDescription("");
-
     return topology;
   }
 
@@ -1135,10 +1127,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     bundle.setBundleJar(rs.getString("path"));
     bundle.setTransformationClass(rs.getString("classname"));
     bundle.setBuiltin(rs.getByte("removable") == (byte) '0');
-    // TODO: Hard-coded
-    bundle.setMavenDeps("");
-    bundle.setFieldHintProviderClass("");
-    bundle.setTimestamp(System.currentTimeMillis());
     return bundle;
   }
 
@@ -1183,20 +1171,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     component.setClassname(rs.getString("classname"));
 
     return component;
-  }
-
-  @Deprecated
-  public Collection<TopologyVersion> listTopologyVersionInfos(Long topologyId) {
-    List<TopologyVersion> versions = new ArrayList<>();
-    TopologyVersion firstVersion = new TopologyVersion();
-    firstVersion.setId(1L);
-    firstVersion.setDescription("First version");
-    firstVersion.setName("CURRENT");
-    firstVersion.setTimestamp(System.currentTimeMillis());
-    firstVersion.setTopologyId(topologyId);
-    versions.add(firstVersion);
-
-    return Collections.unmodifiableCollection(versions);
   }
 
   public Collection<TopologySource> listSources(Long topologyId) {
@@ -1330,10 +1304,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     Topology newTopology = new Topology();
     newTopology.setName(topologyName);
     newTopology.setConfigStr(topologyData.getConfigStr());
-    // Hard-code
-    newTopology.setTimestamp(System.currentTimeMillis());
-    newTopology.setVersionId(1L);
-    newTopology.setNamespaceId(1L);
     newTopology = addTopology(newTopology);
 
     // Add topology editor meta data

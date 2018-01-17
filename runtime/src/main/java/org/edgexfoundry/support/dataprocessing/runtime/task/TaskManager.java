@@ -249,14 +249,11 @@ public final class TaskManager implements DirectoryChangeEventListener {
 
   private TopologyComponentBundle updateTopologyComponentBundle(TopologyComponentBundle bundle,
       TaskModel model) {
-    bundle.setFieldHintProviderClass("");
-    bundle.setMavenDeps("");
     if(model.getName().equalsIgnoreCase("QUERY")) {
       bundle.setStreamingEngine("KAPACITOR");
     } else {
       bundle.setStreamingEngine("FLINK");
     }
-    bundle.setTimestamp(System.currentTimeMillis());
 
     // UI component
     ComponentUISpecification uiSpecification = new ComponentUISpecification();

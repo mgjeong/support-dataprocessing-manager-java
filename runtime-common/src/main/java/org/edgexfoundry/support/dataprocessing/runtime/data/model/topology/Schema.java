@@ -22,7 +22,7 @@ public class Schema {
 
     private final Class<?> javaType;
 
-    private Type(Class<?> javaType) {
+    Type(Class<?> javaType) {
       this.javaType = javaType;
     }
 

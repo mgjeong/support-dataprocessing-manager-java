@@ -12,7 +12,6 @@ public class TopologyDetailed extends Format {
 
   private Topology topology;
   private TopologyRunningStatus running;
-  private String namespaceName;
 
   public TopologyDetailed() {
 
@@ -32,13 +31,5 @@ public class TopologyDetailed extends Format {
 
   public void setRunning(TopologyRunningStatus running) {
     this.running = running;
-  }
-
-  public String getNamespaceName() {
-    return namespaceName;
-  }
-
-  public void setNamespaceName(String namespaceName) {
-    this.namespaceName = namespaceName;
   }
 }

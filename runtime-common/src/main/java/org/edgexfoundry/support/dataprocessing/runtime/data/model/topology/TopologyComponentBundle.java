@@ -22,16 +22,13 @@ public class TopologyComponentBundle extends Format {
   private Long id;
   private String name;
   private TopologyComponentType type;
-  private Long timestamp;
   private String streamingEngine;
   private String subType;
   private String bundleJar;
 
   private ComponentUISpecification topologyComponentUISpecification;
-  private String fieldHintProviderClass;
   private String transformationClass;
   private Boolean builtin;
-  private String mavenDeps;
 
   public TopologyComponentBundle() {
 
@@ -59,14 +56,6 @@ public class TopologyComponentBundle extends Format {
 
   public void setType(TopologyComponentType type) {
     this.type = type;
-  }
-
-  public Long getTimestamp() {
-    return timestamp;
-  }
-
-  public void setTimestamp(Long timestamp) {
-    this.timestamp = timestamp;
   }
 
   public String getStreamingEngine() {
@@ -102,14 +91,6 @@ public class TopologyComponentBundle extends Format {
     this.topologyComponentUISpecification = topologyComponentUISpecification;
   }
 
-  public String getFieldHintProviderClass() {
-    return fieldHintProviderClass;
-  }
-
-  public void setFieldHintProviderClass(String fieldHintProviderClass) {
-    this.fieldHintProviderClass = fieldHintProviderClass;
-  }
-
   public String getTransformationClass() {
     return transformationClass;
   }
@@ -126,11 +107,4 @@ public class TopologyComponentBundle extends Format {
     this.builtin = builtin;
   }
 
-  public String getMavenDeps() {
-    return mavenDeps;
-  }
-
-  public void setMavenDeps(String mavenDeps) {
-    this.mavenDeps = mavenDeps;
-  }
 }

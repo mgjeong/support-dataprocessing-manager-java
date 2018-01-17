@@ -24,15 +24,6 @@ public class Topology extends Format {
    */
   private String name;
 
-  /**
-   * Version id, hard-code it as 1
-   */
-  private Long versionId = 1L;
-  private Long namespaceId;
-
-  private String description;
-  private Long timestamp;
-
   private Map<String, Object> config = new HashMap<>();
 
   public Long getId() {
@@ -104,37 +95,4 @@ public class Topology extends Format {
       return null;
     }
   }
-
-  public Long getVersionId() {
-    return versionId;
-  }
-
-  public void setVersionId(Long versionId) {
-    this.versionId = versionId;
-  }
-
-  public Long getNamespaceId() {
-    return namespaceId;
-  }
-
-  public void setNamespaceId(Long namespaceId) {
-    this.namespaceId = namespaceId;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public Long getTimestamp() {
-    return timestamp;
-  }
-
-  public void setTimestamp(Long timestamp) {
-    this.timestamp = timestamp;
-  }
-
 }
