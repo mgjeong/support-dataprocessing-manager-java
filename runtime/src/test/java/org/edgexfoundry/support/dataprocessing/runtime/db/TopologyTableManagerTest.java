@@ -168,7 +168,7 @@ public class TopologyTableManagerTest {
     TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
     dpfwSource.setName("DPFW-SOURCE");
     dpfwSource.setType(TopologyComponentType.SOURCE);
-    dpfwSource.setStreamingEngine("STORM");
+    dpfwSource.setStreamingEngine("FLINK");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("a");
     dpfwSource.setTransformationClass("a");
