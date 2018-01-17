@@ -15,10 +15,12 @@
  *
  *******************************************************************************/
 
-package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.file;
 
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+
+
 
 import java.io.File;
 import java.io.PrintWriter;

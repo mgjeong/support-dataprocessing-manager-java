@@ -30,6 +30,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskForma
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.ezmq.EZMQSource;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.file.FileInputSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.operator.TaskFlatMap;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink.FileOutputSink;
@@ -134,7 +135,7 @@ public class Launcher {
             // String host = dataSource[0].trim(); // unused
             int port = Integer.parseInt(dataSource[1].trim());
             return stream.addSink(new EZMQSink(port)).setParallelism(1);
-        } else if (dataType.equals("f")) {
+        } else if (dataType.equals("file")) {
             String outputFilePath = output.getDataSource();
             if (!outputFilePath.endsWith(".txt")) {
                 outputFilePath += ".txt";
@@ -170,6 +171,11 @@ public class Launcher {
             } else {
                 return env.addSource(new EZMQSource(host, port)).setParallelism(1);
             }
+        } else if (dataType.equals("file")) {
+            String dataSource = input.getDataSource();
+            String[] meta = input.getName().split(":");
+            return env.addSource(new FileInputSource(dataSource,meta[0],meta[1],meta[2]))
+                    .setParallelism(1);
         } else {
             throw new RuntimeException("Unsupported input data type: " + dataType);
         }
