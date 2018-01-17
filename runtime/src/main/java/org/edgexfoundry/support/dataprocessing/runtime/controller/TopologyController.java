@@ -465,7 +465,7 @@ public class TopologyController {
     }
 
     // Write to database
-    TopologyJobTableManager.getInstance().addOrUpdateTopologyJob(job);
+    topologyJobTableManager.addOrUpdateTopologyJob(job);
 
     // Response by success/failure
     if (job.getState().getState() == "RUNNING") {
@@ -566,7 +566,7 @@ public class TopologyController {
     FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
     JobResponseFormat response = engine.stop(job.getState().getEngineId());
     job.getState().setState("STOPPED");
-    TopologyJobTableManager.getInstance().addOrUpdateTopologyJobState(job.getId(), job.getState());
+    topologyJobTableManager.addOrUpdateTopologyJobState(job.getId(), job.getState());
 
     return respond(response, HttpStatus.OK);
   }

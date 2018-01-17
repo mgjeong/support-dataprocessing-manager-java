@@ -1,11 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -14,40 +12,25 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 public abstract class AbstractStorageManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageManager.class);
-  protected static final Object writeLock = new Object();
 
-  private static Connection connection;
-  private static transient boolean isTerminated = false;
-  private static int transactionCounter = 0;
+  private Database database;
+  private transient boolean isTerminated = false;
 
-  private static String getJdbcUrl() {
-    return "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH;
+  public AbstractStorageManager(String jdbcUrl, String jdbcClass) {
+    this.database = Database.getInstance();
+    initialize(jdbcUrl, jdbcClass);
   }
 
-  private static String getJdbcClass() {
-    return "org.sqlite.JDBC";
+  public void initialize(String jdbcUrl, String jdbcClass) {
+    this.database.initialize(jdbcUrl, jdbcClass);
   }
 
-  protected synchronized static Connection getConnection() throws SQLException {
+  protected synchronized Connection getConnection() throws SQLException {
     if (isTerminated) {
       return null;
     }
 
-    // increment transaction counter
-    transactionCounter++;
-
-    if (connection != null && !connection.isClosed()) {
-      return connection; // valid connection already exists
-    }
-
-    try {
-      Class.forName(getJdbcClass());
-      connection = DriverManager.getConnection(getJdbcUrl());
-      connection.setAutoCommit(false);
-      return connection;
-    } catch (ClassNotFoundException e) {
-      throw new SQLException(e);
-    }
+    return this.database.getConnection();
   }
 
   public void executeSqlScript(Resource resource) {
@@ -64,34 +47,14 @@ public abstract class AbstractStorageManager {
     }
   }
 
-  protected synchronized static void commit() {
-    try {
-      if (transactionCounter > 0) {
-        transactionCounter--;
-      }
-
-      if (transactionCounter == 0 && connection != null && !connection.isClosed()) {
-        connection.commit();
-      }
-
-    } catch (SQLException e) {
-      LOGGER.error(e.getMessage(), e);
-    }
+  public synchronized void commit() {
+    this.database.commit();
   }
 
-  protected synchronized static void rollback() {
-    try {
-      if (transactionCounter > 0) {
-        transactionCounter--;
-      }
-
-      if (transactionCounter == 0 && connection != null && !connection.isClosed()) {
-        connection.rollback();
-      }
-    } catch (SQLException e) {
-      LOGGER.error(e.getMessage(), e);
-    }
+  public synchronized void rollback() {
+    this.database.rollback();
   }
+
 
   protected PreparedStatement createPreparedStatement(Connection con, String sql, Object... params)
       throws SQLException {
@@ -102,20 +65,16 @@ public abstract class AbstractStorageManager {
     return ps;
   }
 
-  public static void terminate() {
-    try {
-      if (isTerminated) {
-        return;
-      }
+  public synchronized void terminate() {
+    if (isTerminated) {
+      return;
+    }
 
-      isTerminated = true;
-      if (connection != null && !connection.isClosed()) {
-        //connection.rollback();
-        connection.commit();
-        connection.close();
-      }
-    } catch (SQLException e) {
-      LOGGER.error(e.getMessage(), e);
+    isTerminated = true;
+    if (database != null) {
+      //connection.rollback();
+      database.commit();
+      database.close();
     }
   }
 

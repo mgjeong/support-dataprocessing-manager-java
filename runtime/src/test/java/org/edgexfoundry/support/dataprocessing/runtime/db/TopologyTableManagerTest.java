@@ -1,8 +1,5 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-
 import java.io.File;
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
@@ -41,9 +38,7 @@ public class TopologyTableManagerTest {
       throw new RuntimeException("Failed to clean " + sqliteFile.getPath());
     }
 
-    storageManager = spy(TopologyTableManager.getInstance());
-    when(storageManager, "getJdbcUrl")
-        .thenReturn("jdbc:sqlite:" + sqliteFile.getPath());
+    storageManager.initialize("jdbc:sqlite:" + sqliteFile.getPath(), Settings.DB_CLASS);
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
     Resource resource = loader.getResource("db/sqlite/create_tables.sql");
     storageManager.executeSqlScript(resource);
@@ -168,7 +163,7 @@ public class TopologyTableManagerTest {
     TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
     dpfwSource.setName("DPFW-SOURCE");
     dpfwSource.setType(TopologyComponentType.SOURCE);
-    dpfwSource.setStreamingEngine("FLINK");
+    dpfwSource.setStreamingEngine("STORM");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("a");
     dpfwSource.setTransformationClass("a");

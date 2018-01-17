@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobState;
 
@@ -14,9 +15,15 @@ public class TopologyJobTableManager extends AbstractStorageManager {
 
   public synchronized static TopologyJobTableManager getInstance() {
     if (instance == null) {
-      instance = new TopologyJobTableManager();
+      instance = new TopologyJobTableManager(
+          "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH,
+          Settings.DB_CLASS);
     }
     return instance;
+  }
+
+  private TopologyJobTableManager(String jdbcUrl, String jdbcClass) {
+    super(jdbcUrl, jdbcClass);
   }
 
   public TopologyJobState addOrUpdateTopologyJobState(String jobId, TopologyJobState jobState) {
@@ -26,22 +33,20 @@ public class TopologyJobTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO job_state (jobId, state, startTime, engineId, engineType) "
         + "VALUES (?, ?, ?, ?, ?)";
-    synchronized (writeLock) {
-      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-          jobId, jobState.getState(), jobState.getStartTime(), jobState.getEngineId(),
-          jobState.getEngineType())) {
-        int affectedRows;
-        affectedRows = ps.executeUpdate();
-        if (affectedRows == 0) {
-          throw new RuntimeException("Failed to insert job state.");
-        } else {
-          commit();
-          return jobState;
-        }
-      } catch (SQLException e) {
-        rollback();
-        throw new RuntimeException(e);
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+        jobId, jobState.getState(), jobState.getStartTime(), jobState.getEngineId(),
+        jobState.getEngineType())) {
+      int affectedRows;
+      affectedRows = ps.executeUpdate();
+      if (affectedRows == 0) {
+        throw new RuntimeException("Failed to insert job state.");
+      } else {
+        commit();
+        return jobState;
       }
+    } catch (SQLException e) {
+      rollback();
+      throw new RuntimeException(e);
     }
   }
 
@@ -51,23 +56,21 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO job (id, topologyId, config) VALUES (?, ?, ?)";
-    synchronized (writeLock) {
-      try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-          topologyJob.getId(), topologyJob.getTopologyId(),
-          topologyJob.getConfigStr())) {
-        int affectedRows;
-        affectedRows = ps.executeUpdate();
-        if (affectedRows == 0) {
-          throw new RuntimeException("Failed to insert job.");
-        } else {
-          addOrUpdateTopologyJobState(topologyJob.getId(), topologyJob.getState());
-          commit();
-          return topologyJob;
-        }
-      } catch (SQLException e) {
-        rollback();
-        throw new RuntimeException(e);
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+        topologyJob.getId(), topologyJob.getTopologyId(),
+        topologyJob.getConfigStr())) {
+      int affectedRows;
+      affectedRows = ps.executeUpdate();
+      if (affectedRows == 0) {
+        throw new RuntimeException("Failed to insert job.");
+      } else {
+        addOrUpdateTopologyJobState(topologyJob.getId(), topologyJob.getState());
+        commit();
+        return topologyJob;
       }
+    } catch (SQLException e) {
+      rollback();
+      throw new RuntimeException(e);
     }
   }
 
