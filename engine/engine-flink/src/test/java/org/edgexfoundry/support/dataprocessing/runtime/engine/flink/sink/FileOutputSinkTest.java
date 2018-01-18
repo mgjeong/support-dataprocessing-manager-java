@@ -17,6 +17,7 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink;
 
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file.FileOutputSink;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.junit.Test;
 

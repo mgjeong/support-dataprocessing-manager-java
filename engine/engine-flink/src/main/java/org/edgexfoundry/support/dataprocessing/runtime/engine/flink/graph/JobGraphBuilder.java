@@ -12,12 +12,11 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.vertex.FlatMapTaskVertex;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.vertex.SinkVertex;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.vertex.SourceVertex;
 
 public class JobGraphBuilder {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(JobGraphBuilder.class);
   private TopologyData jobConfig;
 
   private Map<Vertex, List<Vertex>> edges;
@@ -28,10 +27,10 @@ public class JobGraphBuilder {
     if (env == null || jsonConfig == null) {
       throw new RuntimeException("Failed to set execution environment");
     }
-    buildConfig(jsonConfig);
+    readJson(jsonConfig);
     initConfig(env);
 
-    return new JobGraph(jobConfig.getTopologyName(), env, edges);
+    return new JobGraph(jobConfig.getTopologyName(), edges);
   }
 
   private void initConfig(StreamExecutionEnvironment env) throws Exception {
@@ -73,7 +72,7 @@ public class JobGraphBuilder {
 
   }
 
-  private void buildConfig(Reader jsonConfig) throws Exception {
+  private void readJson(Reader jsonConfig) throws Exception {
     this.jobConfig = new Gson().fromJson(jsonConfig, TopologyData.class);
   }
 
