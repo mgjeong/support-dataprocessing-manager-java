@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
@@ -47,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class FlinkEngine extends AbstractEngine {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkEngine.class);
-  private static final String DEFAULT_JOB_JAR_LOCATION = "/runtime/resource/";
+  private static final String DEFAULT_JOB_JAR_LOCATION = Settings.RESOURCE_PATH;
 
   private static final String DEFAULT_LAUNCHER_JAR_LOCATION = DEFAULT_JOB_JAR_LOCATION
       + "engine-flink.jar";

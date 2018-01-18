@@ -47,7 +47,7 @@ public abstract class AbstractStorageManager {
     }
 
     try {
-      ScriptUtils.executeSqlScript(getConnection(), resource);
+      ScriptUtils.executeSqlScript(getTransaction(), resource);
       commit();
     } catch (SQLException e) {
       rollback();
@@ -77,11 +77,9 @@ public abstract class AbstractStorageManager {
     if (isTerminated) {
       return;
     }
-
     isTerminated = true;
+
     if (database != null) {
-      //connection.rollback();
-      database.commit();
       database.close();
     }
   }

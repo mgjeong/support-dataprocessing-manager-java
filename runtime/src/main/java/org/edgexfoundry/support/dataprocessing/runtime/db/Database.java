@@ -98,6 +98,9 @@ public final class Database {
   public synchronized void close() {
     try {
       if (this.connection != null && !this.connection.isClosed()) {
+        if (!this.connection.getAutoCommit()) {
+          this.connection.rollback();
+        }
         this.connection.close();
       }
     } catch (SQLException e) {
