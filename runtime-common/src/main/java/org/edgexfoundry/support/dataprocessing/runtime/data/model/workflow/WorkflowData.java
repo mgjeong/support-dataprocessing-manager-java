@@ -1,4 +1,4 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,31 +13,31 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 @JsonInclude(Include.NON_NULL)
-public class TopologyData {
+public class WorkflowData {
 
-  private Long topologyId;
-  private String topologyName;
+  private Long workflowId;
+  private String workflowName;
   private Map<String, Object> config = new HashMap<>();
-  private List<TopologySource> sources = new ArrayList<>();
-  private List<TopologySink> sinks = new ArrayList<>();
-  private List<TopologyProcessor> processors = new ArrayList<>();
-  private List<TopologyEdge> edges = new ArrayList<>();
-  private TopologyEditorMetadata topologyEditorMetadata;
+  private List<WorkflowSource> sources = new ArrayList<>();
+  private List<WorkflowSink> sinks = new ArrayList<>();
+  private List<WorkflowProcessor> processors = new ArrayList<>();
+  private List<WorkflowEdge> edges = new ArrayList<>();
+  private WorkflowEditorMetadata workflowEditorMetadata;
 
   public enum EngineType {
     MULTI, FLINK, KAPACITOR, UNKNOWN
   }
 
-  public TopologyData() {
+  public WorkflowData() {
 
   }
 
-  public String getTopologyName() {
-    return topologyName;
+  public String getWorkflowName() {
+    return workflowName;
   }
 
-  public void setTopologyName(String topologyName) {
-    this.topologyName = topologyName;
+  public void setWorkflowName(String workflowName) {
+    this.workflowName = workflowName;
   }
 
   @JsonProperty("config")
@@ -73,63 +73,63 @@ public class TopologyData {
     }
   }
 
-  public List<TopologySource> getSources() {
+  public List<WorkflowSource> getSources() {
     return sources;
   }
 
   public void setSources(
-      List<TopologySource> sources) {
+      List<WorkflowSource> sources) {
     this.sources = sources;
   }
 
-  public List<TopologySink> getSinks() {
+  public List<WorkflowSink> getSinks() {
     return sinks;
   }
 
   public void setSinks(
-      List<TopologySink> sinks) {
+      List<WorkflowSink> sinks) {
     this.sinks = sinks;
   }
 
-  public List<TopologyProcessor> getProcessors() {
+  public List<WorkflowProcessor> getProcessors() {
     return processors;
   }
 
   public void setProcessors(
-      List<TopologyProcessor> processors) {
+      List<WorkflowProcessor> processors) {
     this.processors = processors;
   }
 
-  public List<TopologyEdge> getEdges() {
+  public List<WorkflowEdge> getEdges() {
     return edges;
   }
 
   public void setEdges(
-      List<TopologyEdge> edges) {
+      List<WorkflowEdge> edges) {
     this.edges = edges;
   }
 
-  public TopologyEditorMetadata getTopologyEditorMetadata() {
-    return topologyEditorMetadata;
+  public WorkflowEditorMetadata getWorkflowEditorMetadata() {
+    return workflowEditorMetadata;
   }
 
-  public void setTopologyEditorMetadata(
-      TopologyEditorMetadata topologyEditorMetadata) {
-    this.topologyEditorMetadata = topologyEditorMetadata;
+  public void setWorkflowEditorMetadata(
+      WorkflowEditorMetadata workflowEditorMetadata) {
+    this.workflowEditorMetadata = workflowEditorMetadata;
   }
 
-  public Long getTopologyId() {
-    return this.topologyId;
+  public Long getWorkflowId() {
+    return this.workflowId;
   }
 
-  public void setTopologyId(Long topologyId) {
-    this.topologyId = topologyId;
+  public void setWorkflowId(Long workflowId) {
+    this.workflowId = workflowId;
   }
 
   public EngineType getEngineType() {
     EngineType engineType = null;
 
-    for (TopologyProcessor processor : processors) {
+    for (WorkflowProcessor processor : processors) {
       if (processor.getEngineType().toLowerCase().equals("flink")) {
         if (engineType == null) {
           engineType = EngineType.FLINK;

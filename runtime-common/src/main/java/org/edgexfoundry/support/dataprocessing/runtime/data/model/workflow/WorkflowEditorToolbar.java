@@ -1,16 +1,16 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TopologyEditorToolbar extends Format {
+public class WorkflowEditorToolbar extends Format {
 
   private Long userId;
   private String data;
   private Long timestamp;
 
-  public TopologyEditorToolbar() {
+  public WorkflowEditorToolbar() {
 
   }
 

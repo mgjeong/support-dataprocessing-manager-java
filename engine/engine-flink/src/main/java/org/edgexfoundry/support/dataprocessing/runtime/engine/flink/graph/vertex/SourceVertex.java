@@ -3,7 +3,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.verte
 import java.util.Map;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.ezmq.EzmqSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
@@ -14,9 +14,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SourceVertex implements Vertex {
   private StreamExecutionEnvironment env;
-  private TopologySource config;
+  private WorkflowSource config;
 
-  public SourceVertex(StreamExecutionEnvironment env, TopologySource config) {
+  public SourceVertex(StreamExecutionEnvironment env, WorkflowSource config) {
     this.env = env;
     this.config = config;
   }

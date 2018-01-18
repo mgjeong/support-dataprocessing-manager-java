@@ -1,4 +1,4 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,21 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Schema.Type;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Schema.Type;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TopologyStream extends Format {
+public class WorkflowStream extends Format {
 
   private Long id;
   private Long versionId;
   private Long componentId;
   private String streamId;
   private String description;
-  private Long topologyId;
+  private Long workflowId;
   private List<Field> fields = new ArrayList<>();
   private Long versionTimestamp;
 
-  public TopologyStream() {
+  public WorkflowStream() {
 
   }
 
@@ -60,12 +60,12 @@ public class TopologyStream extends Format {
     this.description = description;
   }
 
-  public Long getTopologyId() {
-    return topologyId;
+  public Long getWorkflowId() {
+    return workflowId;
   }
 
-  public void setTopologyId(Long topologyId) {
-    this.topologyId = topologyId;
+  public void setWorkflowId(Long workflowId) {
+    this.workflowId = workflowId;
   }
 
   public List<Field> getFields() {

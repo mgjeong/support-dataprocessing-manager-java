@@ -53,14 +53,14 @@ public class FlinkEngineTest {
 
   @Test
   public void testCreateJarAndRun() throws Exception {
-    TopologyData sample = getSampleTopology();
+    WorkflowData sample = getSampleWorkflow();
     Engine en = new FlinkEngine("localhost", 8081);
     String id = en.createJob(sample);
     en.deploy(id);
   }
 
-  private TopologyData getSampleTopology() throws Exception {
-    TopologyData res = new Gson().fromJson(new FileReader(testConfigPath), TopologyData.class);
+  private WorkflowData getSampleWorkflow() throws Exception {
+    WorkflowData res = new Gson().fromJson(new FileReader(testConfigPath), WorkflowData.class);
     return res;
   }
   */

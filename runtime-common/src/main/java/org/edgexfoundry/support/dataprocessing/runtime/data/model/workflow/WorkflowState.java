@@ -1,25 +1,25 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TopologyState extends Format {
+public class WorkflowState extends Format {
 
-  private Long topologyId;
+  private Long workflowId;
   private String name;
   private String description;
 
-  public TopologyState() {
+  public WorkflowState() {
 
   }
 
-  public Long getTopologyId() {
-    return topologyId;
+  public Long getWorkflowId() {
+    return workflowId;
   }
 
-  public void setTopologyId(Long topologyId) {
-    this.topologyId = topologyId;
+  public void setWorkflowId(Long workflowId) {
+    this.workflowId = workflowId;
   }
 
   public String getName() {

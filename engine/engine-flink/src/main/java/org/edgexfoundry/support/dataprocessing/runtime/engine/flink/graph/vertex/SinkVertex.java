@@ -4,7 +4,7 @@ import java.util.Map;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.util.Collector;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.ezmq.EzmqSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
@@ -18,10 +18,10 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SinkVertex implements Vertex {
 
-  private TopologySink config;
+  private WorkflowSink config;
   private DataStream<DataSet> influx = null;
 
-  public SinkVertex(TopologySink config) {
+  public SinkVertex(WorkflowSink config) {
     this.config = config;
   }
 

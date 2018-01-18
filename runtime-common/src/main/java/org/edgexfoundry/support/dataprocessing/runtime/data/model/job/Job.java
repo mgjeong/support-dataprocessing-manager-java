@@ -1,4 +1,4 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,27 +12,27 @@ import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobState.State;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 
 @JsonInclude(Include.NON_NULL)
-public class TopologyJob extends Format {
+public class Job extends Format {
 
   private String id;
-  private Long topologyId;
+  private Long workflowId;
   private Map<String, Object> config = new HashMap<>();
 
-  private TopologyJobState state;
+  private JobState state;
 
-  public TopologyJob() {
+  public Job() {
 
   }
 
-  public TopologyJobState getState() {
+  public JobState getState() {
     return state;
   }
 
   public void setState(
-      TopologyJobState state) {
+      JobState state) {
     this.state = state;
   }
 
@@ -46,12 +46,12 @@ public class TopologyJob extends Format {
     this.id = id;
   }
 
-  public Long getTopologyId() {
-    return topologyId;
+  public Long getWorkflowId() {
+    return workflowId;
   }
 
-  public void setTopologyId(Long topologyId) {
-    this.topologyId = topologyId;
+  public void setWorkflowId(Long workflowId) {
+    this.workflowId = workflowId;
   }
 
   @JsonIgnore
@@ -98,11 +98,11 @@ public class TopologyJob extends Format {
     }
   }
 
-  public static TopologyJob create(Long topologyId) {
-    TopologyJob job = new TopologyJob();
-    job.setState(new TopologyJobState());
+  public static Job create(Long workflowId) {
+    Job job = new Job();
+    job.setState(new JobState());
     job.getState().setState(State.CREATED);
-    job.setTopologyId(topologyId);
+    job.setWorkflowId(workflowId);
     job.setId(UUID.randomUUID().toString());
     return job;
   }

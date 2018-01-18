@@ -28,12 +28,12 @@ import java.util.zip.ZipInputStream;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField.UIFieldType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField.UIFieldType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,26 +146,26 @@ public final class TaskManager implements DirectoryChangeEventListener {
       int removable) {
     try {
       // Check if bundle already exists
-      TopologyComponentBundle bundle = TopologyTableManager.getInstance()
-          .getTopologyComponentBundle(model.getName(), TopologyComponentType.PROCESSOR,
+      WorkflowComponentBundle bundle = WorkflowTableManager.getInstance()
+          .getWorkflowComponentBundle(model.getName(), WorkflowComponentBundleType.PROCESSOR,
               "DPFW");
       if (bundle == null) {
         // make new bundle
-        bundle = new TopologyComponentBundle();
+        bundle = new WorkflowComponentBundle();
         bundle.setName(model.getName());
-        bundle.setType(TopologyComponentType.PROCESSOR);
+        bundle.setType(WorkflowComponentBundleType.PROCESSOR);
         //bundle.setSubType(model.getType().name());
         bundle.setSubType("DPFW");
       }
-      bundle = updateTopologyComponentBundle(bundle, model);
+      bundle = updateWorkflowComponentBundle(bundle, model);
       bundle.setBundleJar(jarPath);
       bundle.setTransformationClass(className);
       bundle.setBuiltin(removable == DEFAULTTASK);
 
       if (bundle.getId() == null) {
-        TopologyTableManager.getInstance().addTopologyComponentBundle(bundle);
+        WorkflowTableManager.getInstance().addWorkflowComponentBundle(bundle);
       } else {
-        TopologyTableManager.getInstance().addOrUpdateTopologyComponentBundle(bundle);
+        WorkflowTableManager.getInstance().addOrUpdateWorkflowComponentBundle(bundle);
       }
 
     } catch (Exception e) {
@@ -175,7 +175,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     return true;
   }
 
-  private TopologyComponentBundle updateTopologyComponentBundle(TopologyComponentBundle bundle,
+  private WorkflowComponentBundle updateWorkflowComponentBundle(WorkflowComponentBundle bundle,
       TaskModel model) {
     if (model.getName().equalsIgnoreCase("QUERY")) {
       bundle.setStreamingEngine("KAPACITOR");
@@ -208,7 +208,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     outrecord.setType(UIFieldType.ARRAYSTRING);
     uiSpecification.addUIField(outrecord);
 
-    bundle.setTopologyComponentUISpecification(uiSpecification);
+    bundle.setWorkflowComponentUISpecification(uiSpecification);
     return bundle;
   }
 

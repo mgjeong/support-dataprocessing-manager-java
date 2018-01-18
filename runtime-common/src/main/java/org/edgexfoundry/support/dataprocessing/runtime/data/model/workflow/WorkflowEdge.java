@@ -1,4 +1,4 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,20 +10,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Stream.Grouping;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Stream.Grouping;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TopologyEdge extends Format {
+public class WorkflowEdge extends Format {
 
   private Long id;
   private Long versionId;
-  private Long topologyId;
+  private Long workflowId;
   private Long fromId;
   private Long toId;
   private Long versionTimestamp;
   private List<StreamGrouping> streamGroupings;
 
-  public TopologyEdge() {
+  public WorkflowEdge() {
 
   }
 
@@ -43,12 +43,12 @@ public class TopologyEdge extends Format {
     this.versionId = versionId;
   }
 
-  public Long getTopologyId() {
-    return topologyId;
+  public Long getWorkflowId() {
+    return workflowId;
   }
 
-  public void setTopologyId(Long topologyId) {
-    this.topologyId = topologyId;
+  public void setWorkflowId(Long workflowId) {
+    this.workflowId = workflowId;
   }
 
   public Long getFromId() {

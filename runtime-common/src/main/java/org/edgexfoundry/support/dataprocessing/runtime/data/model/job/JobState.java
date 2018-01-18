@@ -1,11 +1,11 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(Include.NON_NULL)
-public class TopologyJobState extends Format {
+public class JobState extends Format {
 
   public enum State {
     CREATED, RUNNING, STOPPED, ERROR;
@@ -30,7 +30,7 @@ public class TopologyJobState extends Format {
   private String engineType;
   private String errorMessage;
 
-  public TopologyJobState() {
+  public JobState() {
 
   }
 

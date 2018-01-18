@@ -37,10 +37,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobState.State;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +60,8 @@ public class FlinkEngine extends AbstractEngine {
     this.httpClient.initialize(flinkHost, flinkPort, "http");
   }
 
-  private Path prepareFlinkJobPlan(TopologyData topologyData, String jobId) {
-    String jsonConfig = new Gson().toJson(topologyData);
+  private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) {
+    String jsonConfig = new Gson().toJson(workflowData);
     String targetPath = DEFAULT_JOB_JAR_LOCATION + jobId + ".json";
     Path configJson = Paths.get(targetPath);
     File configJsonFile = configJson.toFile();
@@ -91,10 +91,10 @@ public class FlinkEngine extends AbstractEngine {
     return configJson.toAbsolutePath();
   }
 
-  private Set<Path> getModelInfo(TopologyData topologyData) {
+  private Set<Path> getModelInfo(WorkflowData workflowData) {
     Set<Path> artifacts = new HashSet<>();
     try {
-      for (TopologyProcessor processor : topologyData.getProcessors()) {
+      for (WorkflowProcessor processor : workflowData.getProcessors()) {
         String name = processor.getName();
         String className = processor.getClassname();
         processor.getConfig().getProperties().put("className", className);
@@ -136,7 +136,7 @@ public class FlinkEngine extends AbstractEngine {
     if (shellProcessResult.exitValue != 0) {
       LOGGER.error("Adding job-specific data to jar is failed - exit code: {} / output: {}",
           shellProcessResult.exitValue, shellProcessResult.stdout);
-      throw new RuntimeException("Topology could not be deployed " +
+      throw new RuntimeException("Workflow could not be deployed " +
           "successfully: fail to add config and artifacts to jar");
     }
     LOGGER.info("Added files to jar {}", jarName);
@@ -163,13 +163,13 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public TopologyJob create(TopologyData topologyData) throws Exception {
+  public Job create(WorkflowData workflowData) throws Exception {
     // Create job
-    TopologyJob job = TopologyJob.create(topologyData.getTopologyId());
+    Job job = Job.create(workflowData.getWorkflowId());
 
     List<Path> jobSpecificData = new ArrayList<>();
-    jobSpecificData.addAll(getModelInfo(topologyData));
-    jobSpecificData.add(prepareFlinkJobPlan(topologyData, job.getId()));
+    jobSpecificData.addAll(getModelInfo(workflowData));
+    jobSpecificData.add(prepareFlinkJobPlan(workflowData, job.getId()));
 
     // Generate flink jar to deploy
     String jobJarFile = prepareJarToDeploy(jobSpecificData, job.getId());
@@ -185,14 +185,14 @@ public class FlinkEngine extends AbstractEngine {
 
     // Update job
     job.getState().setState(State.CREATED);
-    job.setConfig(topologyData.getConfig());
+    job.setConfig(workflowData.getConfig());
     job.addConfig("launcherJarId", launcherJarId);
     job.getState().setEngineType("FLINK");
     return job;
   }
 
   @Override
-  public TopologyJob run(TopologyJob job) throws Exception {
+  public Job run(Job job) throws Exception {
     String launcherJarId;
     if (job == null) {
       throw new Exception("Job is null.");
@@ -236,7 +236,7 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public TopologyJob stop(TopologyJob job) throws Exception {
+  public Job stop(Job job) throws Exception {
     if (job == null) {
       throw new Exception("Job is null.");
     } else if (job.getState().getEngineId() == null) {
@@ -258,7 +258,7 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public TopologyJob delete(TopologyJob job) throws Exception {
+  public Job delete(Job job) throws Exception {
     // TODO: delete?
     return job;
   }

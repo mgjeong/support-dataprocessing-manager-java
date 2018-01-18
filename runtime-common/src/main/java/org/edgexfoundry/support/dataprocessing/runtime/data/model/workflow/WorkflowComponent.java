@@ -1,4 +1,4 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,11 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TopologyComponent extends Format {
+public class WorkflowComponent extends Format {
 
   private Long id;
-  private Long topologyId;
-  private Long topologyComponentBundleId;
+  private Long workflowId;
+  private Long workflowComponentBundleId;
   private String name = StringUtils.EMPTY;
   private String description = StringUtils.EMPTY;
   private String engineType = StringUtils.EMPTY;
@@ -21,7 +21,7 @@ public class TopologyComponent extends Format {
   private String classname = StringUtils.EMPTY;
   private Config config = new Config();
 
-  public TopologyComponent() {
+  public WorkflowComponent() {
   }
 
   public Long getId() {
@@ -32,12 +32,12 @@ public class TopologyComponent extends Format {
     this.id = id;
   }
 
-  public Long getTopologyId() {
-    return topologyId;
+  public Long getWorkflowId() {
+    return workflowId;
   }
 
-  public void setTopologyId(Long topologyId) {
-    this.topologyId = topologyId;
+  public void setWorkflowId(Long workflowId) {
+    this.workflowId = workflowId;
   }
 
   public String getPath() {
@@ -56,12 +56,12 @@ public class TopologyComponent extends Format {
     this.classname = classname;
   }
 
-  public Long getTopologyComponentBundleId() {
-    return topologyComponentBundleId;
+  public Long getWorkflowComponentBundleId() {
+    return workflowComponentBundleId;
   }
 
-  public void setTopologyComponentBundleId(Long topologyComponentBundleId) {
-    this.topologyComponentBundleId = topologyComponentBundleId;
+  public void setWorkflowComponentBundleId(Long workflowComponentBundleId) {
+    this.workflowComponentBundleId = workflowComponentBundleId;
   }
 
   public String getName() {

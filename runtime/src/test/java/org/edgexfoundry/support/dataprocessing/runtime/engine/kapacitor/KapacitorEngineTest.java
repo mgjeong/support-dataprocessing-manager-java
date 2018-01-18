@@ -28,19 +28,19 @@ public class KapacitorEngineTest {
   }
 
   @Test
-  public void testDeployTopology() {
+  public void testDeployWorkflow() {
     try {
-      TopologyData sampleTopology = getSampleTopology();
+      WorkflowData sampleWorkflow = getSampleWorkflow();
       Engine en = new KapacitorEngine("localhost", 9092);
-      String id = en.createJob(sampleTopology);
+      String id = en.createJob(sampleWorkflow);
       en.deploy(id);
     } catch (Exception e) {
       Assert.fail();
     }
   }
 
-  private TopologyData getSampleTopology() throws Exception {
-    return new Gson().fromJson(new FileReader(testConfigPath), TopologyData.class);
+  private WorkflowData getSampleWorkflow() throws Exception {
+    return new Gson().fromJson(new FileReader(testConfigPath), WorkflowData.class);
   }
   */
 }

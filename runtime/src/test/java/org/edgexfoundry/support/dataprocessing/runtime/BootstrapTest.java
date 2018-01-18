@@ -1,21 +1,21 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BootstrapTest {
 
-  private static TopologyTableManager topologyTableManager;
+  private static WorkflowTableManager workflowTableManager;
 
   @BeforeClass
   public static void initialize() {
     File dbFile = new File("./" + Settings.DB_TEST_PATH);
     dbFile.deleteOnExit();
-    topologyTableManager = TopologyTableManager.getInstance();
-    topologyTableManager.initialize("jdbc:sqlite:" + dbFile.getAbsolutePath(), Settings.DB_CLASS);
+    workflowTableManager = WorkflowTableManager.getInstance();
+    workflowTableManager.initialize("jdbc:sqlite:" + dbFile.getAbsolutePath(), Settings.DB_CLASS);
   }
 
   @Test
@@ -30,6 +30,6 @@ public class BootstrapTest {
 
   @AfterClass
   public static void terminate() {
-    topologyTableManager.terminate();
+    workflowTableManager.terminate();
   }
 }

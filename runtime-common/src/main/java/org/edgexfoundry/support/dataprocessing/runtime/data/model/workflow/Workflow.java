@@ -1,4 +1,4 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,15 +12,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Topology extends Format {
+public class Workflow extends Format {
 
   /**
-   * Unique identifier for a topology.
+   * Unique identifier for a workflow.
    */
   private Long id;
 
   /**
-   * Name of a topology.
+   * Name of a workflow.
    */
   private String name;
 

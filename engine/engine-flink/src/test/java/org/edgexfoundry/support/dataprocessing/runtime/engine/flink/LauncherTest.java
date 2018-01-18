@@ -24,14 +24,12 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.io.File;
-import java.nio.file.FileSystemException;
 import java.util.jar.JarFile;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,10 +41,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Launcher.class, StreamExecutionEnvironment.class, JobGraphBuilder.class})
 public class LauncherTest {
+
   final static String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
   final static String TEST_JAR = TEST_DIR + "/launcher_test_job.jar";
   final static String TEST_JSON = TEST_DIR + "/launcher_test_job.json";
-  final static String JSON_CONTENT = "{\"topologyName\":\"launcher_test\"}";
+  final static String JSON_CONTENT = "{\"workflowName\":\"launcher_test\"}";
   final static String[] ARGS_INVALID = {"--internal", TEST_JSON};
   final static String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON};
   final static String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON};

@@ -1,8 +1,8 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,22 +22,22 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
-  public TopologyJob create(TopologyData topology) throws Exception {
+  public Job create(WorkflowData workflow) throws Exception {
     return null;
   }
 
   @Override
-  public TopologyJob run(TopologyJob job) throws Exception {
+  public Job run(Job job) throws Exception {
     return null;
   }
 
   @Override
-  public TopologyJob stop(TopologyJob job) throws Exception {
+  public Job stop(Job job) throws Exception {
     return null;
   }
 
   @Override
-  public TopologyJob delete(TopologyJob job) throws Exception {
+  public Job delete(Job job) throws Exception {
     return null;
   }
 /*
@@ -53,10 +53,10 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
-  public String createJob(TopologyData topology) {
+  public String createJob(WorkflowData workflow) {
     String resultScript = "";
     try {
-      ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(topology)
+      ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(workflow)
           .initialize();
       resultScript = scriptGraph.generateScript();
     } catch (Exception e) {
@@ -69,7 +69,7 @@ public class KapacitorEngine extends AbstractEngine {
 
     this.script = resultScript;
 
-    String jobId = topology.getTopologyName();
+    String jobId = workflow.getWorkflowName();
     JsonObject jobInfo = getBaseJsonObject(jobId);
     LOGGER.info("Kapacitor script is following: {}", this.script);
     jobInfo.addProperty("script", this.script);
@@ -78,7 +78,7 @@ public class KapacitorEngine extends AbstractEngine {
     this.httpClient.post(TASK_ROOT, jobInfo.toString());
     LOGGER.info("Kapacitor Job Id {} is registered.", jobId);
 
-    return topology.getTopologyName();
+    return workflow.getWorkflowName();
   }
 
   @Override

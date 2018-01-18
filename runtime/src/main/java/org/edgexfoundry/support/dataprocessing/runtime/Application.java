@@ -17,7 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +81,7 @@ public class Application extends SpringBootServletInitializer {
   }
 
   private static void terminate() {
-    TopologyTableManager.getInstance().terminate();
+    WorkflowTableManager.getInstance().terminate();
 
     TaskManager.getInstance().terminate();
   }

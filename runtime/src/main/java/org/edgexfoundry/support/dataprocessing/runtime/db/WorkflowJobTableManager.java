@@ -1,33 +1,32 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobState;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 
-public class TopologyJobTableManager extends AbstractStorageManager {
+public class WorkflowJobTableManager extends AbstractStorageManager {
 
-  private static TopologyJobTableManager instance = null;
+  private static WorkflowJobTableManager instance = null;
 
-  public synchronized static TopologyJobTableManager getInstance() {
+  public synchronized static WorkflowJobTableManager getInstance() {
     if (instance == null) {
-      instance = new TopologyJobTableManager(
+      instance = new WorkflowJobTableManager(
           "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH,
           Settings.DB_CLASS);
     }
     return instance;
   }
 
-  private TopologyJobTableManager(String jdbcUrl, String jdbcClass) {
+  private WorkflowJobTableManager(String jdbcUrl, String jdbcClass) {
     super(jdbcUrl, jdbcClass);
   }
 
-  public TopologyJobState addOrUpdateTopologyJobState(String jobId, TopologyJobState jobState) {
+  public JobState addOrUpdateWorkflowJobState(String jobId, JobState jobState) {
     if (jobId == null || jobState == null) {
       throw new RuntimeException("Job id or job state is null.");
     }
@@ -51,23 +50,23 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
   }
 
-  public TopologyJob addOrUpdateTopologyJob(TopologyJob topologyJob) {
-    if (topologyJob == null) {
-      throw new RuntimeException("Topology job is null.");
+  public Job addOrUpdateWorkflowJob(Job job) {
+    if (job == null) {
+      throw new RuntimeException("Workflow job is null.");
     }
 
-    String sql = "INSERT OR REPLACE INTO job (id, topologyId, config) VALUES (?, ?, ?)";
+    String sql = "INSERT OR REPLACE INTO job (id, workflowId, config) VALUES (?, ?, ?)";
     try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        topologyJob.getId(), topologyJob.getTopologyId(),
-        topologyJob.getConfigStr())) {
+        job.getId(), job.getWorkflowId(),
+        job.getConfigStr())) {
       int affectedRows;
       affectedRows = ps.executeUpdate();
       if (affectedRows == 0) {
         throw new RuntimeException("Failed to insert job.");
       } else {
-        addOrUpdateTopologyJobState(topologyJob.getId(), topologyJob.getState());
+        addOrUpdateWorkflowJobState(job.getId(), job.getState());
         commit();
-        return topologyJob;
+        return job;
       }
     } catch (SQLException e) {
       rollback();
@@ -75,15 +74,15 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
   }
 
-  public Collection<TopologyJob> listTopologyJobs(Long topologyId) {
-    if (topologyId == null) {
-      throw new RuntimeException("Topology id is null.");
+  public Collection<Job> listWorkflowJobs(Long workflowId) {
+    if (workflowId == null) {
+      throw new RuntimeException("Workflow id is null.");
     }
 
     StringBuilder sb = new StringBuilder();
     sb.append("SELECT ");
     sb.append("job.id AS id, ");
-    sb.append("job.topologyId AS topologyId, ");
+    sb.append("job.workflowId AS workflowId, ");
     sb.append("job.config AS config, ");
     sb.append("job_state.state AS state, ");
     sb.append("job_state.startTime AS startTime, ");
@@ -91,14 +90,14 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     sb.append("job_state.engineType AS engineType ");
     sb.append("FROM job, job_state WHERE ");
     sb.append("job_state.jobId = job.id AND ");
-    sb.append("job.topologyId = ?");
+    sb.append("job.workflowId = ?");
     String sql = sb.toString();
 
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId);
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
-      Collection<TopologyJob> jobs = new ArrayList<>();
+      Collection<Job> jobs = new ArrayList<>();
       while (rs.next()) {
-        jobs.add(mapToTopologyJob(rs));
+        jobs.add(mapToWorkflowJob(rs));
       }
       return jobs;
     } catch (SQLException e) {
@@ -106,13 +105,13 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
   }
 
-  private TopologyJob mapToTopologyJob(ResultSet rs) throws SQLException {
-    TopologyJob job = new TopologyJob();
+  private Job mapToWorkflowJob(ResultSet rs) throws SQLException {
+    Job job = new Job();
     job.setId(rs.getString("id"));
-    job.setTopologyId(rs.getLong("topologyId"));
+    job.setWorkflowId(rs.getLong("workflowId"));
     job.setConfigStr(rs.getString("config"));
 
-    TopologyJobState jobState = new TopologyJobState();
+    JobState jobState = new JobState();
     jobState.setState(rs.getString("state"));
     jobState.setStartTime(rs.getLong("startTime"));
     jobState.setEngineId(rs.getString("engineId"));
@@ -122,15 +121,15 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     return job;
   }
 
-  public TopologyJob getTopologyJob(Long topologyId, String jobId) {
-    if (topologyId == null || jobId == null) {
-      throw new RuntimeException("Topology id or job id is null.");
+  public Job getWorkflowJob(Long workflowId, String jobId) {
+    if (workflowId == null || jobId == null) {
+      throw new RuntimeException("Workflow id or job id is null.");
     }
 
     StringBuilder sb = new StringBuilder();
     sb.append("SELECT ");
     sb.append("job.id AS id, ");
-    sb.append("job.topologyId AS topologyId, ");
+    sb.append("job.workflowId AS workflowId, ");
     sb.append("job.config AS config, ");
     sb.append("job_state.state AS state, ");
     sb.append("job_state.startTime AS startTime, ");
@@ -138,15 +137,15 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     sb.append("job_state.engineType AS engineType ");
     sb.append("FROM job, job_state WHERE ");
     sb.append("job_state.jobId = job.id AND ");
-    sb.append("job.topologyId = ? AND job.id = ?");
+    sb.append("job.workflowId = ? AND job.id = ?");
     String sql = sb.toString();
 
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId, jobId);
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId, jobId);
         ResultSet rs = ps.executeQuery()) {
       if (rs.next()) {
-        return mapToTopologyJob(rs);
+        return mapToWorkflowJob(rs);
       } else {
-        throw new RuntimeException("Topology job not found.");
+        throw new RuntimeException("Workflow job not found.");
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);

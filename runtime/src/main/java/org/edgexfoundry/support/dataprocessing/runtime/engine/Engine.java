@@ -17,23 +17,23 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 
 public interface Engine {
 
   /**
-   * Creates an engine job instance from topology data
+   * Creates an engine job instance from workflow data
    */
-  TopologyJob create(TopologyData topology) throws Exception;
+  Job create(WorkflowData workflow) throws Exception;
 
   /**
    * Runs an engine job
    */
-  TopologyJob run(TopologyJob job) throws Exception;
+  Job run(Job job) throws Exception;
 
-  TopologyJob stop(TopologyJob job) throws Exception;
+  Job stop(Job job) throws Exception;
 
-  TopologyJob delete(TopologyJob job) throws Exception;
+  Job delete(Job job) throws Exception;
 }
 

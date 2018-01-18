@@ -1,7 +1,7 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import java.util.List;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream.Field;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Field;
 
 public class Stream {
 

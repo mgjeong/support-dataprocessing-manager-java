@@ -1,16 +1,16 @@
-package org.edgexfoundry.support.dataprocessing.runtime.data.model.topology;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TopologyComponentBundle extends Format {
+public class WorkflowComponentBundle extends Format {
 
-  public enum TopologyComponentType {
-    SOURCE, PROCESSOR, SINK, TOPOLOGY, LINK;
+  public enum WorkflowComponentBundleType {
+    SOURCE, PROCESSOR, SINK, WORKFLOW, LINK;
 
-    public static TopologyComponentType toTopologyComponentType(String type) {
-      for (TopologyComponentType t : TopologyComponentType.values()) {
+    public static WorkflowComponentBundleType toWorkflowComponentBundleType(String type) {
+      for (WorkflowComponentBundleType t : WorkflowComponentBundleType.values()) {
         if (t.name().equalsIgnoreCase(type)) {
           return t;
         }
@@ -21,16 +21,16 @@ public class TopologyComponentBundle extends Format {
 
   private Long id;
   private String name;
-  private TopologyComponentType type;
+  private WorkflowComponentBundleType type;
   private String streamingEngine;
   private String subType;
   private String bundleJar;
 
-  private ComponentUISpecification topologyComponentUISpecification;
+  private ComponentUISpecification workflowComponentUISpecification;
   private String transformationClass;
   private Boolean builtin;
 
-  public TopologyComponentBundle() {
+  public WorkflowComponentBundle() {
 
   }
 
@@ -50,11 +50,11 @@ public class TopologyComponentBundle extends Format {
     this.name = name;
   }
 
-  public TopologyComponentType getType() {
+  public WorkflowComponentBundleType getType() {
     return type;
   }
 
-  public void setType(TopologyComponentType type) {
+  public void setType(WorkflowComponentBundleType type) {
     this.type = type;
   }
 
@@ -82,13 +82,13 @@ public class TopologyComponentBundle extends Format {
     this.bundleJar = bundleJar;
   }
 
-  public ComponentUISpecification getTopologyComponentUISpecification() {
-    return topologyComponentUISpecification;
+  public ComponentUISpecification getWorkflowComponentUISpecification() {
+    return workflowComponentUISpecification;
   }
 
-  public void setTopologyComponentUISpecification(
-      ComponentUISpecification topologyComponentUISpecification) {
-    this.topologyComponentUISpecification = topologyComponentUISpecification;
+  public void setWorkflowComponentUISpecification(
+      ComponentUISpecification workflowComponentUISpecification) {
+    this.workflowComponentUISpecification = workflowComponentUISpecification;
   }
 
   public String getTransformationClass() {
