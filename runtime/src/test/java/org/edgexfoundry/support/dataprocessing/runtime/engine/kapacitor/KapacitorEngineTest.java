@@ -1,14 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
-import com.google.gson.Gson;
-import java.io.FileReader;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
-import org.junit.Assert;
-import org.junit.Test;
-
 public class KapacitorEngineTest {
+
   private static final String testConfigPath = "src/test/resources/config_kapacitor.json";
 /*
   @Test
