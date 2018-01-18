@@ -58,13 +58,11 @@ public class TopologyController {
 
   private TopologyTableManager topologyTableManager = null;
   private TopologyJobTableManager topologyJobTableManager = null;
-  private TaskManager taskManager = null;
   private EdgeInfo edgeInfo = null;
 
   public TopologyController() {
     this.topologyTableManager = TopologyTableManager.getInstance();
     this.topologyJobTableManager = TopologyJobTableManager.getInstance();
-    this.taskManager = TaskManager.getInstance();
     this.edgeInfo = new EdgeInfo();
   }
 

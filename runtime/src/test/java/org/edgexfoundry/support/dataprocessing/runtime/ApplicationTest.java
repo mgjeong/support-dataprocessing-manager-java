@@ -14,9 +14,11 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.spring;
+package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.support.dataprocessing.runtime.Application;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,37 +26,33 @@ import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
 public class ApplicationTest {
 
-    @Rule
-    public OutputCapture outputCapture = new OutputCapture();
+  @Rule
+  public OutputCapture outputCapture = new OutputCapture();
 
-    private static final String SPRING_STARTUP = "root of context hierarchy";
+  private static final String SPRING_STARTUP = "root of context hierarchy";
 
-    @Test
-    public void emptyApplicationContext() throws Exception {
-        Application.main(getArgs());
-        Assert.assertTrue(getOutput().contains(SPRING_STARTUP));
-    }
+  @Test
+  public void emptyApplicationContext() throws Exception {
+    Application.main(getArgs());
+    Assert.assertTrue(getOutput().contains(SPRING_STARTUP));
+  }
 
-    private String[] getArgs(String... args) {
-        List<String> list = new ArrayList<>(Arrays.asList(
+  private String[] getArgs(String... args) {
+    List<String> list = new ArrayList<>(Arrays.asList(
 //                "--spring.main.webEnvironment=false", "--spring.main.showBanner=OFF",
-                "--spring.main.registerShutdownHook=true", "--debug"));
-        if (args.length > 0) {
-            list.add("--spring.main.sources="
-                    + StringUtils.arrayToCommaDelimitedString(args));
-        }
-        return list.toArray(new String[list.size()]);
+        "--spring.main.registerShutdownHook=true", "--debug"));
+    if (args.length > 0) {
+      list.add("--spring.main.sources="
+          + StringUtils.arrayToCommaDelimitedString(args));
     }
+    return list.toArray(new String[list.size()]);
+  }
 
-    private String getOutput() {
-        return this.outputCapture.toString();
-    }
+  private String getOutput() {
+    return this.outputCapture.toString();
+  }
 
 }

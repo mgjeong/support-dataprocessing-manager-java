@@ -16,50 +16,16 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.error;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.io.Serializable;
 
 public enum ErrorType implements Serializable {
-    DPFW_ERROR_NONE,
-    DPFW_ERROR_INVALID_PARAMS,
-    DPFW_ERROR_PERMISSION,
-    DPFW_ERROR_DB,
-    DPFW_ERROR_ENGINE_FLINK,
-    DPFW_ERROR_FULL_JOB,
-    DPFW_ERROR_CONNECTION_ERROR,
-    DPFW_ERROR_ENGINE_TYPE;
-
-    @JsonIgnore
-    private int error;
-
-    ErrorType() {
-    }
-
-    ErrorType(int error) {
-        setErrorType(error);
-    }
-
-    @Override
-    @JsonIgnore
-    public String toString() {
-        return this.name().toUpperCase();
-    }
-
-    public void setErrorType(int error) {
-        this.error = error;
-    }
-
-    @JsonIgnore
-    public static ErrorType getErrorType(String error) {
-        ErrorType ret = null;
-        for (ErrorType jobState : ErrorType.values()) {
-            if (jobState.toString().equalsIgnoreCase(error)) {
-                ret = jobState;
-                break;
-            }
-        }
-        return ret;
-    }
+  DPFW_ERROR_NONE,
+  DPFW_ERROR_INVALID_PARAMS,
+  DPFW_ERROR_PERMISSION,
+  DPFW_ERROR_DB,
+  DPFW_ERROR_ENGINE_FLINK,
+  DPFW_ERROR_FULL_JOB,
+  DPFW_ERROR_CONNECTION_ERROR,
+  DPFW_ERROR_ENGINE_TYPE
 }
 

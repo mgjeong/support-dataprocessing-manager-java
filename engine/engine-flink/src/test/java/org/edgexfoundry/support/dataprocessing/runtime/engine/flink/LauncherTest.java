@@ -74,7 +74,7 @@ public class LauncherTest {
   }
 
   @BeforeClass
-  public void createTestFiles() throws Exception {
+  public static void createTestFiles() throws Exception {
     File f = new File(TEST_JSON);
     if (f.exists()) {
       if (!f.delete()) {

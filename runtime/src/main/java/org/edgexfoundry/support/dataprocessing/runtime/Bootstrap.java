@@ -156,15 +156,4 @@ public class Bootstrap {
   public void terminate() {
     storageManager.terminate();
   }
-
-  public static void main(String[] args) throws Exception {
-    LOGGER.info("Starting bootstrap...");
-
-    final Bootstrap bootstrap = new Bootstrap();
-
-    // Shutdown hook
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> bootstrap.terminate()));
-
-    bootstrap.execute();
-  }
 }
