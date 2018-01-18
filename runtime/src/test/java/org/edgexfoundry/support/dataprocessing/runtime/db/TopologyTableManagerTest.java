@@ -30,7 +30,7 @@ import org.springframework.core.io.ResourceLoader;
 public class TopologyTableManagerTest {
 
   private static TopologyTableManager storageManager = TopologyTableManager.getInstance();
-  private static File sqliteFile = new File(Settings.DOCKER_PATH + Settings.DB_TEST_PATH);
+  private static File sqliteFile = new File("./" + Settings.DB_TEST_PATH);
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -163,7 +163,7 @@ public class TopologyTableManagerTest {
     TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
     dpfwSource.setName("DPFW-SOURCE");
     dpfwSource.setType(TopologyComponentType.SOURCE);
-    dpfwSource.setStreamingEngine("STORM");
+    dpfwSource.setStreamingEngine("FLINK");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("a");
     dpfwSource.setTransformationClass("a");
