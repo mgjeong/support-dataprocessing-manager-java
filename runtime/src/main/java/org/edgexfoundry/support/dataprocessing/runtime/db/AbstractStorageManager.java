@@ -25,6 +25,14 @@ public abstract class AbstractStorageManager {
     this.database.initialize(jdbcUrl, jdbcClass);
   }
 
+  protected Connection getTransaction() throws SQLException {
+    if (isTerminated) {
+      return null;
+    }
+
+    return this.database.getTransaction();
+  }
+
   protected synchronized Connection getConnection() throws SQLException {
     if (isTerminated) {
       return null;

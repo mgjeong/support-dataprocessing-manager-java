@@ -9,8 +9,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobState.State;
 
 @JsonInclude(Include.NON_NULL)
 public class TopologyJob extends Format {
@@ -63,8 +65,8 @@ public class TopologyJob extends Format {
   }
 
   @JsonIgnore
-  public Object getConfig(String key) {
-    return config.get(key);
+  public <T> T getConfig(String key) {
+    return (T) config.get(key);
   }
 
   @JsonIgnore
@@ -96,11 +98,12 @@ public class TopologyJob extends Format {
     }
   }
 
-  public static TopologyJob create(Long topologyId, String jobId) {
+  public static TopologyJob create(Long topologyId) {
     TopologyJob job = new TopologyJob();
     job.setState(new TopologyJobState());
+    job.getState().setState(State.CREATED);
     job.setTopologyId(topologyId);
-    job.setId(jobId);
+    job.setId(UUID.randomUUID().toString());
     return job;
   }
 }

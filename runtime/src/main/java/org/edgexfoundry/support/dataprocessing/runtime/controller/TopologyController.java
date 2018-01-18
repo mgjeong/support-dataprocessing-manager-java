@@ -11,13 +11,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
@@ -26,6 +24,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEditorToolbar;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
@@ -131,7 +130,6 @@ public class TopologyController {
   public ResponseEntity listTopologyComponentBundles(
       @PathVariable("component") TopologyComponentBundle.TopologyComponentType componentType
   ) {
-    this.taskManager.getTaskModelList();
     switch (componentType) {
       case SOURCE:
         return listTopologyComponentSourceBundles();
@@ -448,32 +446,23 @@ public class TopologyController {
     topologyData.getConfig().put("targetHost", targetHost);
     String[] splits = targetHost.split(":");
     FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-    String jobId = engine.createJob(topologyData);
-    TopologyJob job = TopologyJob.create(topologyId, jobId);
-    job.setConfig(topologyData.getConfig());
 
-    // Run
-    JobResponseFormat response = engine.deploy(job.getId());
-    //TODO: job id should be unique! (Flink returns job name as its job id)
-    job.setId(UUID.randomUUID().toString()); // TODO: TEMP. Assign a random job id
-    if (response.getJobId() != null) {
-      job.getState().setEngineId(response.getJobId()); // engine id
-      job.getState().setState("RUNNING");
-      job.getState().setStartTime(System.currentTimeMillis());
-    } else {
-      job.getState().setState("ERROR");
-    }
+    TopologyJob job;
+    try {
+      job = engine.create(topologyData);
+      if (job == null) {
+        throw new Exception("Failed to create job.");
+      }
+      job = topologyJobTableManager.addOrUpdateTopologyJob(job); // add to database
 
-    // Write to database
-    topologyJobTableManager.addOrUpdateTopologyJob(job);
+      // Run job
+      job = engine.run(job);
+      topologyJobTableManager.addOrUpdateTopologyJobState(job.getId(), job.getState());
 
-    // Response by success/failure
-    if (job.getState().getState() == "RUNNING") {
-      return respond(result, HttpStatus.OK);
-    } else {
-      LOGGER.error("Failed to deploy topology.\n{}", response.getError().getResponseMessage());
-      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK,
-          "Failed to deploy topology"), HttpStatus.OK);
+      return respond(job, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
+          HttpStatus.OK);
     }
   }
 
@@ -545,11 +534,11 @@ public class TopologyController {
     try {
       Collection<TopologyJob> jobs = topologyJobTableManager.listTopologyJobs(topologyId);
       jobs = jobs.stream().filter(
-          topologyJob -> topologyJob.getState().getState().equalsIgnoreCase("RUNNING"))
+          topologyJob -> topologyJob.getState().getState() == State.RUNNING)
           .collect(Collectors.toSet());
       return respondEntity(jobs, HttpStatus.OK);
     } catch (Exception e) {
-      return respondEntity(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }
   }
 
@@ -560,15 +549,18 @@ public class TopologyController {
   @RequestMapping(value = "/topologies/{topologyId}/jobs/{jobId}/stop", method = RequestMethod.GET)
   public ResponseEntity stopJob(@PathVariable("topologyId") Long topologyId,
       @PathVariable("jobId") String jobId, RedirectAttributes redirectAttributes) {
-    TopologyJob job = topologyJobTableManager.getTopologyJob(topologyId, jobId);
-    String targetHost = (String) job.getConfig("targetHost");
-    String[] splits = targetHost.split(":");
-    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-    JobResponseFormat response = engine.stop(job.getState().getEngineId());
-    job.getState().setState("STOPPED");
-    topologyJobTableManager.addOrUpdateTopologyJobState(job.getId(), job.getState());
+    try {
+      TopologyJob job = topologyJobTableManager.getTopologyJob(topologyId, jobId);
+      String targetHost = job.getConfig("targetHost");
+      String[] splits = targetHost.split(":");
+      FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
 
-    return respond(response, HttpStatus.OK);
+      job = engine.stop(job);
+      topologyJobTableManager.addOrUpdateTopologyJobState(job.getId(), job.getState());
+      return respond(job, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
   }
 
   private ResponseEntity listTopologyComponentTopologyBundles() {

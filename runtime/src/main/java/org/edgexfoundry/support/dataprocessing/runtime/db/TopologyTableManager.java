@@ -95,7 +95,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO topology (name, config) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topology.getName(),
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topology.getName(),
         topology.getConfigStr())) {
       // insert
       int affectedRows;
@@ -135,7 +135,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     topology.setId(topologyId);
 
     String sql = "INSERT OR REPLACE INTO topology (id, name, config) VALUES (?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyId,
         topology.getName(),
         topology.getConfigStr())) {
@@ -192,7 +192,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO topology_editor_metadata (topologyId, data) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         editorMetadata.getTopologyId(), editorMetadata.getData())) {
       int affectedRows;
       affectedRows = ps.executeUpdate();
@@ -224,7 +224,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     editorMetadata.setTopologyId(topologyId);
 
     String sql = "INSERT OR REPLACE INTO topology_editor_metadata (topologyId, data) VALUES(?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         editorMetadata.getTopologyId(), editorMetadata.getData())) {
       int affectedRows;
       affectedRows = ps.executeUpdate();
@@ -253,7 +253,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO topology (id, name, config) VALUES(?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId,
         topology.getName(), topology.getConfigStr())) {
 
       int affectedRows;
@@ -287,7 +287,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId)) {
       ps.executeUpdate();
       commit();
       return topology;
@@ -341,7 +341,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_editor_metadata WHERE topologyId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId)) {
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId)) {
       ps.executeUpdate();
       commit();
     } catch (SQLException e) {
@@ -390,7 +390,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql = "INSERT INTO topology_component_bundle "
         + "(name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         bundle.getName(), bundle.getType().name(), bundle.getSubType(),
         bundle.getStreamingEngine(),
         bundle.getBundleJar(), bundle.getTransformationClass(),
@@ -435,7 +435,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql = "INSERT OR REPLACE INTO topology_component_bundle "
         + "(id, name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         bundle.getId(),
         bundle.getName(), bundle.getType().name(), bundle.getSubType(),
         bundle.getStreamingEngine(),
@@ -491,7 +491,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_component_bundle WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyComponentBundleId)) {
       ps.executeUpdate();
       commit();
@@ -557,7 +557,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_stream (topologyId, componentId, streamName, fields) VALUES"
         + "(?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyStream.getTopologyId(), topologyStream.getComponentId(),
         topologyStream.getStreamId(), topologyStream.getFieldsStr())) {
       // insert
@@ -609,7 +609,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_stream (id, topologyId, componentId, streamName, fields) VALUES"
             + "(?,?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyStreamId,
         stream.getTopologyId(), stream.getComponentId(),
         stream.getStreamId(), stream.getFieldsStr())) {
@@ -646,7 +646,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId,
         streamId)) {
       ps.executeUpdate();
       commit();
@@ -722,7 +722,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_edge (topologyId, fromId, toId, streamGroupings) "
         + "VALUES (?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyEdge.getTopologyId(), topologyEdge.getFromId(),
         topologyEdge.getToId(), topologyEdge.getStreamGroupings())) {
       // insert
@@ -769,7 +769,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_edge (id, topologyId, fromId, toId, streamGroupings) "
             + "VALUES (?,?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyEdgeId,
         topologyEdge.getTopologyId(), topologyEdge.getFromId(),
         topologyEdge.getToId(), topologyEdge.getStreamGroupings())) {
@@ -793,7 +793,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_edge WHERE topologyId = ? AND (fromId = ? OR toId = ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId,
         componentId, componentId)) {
       ps.executeUpdate();
       commit();
@@ -820,7 +820,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_edge WHERE topologyId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId,
         edgeId)) {
       ps.executeUpdate();
       commit();
@@ -899,7 +899,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO topology_component (topologyId, componentBundleId, name, config) "
         + "VALUES (?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyId, topologyComponent.getTopologyComponentBundleId(),
         topologyComponent.getName(), topologyComponent.getConfigStr())) {
 
@@ -964,7 +964,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO topology_component (id, topologyId, componentBundleId, name, config) "
             + "VALUES (?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyComponentId,
         topologyId, topologyComponent.getTopologyComponentBundleId(),
         topologyComponent.getName(), topologyComponent.getConfigStr())) {
@@ -1024,7 +1024,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     // removeTopologyComponentStreams(topologyId, topologyComponentId);
 
     String sql = "DELETE FROM topology_component WHERE topologyId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId,
         topologyComponentId)) {
       ps.executeUpdate();
       commit();
@@ -1041,7 +1041,7 @@ public final class TopologyTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM topology_stream WHERE topologyId = ? AND componentId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, topologyId,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, topologyId,
         topologyComponentId)) {
       ps.executeUpdate();
       commit();

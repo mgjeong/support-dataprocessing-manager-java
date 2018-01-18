@@ -7,20 +7,45 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 @JsonInclude(Include.NON_NULL)
 public class TopologyJobState extends Format {
 
-  private String state;
+  public enum State {
+    CREATED, RUNNING, STOPPED, ERROR;
+
+    static State toState(String v) {
+      if (v == null) {
+        return null;
+      }
+
+      for (State s : State.values()) {
+        if (s.name().equalsIgnoreCase(v)) {
+          return s;
+        }
+      }
+      return null;
+    }
+  }
+
+  private State state;
   private Long startTime;
   private String engineId;
   private String engineType;
+  private String errorMessage;
 
   public TopologyJobState() {
 
   }
 
-  public String getState() {
+  public State getState() {
     return state;
   }
 
   public void setState(String state) {
+    this.state = State.toState(state);
+    if (this.state == null) {
+      throw new RuntimeException("Failed to update state to " + state);
+    }
+  }
+
+  public void setState(State state) {
     this.state = state;
   }
 
@@ -46,5 +71,13 @@ public class TopologyJobState extends Format {
 
   public void setEngineType(String engineType) {
     this.engineType = engineType;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
   }
 }

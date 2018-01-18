@@ -42,10 +42,15 @@ public final class Database {
     return this.jdbcClass;
   }
 
-  public synchronized Connection getConnection() throws SQLException {
+  public synchronized Connection getTransaction() throws SQLException {
     // increment transaction counter
     transactionCounter++;
+    connection = getConnection();
+    connection.setAutoCommit(false);
+    return connection;
+  }
 
+  public synchronized Connection getConnection() throws SQLException {
     if (connection != null && !connection.isClosed()) {
       return connection; // valid connection already exists
     }
@@ -53,7 +58,6 @@ public final class Database {
     try {
       Class.forName(getJdbcClass());
       connection = DriverManager.getConnection(getJdbcUrl());
-      connection.setAutoCommit(false);
       return connection;
     } catch (ClassNotFoundException e) {
       throw new SQLException(e);
@@ -68,6 +72,7 @@ public final class Database {
 
       if (transactionCounter == 0 && connection != null && !connection.isClosed()) {
         connection.commit();
+        connection.setAutoCommit(true);
       }
 
     } catch (SQLException e) {
@@ -83,6 +88,7 @@ public final class Database {
 
       if (transactionCounter == 0 && connection != null && !connection.isClosed()) {
         connection.rollback();
+        connection.setAutoCommit(true);
       }
     } catch (SQLException e) {
       LOGGER.error(e.getMessage(), e);

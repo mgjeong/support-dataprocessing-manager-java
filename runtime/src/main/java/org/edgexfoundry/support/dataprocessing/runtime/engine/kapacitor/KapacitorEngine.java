@@ -1,23 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import java.util.List;
-import java.util.Map;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyJob;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.ScriptFactory;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph.ScriptGraph;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph.ScriptGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +21,26 @@ public class KapacitorEngine extends AbstractEngine {
     this.script = null;
   }
 
+  @Override
+  public TopologyJob create(TopologyData topology) throws Exception {
+    return null;
+  }
+
+  @Override
+  public TopologyJob run(TopologyJob job) throws Exception {
+    return null;
+  }
+
+  @Override
+  public TopologyJob stop(TopologyJob job) throws Exception {
+    return null;
+  }
+
+  @Override
+  public TopologyJob delete(TopologyJob job) throws Exception {
+    return null;
+  }
+/*
   @Override
   public JobResponseFormat createJob() {
     return new JobResponseFormat();
@@ -190,5 +196,5 @@ public class KapacitorEngine extends AbstractEngine {
       return responseFormat;
     }
   }
-
+*/
 }

@@ -1,5 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,8 +34,8 @@ public class TopologyJobTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO job_state (jobId, state, startTime, engineId, engineType) "
         + "VALUES (?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
-        jobId, jobState.getState(), jobState.getStartTime(), jobState.getEngineId(),
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
+        jobId, jobState.getState().name(), jobState.getStartTime(), jobState.getEngineId(),
         jobState.getEngineType())) {
       int affectedRows;
       affectedRows = ps.executeUpdate();
@@ -56,7 +57,7 @@ public class TopologyJobTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO job (id, topologyId, config) VALUES (?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql,
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
         topologyJob.getId(), topologyJob.getTopologyId(),
         topologyJob.getConfigStr())) {
       int affectedRows;
