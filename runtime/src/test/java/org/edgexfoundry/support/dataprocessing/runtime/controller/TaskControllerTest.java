@@ -16,19 +16,14 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
+/*
 @WebAppConfiguration
 @PrepareForTest(TaskManager.class)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @RunWith(PowerMockRunner.class)
+*/
 public class TaskControllerTest {
+
 /*
     private static MockMvc mockMvc;
 

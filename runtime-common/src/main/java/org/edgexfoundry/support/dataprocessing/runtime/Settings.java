@@ -27,11 +27,6 @@ public final class Settings {
   public static final String DB_TEST_PATH = "DPFW_TEST.db";
   public static final String DB_CLASS = "org.sqlite.JDBC";
 
-  public static final String WEB_ADDRESS = "localhost";
-  public static final int WEB_PORT = 8082;
-  public static final String WEB_SCHEMA = "http";
-
-
   private Settings() {
 
   }
