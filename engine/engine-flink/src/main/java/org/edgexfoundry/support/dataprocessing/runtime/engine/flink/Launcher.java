@@ -33,32 +33,25 @@ public class Launcher {
   private void execute(String[] args) throws Exception {
     final ParameterTool params = ParameterTool.fromArgs(args);
 
-    LOGGER.info("haha1");
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.getConfig().setGlobalJobParameters(params);
 
-    LOGGER.info("haha2");
     if (!params.has("json")) {
       throw new RuntimeException("No specified job-config file");
     }
 
-    LOGGER.info("haha3");
     String jsonString = params.get("json");
     Reader jsonReader;
     if (params.has("internal")) {
-      LOGGER.info("haha4");
       String jsonFileName = "/" + jsonString + ".json";
       jsonReader = new InputStreamReader(getClass().getResourceAsStream(jsonFileName));
     } else {
-      LOGGER.info("haha5");
       jsonReader = new FileReader(jsonString);
     }
 
-    LOGGER.info("haha6");
     JobGraph jobGraph = new JobGraphBuilder().getInstance(env, jsonReader);
     jsonReader.close();
 
-    LOGGER.info("haha7");
     jobGraph.initialize();
     env.execute(jobGraph.getJobId());
   }
