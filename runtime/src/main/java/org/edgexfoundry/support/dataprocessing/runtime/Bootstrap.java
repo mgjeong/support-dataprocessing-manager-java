@@ -30,7 +30,6 @@ public class Bootstrap {
     TopologyComponentBundle dpfwSink = new TopologyComponentBundle();
     dpfwSink.setName("DPFW-SINK");
     dpfwSink.setType(TopologyComponentBundle.TopologyComponentType.SINK);
-    dpfwSink.setTimestamp(System.currentTimeMillis());
     dpfwSink.setStreamingEngine("FLINK");
     dpfwSink.setSubType("DPFW");
     dpfwSink.setBundleJar("");
@@ -40,10 +39,8 @@ public class Bootstrap {
     addUIField(componentUISpecification, "Data Sink", "dataSink", "Enter data sink");
     dpfwSink.setTopologyComponentUISpecification(componentUISpecification);
 
-    dpfwSink.setFieldHintProviderClass("");
     dpfwSink.setTransformationClass("");
     dpfwSink.setBuiltin(true);
-    dpfwSink.setMavenDeps("");
 
     TopologyComponentBundle existingBundle =
         storageManager.getTopologyComponentBundle(dpfwSink.getName(), dpfwSink.getType(),
@@ -61,7 +58,6 @@ public class Bootstrap {
     TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
     dpfwSource.setName("DPFW-SOURCE");
     dpfwSource.setType(TopologyComponentBundle.TopologyComponentType.SOURCE);
-    dpfwSource.setTimestamp(System.currentTimeMillis());
     dpfwSource.setStreamingEngine("FLINK");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("");
@@ -72,10 +68,8 @@ public class Bootstrap {
     addUIField(componentUISpecification, "Data Source", "dataSource", "Enter data source");
     dpfwSource.setTopologyComponentUISpecification(componentUISpecification);
 
-    dpfwSource.setFieldHintProviderClass("");
     dpfwSource.setTransformationClass("");
     dpfwSource.setBuiltin(true);
-    dpfwSource.setMavenDeps("");
 
     TopologyComponentBundle existingBundle =
         storageManager.getTopologyComponentBundle(dpfwSource.getName(), dpfwSource.getType(),
@@ -93,7 +87,6 @@ public class Bootstrap {
     TopologyComponentBundle runtimeTopology = new TopologyComponentBundle();
     runtimeTopology.setName("Runtime topology");
     runtimeTopology.setType(TopologyComponentBundle.TopologyComponentType.TOPOLOGY);
-    runtimeTopology.setTimestamp(System.currentTimeMillis());
     runtimeTopology.setStreamingEngine("FLINK");
     runtimeTopology.setSubType("TOPOLOGY");
     runtimeTopology.setBundleJar("");
@@ -119,10 +112,8 @@ public class Bootstrap {
     componentUISpecification.addUIField(targetHost);
     runtimeTopology.setTopologyComponentUISpecification(componentUISpecification);
 
-    runtimeTopology.setFieldHintProviderClass("");
     runtimeTopology.setTransformationClass("dummy");
     runtimeTopology.setBuiltin(true);
-    runtimeTopology.setMavenDeps("");
 
     TopologyComponentBundle existingBundle =
         storageManager

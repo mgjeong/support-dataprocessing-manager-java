@@ -14,10 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ClusterWithService.ServiceConfiguration;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Namespace;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
@@ -31,7 +28,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topol
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyStream;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyVersion;
 
 public final class TopologyTableManager extends AbstractStorageManager {
 
@@ -45,28 +41,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
   }
 
   private TopologyTableManager() {
-  }
-
-  @Deprecated
-  private Namespace mockNamespace() {
-    Namespace.Info firstInfo = new Namespace.Info();
-    firstInfo.setId(1L);
-    firstInfo.setDescription("First namespace");
-    firstInfo.setName("Dover");
-    firstInfo.setStreamingEngine("STORM");
-    firstInfo.setTimeSeriesDB(null);
-    firstInfo.setTimestamp(System.currentTimeMillis());
-
-    Namespace.ServiceClusterMap firstMap = new Namespace.ServiceClusterMap();
-    firstMap.setClusterId(1L);
-    firstMap.setNamespaceId(1L);
-    firstMap.setServiceName("STORM");
-
-    // enrich
-    Namespace first = new Namespace();
-    first.setNamespace(firstInfo);
-    first.addMapping(firstMap);
-    return first;
   }
 
   /**
@@ -1122,13 +1096,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     topology.setId(rs.getLong("id"));
     topology.setName(rs.getString("name"));
     topology.setConfigStr(rs.getString("config"));
-
-    //TODO: hard-coded. Delete them or use them
-    topology.setNamespaceId(1L);
-    topology.setVersionId(1L);
-    topology.setTimestamp(System.currentTimeMillis());
-    topology.setDescription("");
-
     return topology;
   }
 
@@ -1160,10 +1127,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     bundle.setBundleJar(rs.getString("path"));
     bundle.setTransformationClass(rs.getString("classname"));
     bundle.setBuiltin(rs.getByte("removable") == (byte) '0');
-    // TODO: Hard-coded
-    bundle.setMavenDeps("");
-    bundle.setFieldHintProviderClass("");
-    bundle.setTimestamp(System.currentTimeMillis());
     return bundle;
   }
 
@@ -1208,27 +1171,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     component.setClassname(rs.getString("classname"));
 
     return component;
-  }
-
-  @Deprecated
-  public Collection<TopologyVersion> listTopologyVersionInfos(Long topologyId) {
-    List<TopologyVersion> versions = new ArrayList<>();
-    TopologyVersion firstVersion = new TopologyVersion();
-    firstVersion.setId(1L);
-    firstVersion.setDescription("First version");
-    firstVersion.setName("CURRENT");
-    firstVersion.setTimestamp(System.currentTimeMillis());
-    firstVersion.setTopologyId(topologyId);
-    versions.add(firstVersion);
-
-    return Collections.unmodifiableCollection(versions);
-  }
-
-  @Deprecated
-  public Collection<Namespace> listNamespaces() {
-    Collection<Namespace> namespaces = new ArrayList<>();
-    namespaces.add(mockNamespace());
-    return namespaces;
   }
 
   public Collection<TopologySource> listSources(Long topologyId) {
@@ -1331,45 +1273,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     return toolbar;
   }
 
-  @Deprecated
-  public Collection<ClusterWithService> listClusterWithServices() {
-    Collection<ClusterWithService> clusterWithServices = new ArrayList<>();
-    ClusterWithService cs = new ClusterWithService();
-    cs.setId(1L);
-    ClusterWithService.Cluster cluster = new ClusterWithService.Cluster();
-    cluster.setId(1L);
-    cluster.setDescription("First cluster");
-    cluster.setName("First Cluster");
-    cluster.setTimestamp(System.currentTimeMillis());
-    cs.setCluster(cluster);
-
-    List<ServiceConfiguration> serviceConfigurations = new ArrayList<>();
-    ServiceConfiguration sc = new ServiceConfiguration();
-    ClusterWithService.Service service = new ClusterWithService.Service();
-    service.setId(1L);
-    service.setName("STORM");
-    service.setClusterId(1L);
-    service.setDescription("");
-    service.setTimestamp(System.currentTimeMillis());
-    sc.setService(service);
-    List<ClusterWithService.Configuration> configurations = new ArrayList<>();
-    ClusterWithService.Configuration configuration = new ClusterWithService.Configuration();
-    configuration.setId(1L);
-    configuration.setServiceId(1L);
-    configuration.setName("storm");
-    configuration.setConfiguration("{}");
-    configuration.setDescription("");
-    configuration.setFilename("");
-    configuration.setTimestamp(System.currentTimeMillis());
-    configuration.setConfigurationMap(new HashMap<>());
-    configurations.add(configuration);
-    sc.setConfigurations(configurations);
-    serviceConfigurations.add(sc);
-    cs.setServiceConfigurations(serviceConfigurations);
-    clusterWithServices.add(cs);
-    return clusterWithServices;
-  }
-
   public String exportTopology(Topology topology) throws Exception {
     TopologyData topologyData = doExportTopology(topology);
     ObjectMapper mapper = new ObjectMapper();
@@ -1401,10 +1304,6 @@ public final class TopologyTableManager extends AbstractStorageManager {
     Topology newTopology = new Topology();
     newTopology.setName(topologyName);
     newTopology.setConfigStr(topologyData.getConfigStr());
-    // Hard-code
-    newTopology.setTimestamp(System.currentTimeMillis());
-    newTopology.setVersionId(1L);
-    newTopology.setNamespaceId(1L);
     newTopology = addTopology(newTopology);
 
     // Add topology editor meta data

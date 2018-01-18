@@ -13,15 +13,12 @@ public class TopologyComponent extends Format {
 
   private Long id;
   private Long topologyId;
-  private Long versionId;
   private Long topologyComponentBundleId;
   private String name = StringUtils.EMPTY;
   private String description = StringUtils.EMPTY;
   private String engineType = StringUtils.EMPTY;
   private String path = StringUtils.EMPTY;
   private String classname = StringUtils.EMPTY;
-  private Boolean reconfigure = false;
-  private Long timestamp;
   private Config config = new Config();
 
   public TopologyComponent() {
@@ -59,14 +56,6 @@ public class TopologyComponent extends Format {
     this.classname = classname;
   }
 
-  public Long getVersionId() {
-    return versionId;
-  }
-
-  public void setVersionId(Long versionId) {
-    this.versionId = versionId;
-  }
-
   public Long getTopologyComponentBundleId() {
     return topologyComponentBundleId;
   }
@@ -99,28 +88,12 @@ public class TopologyComponent extends Format {
     this.description = description;
   }
 
-  public Boolean getReconfigure() {
-    return reconfigure;
-  }
-
-  public void setReconfigure(Boolean reconfigure) {
-    this.reconfigure = reconfigure;
-  }
-
   public Config getConfig() {
     return config;
   }
 
   public void setConfig(Config config) {
     this.config = config;
-  }
-
-  public Long getTimestamp() {
-    return timestamp;
-  }
-
-  public void setTimestamp(Long timestamp) {
-    this.timestamp = timestamp;
   }
 
   @JsonIgnore
