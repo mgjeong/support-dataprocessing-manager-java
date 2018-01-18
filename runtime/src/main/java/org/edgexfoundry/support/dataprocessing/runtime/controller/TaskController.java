@@ -18,24 +18,12 @@
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import java.io.IOException;
-import java.util.Locale;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -53,7 +41,7 @@ public class TaskController {
       e.printStackTrace();
     }
   }
-
+/*
   @ApiOperation(value = "Add New Custom Task", notes = "Add New Custom Task")
   @RequestMapping(value = "", method = RequestMethod.POST, headers = ("content-type=multipart/*"))
   @ResponseBody
@@ -97,4 +85,5 @@ public class TaskController {
     LOGGER.debug(response.toString());
     return response;
   }
+  */
 }

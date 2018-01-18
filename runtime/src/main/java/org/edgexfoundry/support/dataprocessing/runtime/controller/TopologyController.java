@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.EngineTypeResponse;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.EngineTypeResponse;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.Topology;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
@@ -555,7 +555,12 @@ public class TopologyController {
       String[] splits = targetHost.split(":");
       FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
 
-      job = engine.stop(job);
+      try {
+        job = engine.stop(job);
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+        job.getState().setState(State.STOPPED); // Set to stop, anyhow
+      }
       topologyJobTableManager.addOrUpdateTopologyJobState(job.getId(), job.getState());
       return respond(job, HttpStatus.OK);
     } catch (Exception e) {
