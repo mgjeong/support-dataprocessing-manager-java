@@ -17,6 +17,7 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.sink;
 
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.websocket.WebSocketServerSink;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

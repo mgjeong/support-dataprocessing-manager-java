@@ -17,224 +17,122 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
+
+import java.io.File;
+import java.nio.file.FileSystemException;
+import java.util.jar.JarFile;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(LauncherTest.class)
+@PrepareForTest({Launcher.class, StreamExecutionEnvironment.class, JobGraphBuilder.class})
 public class LauncherTest {
-    @Test
-    public void testWithoutAnyCommandLineArguments() throws Exception {
-        try {
-            Launcher.main(new String[] {});
-            Assert.fail("Should not reach here.");
-        } catch (RuntimeException e) {
-        }
+  final static String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
+  final static String TEST_JAR = TEST_DIR + "/launcher_test_job.jar";
+  final static String TEST_JSON = TEST_DIR + "/launcher_test_job.json";
+  final static String JSON_CONTENT = "{\"topologyName\":\"launcher_test\"}";
+  final static String[] ARGS_INVALID = {"--internal", TEST_JSON};
+  final static String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON};
+  final static String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON};
+
+  @Test(expected = NullPointerException.class)
+  public void testWhenImpossibleExecution() throws Exception {
+    mockStatic(StreamExecutionEnvironment.class);
+    PowerMockito.when(StreamExecutionEnvironment.class, "getExecutionEnvironment")
+        .thenReturn(null);
+
+    Launcher.main(ARGS_FOR_INTERNAL_CONFIG);
+    Assert.fail("Failed: Illegal state; Null execution environment");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWithoutAnyCommandLineArguments() throws Exception {
+    Launcher.main(new String[]{});
+    Assert.fail("Failed: Not any exception on a job without specifications");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWithImproperArgs() throws Exception {
+    Launcher.main(ARGS_INVALID);
+    Assert.fail("Failed: Not any exception on a job with invalid specifications");
+  }
+
+  @BeforeClass
+  public void createTestFiles() throws Exception {
+    File f = new File(TEST_JSON);
+    if (f.exists()) {
+      if (!f.delete()) {
+        throw new RuntimeException("Cannot prepare test files");
+      }
+    } else {
+      f.mkdirs();
+      f.createNewFile();
     }
 
-    @Test
-    public void testWithJobId() throws Exception {
-        String jobId = "test-job-id";
-        Launcher launcher = new Launcher();
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // we expect job id to be missing at this point.
-        }
+    JarFile testJar = new JarFile(f);
+  }
 
-        // add mock
-        // test with empty payload
-        List<Map<String, String>> payload = new ArrayList<>();
-        JobTableManager jobTableManager = mock(JobTableManager.class);
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        Field fieldJobTableManager = Launcher.class.getDeclaredField("jobTableManager");
-        fieldJobTableManager.setAccessible(true);
-        fieldJobTableManager.set(launcher, jobTableManager);
+  @After
+  public void deleteTestFiles() {
 
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // we expect no payload for the job id found at this point.
-        }
+  }
 
-        // make payload
-        payload = makeMockPayload();
-        jobTableManager = mock(JobTableManager.class);
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        fieldJobTableManager.set(launcher, jobTableManager);
+  @Test
+  public void testWithExternalJsonFileNullInput() throws Exception {
 
-        // create spy env
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamExecutionEnvironment envSpy = spy(env);
-        Field fieldEnv = Launcher.class.getDeclaredField("env");
-        fieldEnv.setAccessible(true);
-        fieldEnv.set(launcher, envSpy);
-        doReturn(null).when(envSpy).execute(any());
+  }
 
-        // launch
-//        launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-    }
+  @Test
+  public void testWithExternalJsonFileInput() throws Exception {
 
-    @Test
-    public void testWithInvalidMockPayload() throws Exception {
-        String jobId = "test-job-id";
-        Launcher launcher = new Launcher();
+  }
 
-        List<Map<String, String>> payload = makeInvalidMockPayloadInput();
-        JobTableManager jobTableManager = mock(JobTableManager.class);
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        Field fieldJobTableManager = Launcher.class.getDeclaredField("jobTableManager");
-        fieldJobTableManager.setAccessible(true);
-        fieldJobTableManager.set(launcher, jobTableManager);
+  @Test
+  public void testWithInternalJsonFileNullInput() throws Exception {
 
-        // create spy env
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamExecutionEnvironment envSpy = spy(env);
-        Field fieldEnv = Launcher.class.getDeclaredField("env");
-        fieldEnv.setAccessible(true);
-        fieldEnv.set(launcher, envSpy);
-        doReturn(null).when(envSpy).execute(any());
+  }
 
-        // launch
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // OK
-        }
+  @Test
+  public void testWithInternalJsonFileInput() throws Exception {
 
-        payload = makeInvalidMockPayloadOutput();
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        fieldJobTableManager.setAccessible(true);
-        fieldJobTableManager.set(launcher, jobTableManager);
-        // launch
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // OK
-        }
-    }
+  }
 
-    private List<Map<String, String>> makeInvalidMockPayloadOutput() {
-        List<Map<String, String>> payload = new ArrayList<>();
-        Map<String, String> p = new HashMap<>();
+  @Test(expected = Exception.class)
+  public void testWithInternalInput() throws Exception {
+    Launcher.main(ARGS_FOR_INTERNAL_CONFIG);
+  }
 
-        // Input
-        JsonArray input = new JsonArray();
-        p.put(JobTableManager.Entry.input.name(), input.toString());
 
-        // Output
-        JsonArray output = new JsonArray();
-        JsonObject outputZMQ = new JsonObject();
-        outputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        outputZMQ.addProperty("dataType", "InvalidInput");
-        output.add(outputZMQ);
-        p.put(JobTableManager.Entry.output.name(), output.toString());
+  @Test(expected = IllegalStateException.class)
+  public void testExecute() throws Exception {
+    mockStatic(JobGraphBuilder.class);
+    JobGraphBuilder builder = PowerMockito.mock(JobGraphBuilder.class);
+    whenNew(JobGraphBuilder.class).withAnyArguments().thenReturn(builder);
 
-        // Task
-        JsonArray tasks = new JsonArray();
-        p.put(JobTableManager.Entry.taskinfo.name(), tasks.toString());
+    JobGraph jobGraph = Mockito.mock(JobGraph.class);
+    when(builder.getInstance(any(), any())).thenReturn(jobGraph);
 
-        payload.add(p);
-        return payload;
-    }
+    Mockito.doNothing().when(jobGraph).initialize();
 
-    private List<Map<String, String>> makeInvalidMockPayloadInput() {
-        List<Map<String, String>> payload = new ArrayList<>();
-        Map<String, String> p = new HashMap<>();
+    Launcher launcher = new Launcher();
+    // Running with an empty job occurs IllegalStateException
+    launcher.main(ARGS_FOR_EXTERNAL_CONFIG);
+  }
 
-        // Input
-        JsonArray input = new JsonArray();
-        JsonObject inputZMQ = new JsonObject();
-        inputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        inputZMQ.addProperty("dataType", "InvalidInput");
-        input.add(inputZMQ);
-        p.put(JobTableManager.Entry.input.name(), input.toString());
-
-        // Output
-        JsonArray output = new JsonArray();
-        p.put(JobTableManager.Entry.output.name(), output.toString());
-
-        // Task
-        JsonArray tasks = new JsonArray();
-        p.put(JobTableManager.Entry.taskinfo.name(), tasks.toString());
-
-        payload.add(p);
-        return payload;
-    }
-
-    private List<Map<String, String>> makeMockPayload() {
-        List<Map<String, String>> payload = new ArrayList<>();
-        Map<String, String> p = new HashMap<>();
-
-        // Input
-        JsonArray input = new JsonArray();
-        JsonObject inputZMQ = new JsonObject();
-        inputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        inputZMQ.addProperty("dataType", "ZMQ");
-        input.add(inputZMQ);
-        JsonObject inputEMF = new JsonObject();
-        inputEMF.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
-        inputEMF.addProperty("dataType", "EMF");
-        input.add(inputEMF);
-        p.put(JobTableManager.Entry.input.name(), input.toString());
-
-        // Output
-        JsonArray output = new JsonArray();
-        JsonObject outputZMQ = new JsonObject();
-        outputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        outputZMQ.addProperty("dataType", "ZMQ");
-        output.add(outputZMQ);
-        JsonObject outputEMF = new JsonObject();
-        outputEMF.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
-        outputEMF.addProperty("dataType", "EMF");
-        output.add(outputEMF);
-        JsonObject outputPayload = new JsonObject();
-        outputPayload.addProperty("dataSource", "output");
-        outputPayload.addProperty("dataType", "F");
-        output.add(outputPayload);
-        JsonObject outputWebSocket = new JsonObject();
-        outputWebSocket.addProperty("dataSource", "localhost:5555");
-        outputWebSocket.addProperty("dataType", "WS");
-        output.add(outputWebSocket);
-        p.put(JobTableManager.Entry.output.name(), output.toString());
-
-        // Task
-        JsonArray tasks = new JsonArray();
-        JsonObject taskA = new JsonObject();
-        taskA.addProperty("type", "PREPROCESSING");
-        taskA.addProperty("name", "CsvParser");
-        JsonObject taskAParam = new JsonObject();
-        taskAParam.addProperty("delimiter", "\t");
-        taskAParam.addProperty("index", "0");
-        taskA.add("params", taskAParam);
-        tasks.add(taskA);
-        p.put(JobTableManager.Entry.taskinfo.name(), tasks.toString());
-        payload.add(p);
-        return payload;
-    }
 }

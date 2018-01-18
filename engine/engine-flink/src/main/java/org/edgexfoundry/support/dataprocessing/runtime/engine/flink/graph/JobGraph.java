@@ -11,7 +11,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class JobGraph {
   private String jobId;
-  private StreamExecutionEnvironment env;
   private List<Vertex> processingOrder;
   private Map<Vertex, List<Vertex>> edges;
 
@@ -20,9 +19,8 @@ public class JobGraph {
     UNVISITED
   }
 
-  public JobGraph(String jobId, StreamExecutionEnvironment env, Map<Vertex, List<Vertex>> edges) {
+  public JobGraph(String jobId, Map<Vertex, List<Vertex>> edges) {
     this.jobId = jobId;
-    this.env = env;
     this.edges = edges;
   }
 
@@ -30,16 +28,12 @@ public class JobGraph {
     return jobId;
   }
 
-  public void setJobId(String jobId) {
-    this.jobId = jobId;
+  public void initialize() throws Exception {
+    this.processingOrder = topologicalSort();
+    initExecution();
   }
 
-  public JobGraph initialize() {
-    this.processingOrder = TopologicalSort();
-    return this;
-  }
-
-  private List<Vertex> TopologicalSort() {
+  private List<Vertex> topologicalSort() {
     Map<Vertex, State> state = new HashMap<>();
     List<Vertex> res = new ArrayList<>();
     for (Vertex component : edges.keySet()) {
@@ -75,17 +69,16 @@ public class JobGraph {
   }
 
 
-  public void execute() throws Exception {
+  public void initExecution() throws Exception {
     for (Vertex vertex : processingOrder) {
       DataStream<DataSet> outFlux = vertex.serve();
       List<Vertex> nextVertices = edges.get(vertex);
       if (nextVertices != null) {
         for (Vertex next : edges.get(vertex)) {
-          next.setFluxIn(outFlux);
+          next.setInflux(outFlux);
         }
       }
     }
-    this.env.execute(this.jobId);
   }
 
 }

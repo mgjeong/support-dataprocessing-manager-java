@@ -19,7 +19,7 @@ public class DeliverVertex implements ScriptVertex {
   public String getScript() {
     Map<String, Object> properties = this.config.getConfig().getProperties();
     String dataType = ((String) properties.get("dataType")).toLowerCase();
-    String dataSink = ((String) properties.get("dataSource")).replaceAll("\\s", "");
+    String dataSink = ((String) properties.get("dataSink")).replaceAll("\\s", "");
 
     if (!dataType.equals("ezmq") && !dataType.equals("f") && !dataType.equals("mongodb")) {
       throw new RuntimeException("Unsupported output data type" + dataType);
