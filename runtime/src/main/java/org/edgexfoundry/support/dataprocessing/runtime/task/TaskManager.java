@@ -18,9 +18,9 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -102,41 +102,32 @@ public final class TaskManager implements DirectoryChangeEventListener {
   private List<String> getTaskModelNames(String fileName) {
     // Validate file name
     if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
-      LOGGER.error("Invalid file name received.");
-      return null;
+      LOGGER.debug("Invalid file name received.");
+      return Collections.emptyList();
     }
 
     // Validate file
     File f = new File(fileName);
     if (f == null || !f.exists() || !f.isFile()) {
-      LOGGER.error("{} does not exist or is invalid.", fileName);
-      return null;
+      LOGGER.debug("{} does not exist or is invalid.", fileName);
+      return Collections.emptyList();
     }
 
     LOGGER.info("Reading {}", fileName);
-
     // Collect all class names available inside jar
     List<String> classNames = new ArrayList<>();
-    ZipInputStream zip = null;
-    try {
-      zip = new ZipInputStream(new FileInputStream(f));
+    try (ZipInputStream zip = new ZipInputStream(new FileInputStream(f))) {
       for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
-        if (!entry.isDirectory() && entry.getName().endsWith(".class") && !entry.getName()
-            .contains("$")) {
+        // Extract class files
+        if (!entry.isDirectory()
+            && entry.getName().endsWith(".class")
+            && !entry.getName().contains("$")) {
           String className = entry.getName().replace('/', '.');
           classNames.add(className.substring(0, className.length() - ".class".length()));
         }
       }
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
-    } finally {
-      if (zip != null) {
-        try {
-          zip.close();
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
     }
 
     return classNames;
@@ -267,7 +258,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     ArrayList<String> fileNames = this.directoryWatcher.scanFile(absPath);
     for (String fileName : fileNames) {
       List<String> classNames = getTaskModelNames(fileName);
-      if (null != classNames) {
+      if (classNames != null && !classNames.isEmpty()) {
         updateTasksFromJar(fileName, classNames, DEFAULTTASK);
       }
     }

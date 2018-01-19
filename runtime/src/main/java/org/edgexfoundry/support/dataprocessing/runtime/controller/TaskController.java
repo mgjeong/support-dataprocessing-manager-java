@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Api(tags = "Task Manager", description = "API List for Task Managing")
 @RequestMapping(value = "/analytics/v1/task")
-public class TaskController {
+public class TaskController extends AbstractController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
   private TaskManager taskManager;

@@ -286,6 +286,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
       throw new RuntimeException("Workflow with id=" + workflowId + " not found.");
     }
 
+    removeWorkflowEditorMetadata(workflowId); // delete meta
+
     String sql = "DELETE FROM workflow WHERE id = ?";
     try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId)) {
       ps.executeUpdate();

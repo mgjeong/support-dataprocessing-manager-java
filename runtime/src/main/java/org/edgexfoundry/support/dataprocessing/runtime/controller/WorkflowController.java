@@ -2,22 +2,16 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.EngineTypeResponse;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
@@ -31,14 +25,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
-import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowJobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,23 +36,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @CrossOrigin(origins = "*")
 @RestController
 @Api(tags = "Workflow UI", description = "API List for Workflow UI")
 @RequestMapping("/api/v1/catalog")
-public class WorkflowController {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowController.class);
+public class WorkflowController extends AbstractController {
 
   private WorkflowTableManager workflowTableManager = null;
-  private WorkflowJobTableManager workflowJobTableManager = null;
   private EdgeInfo edgeInfo = null;
 
   public WorkflowController() {
     this.workflowTableManager = WorkflowTableManager.getInstance();
-    this.workflowJobTableManager = WorkflowJobTableManager.getInstance();
     this.edgeInfo = new EdgeInfo();
   }
 
@@ -421,50 +405,6 @@ public class WorkflowController {
     }
   }
 
-  @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")
-  @RequestMapping(value = "/workflows/{workflowId}/actions/validate", method = RequestMethod.POST)
-  public ResponseEntity validateWorkflow(@PathVariable("workflowId") Long workflowId) {
-    Workflow result = this.workflowTableManager.getWorkflow(workflowId);
-
-    return respond(result, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Deploy workflow", notes = "Deploys a workflow")
-  @RequestMapping(value = "/workflows/{workflowId}/actions/deploy", method = RequestMethod.POST)
-  public ResponseEntity deployWorkflow(@PathVariable("workflowId") Long workflowId) {
-    Workflow result = this.workflowTableManager.getWorkflow(workflowId);
-
-    // flink result
-    WorkflowData workflowData = this.workflowTableManager.doExportWorkflow(result);
-
-    LOGGER.info("WorkflowData: " + workflowData.getConfigStr());
-
-    // Create
-    String targetHost = (String) workflowData.getConfig().get("targetHost");
-    // targetHost = "localhost:8081";
-    workflowData.getConfig().put("targetHost", targetHost);
-    String[] splits = targetHost.split(":");
-    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-
-    Job job;
-    try {
-      job = engine.create(workflowData);
-      if (job == null) {
-        throw new Exception("Failed to create job.");
-      }
-      job = workflowJobTableManager.addOrUpdateWorkflowJob(job); // add to database
-
-      // Run job
-      job = engine.run(job);
-      workflowJobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
-
-      return respond(job, HttpStatus.OK);
-    } catch (Exception e) {
-      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
-          HttpStatus.OK);
-    }
-  }
-
   @ApiOperation(value = "Export workflow", notes = "Exports a workflow")
   @RequestMapping(value = "/workflows/{workflowId}/actions/export", method = RequestMethod.GET)
   public ResponseEntity exportWorkflow(@PathVariable("workflowId") Long workflowId) {
@@ -524,49 +464,6 @@ public class WorkflowController {
     return respondEntity(response, HttpStatus.OK);
   }
 
-  /**
-   * TEMPORARY
-   **/
-  @ApiOperation(value = "Get workflow jobs", notes = "Get workflow jos")
-  @RequestMapping(value = "/workflows/{workflowId}/jobs", method = RequestMethod.GET)
-  public ResponseEntity getWorkflowJobs(@PathVariable("workflowId") Long workflowId) {
-    try {
-      Collection<Job> jobs = workflowJobTableManager.listWorkflowJobs(workflowId);
-      jobs = jobs.stream().filter(
-          workflowJob -> workflowJob.getState().getState() == State.RUNNING)
-          .collect(Collectors.toSet());
-      return respondEntity(jobs, HttpStatus.OK);
-    } catch (Exception e) {
-      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
-    }
-  }
-
-  /**
-   * TEMPORARY
-   **/
-  @ApiOperation(value = "Stop job", notes = "Stop job")
-  @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
-  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
-      @PathVariable("jobId") String jobId, RedirectAttributes redirectAttributes) {
-    try {
-      Job job = workflowJobTableManager.getWorkflowJob(workflowId, jobId);
-      String targetHost = job.getConfig("targetHost");
-      String[] splits = targetHost.split(":");
-      FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-
-      try {
-        job = engine.stop(job);
-      } catch (Exception e) {
-        LOGGER.error(e.getMessage(), e);
-        job.getState().setState(State.STOPPED); // Set to stop, anyhow
-      }
-      workflowJobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
-      return respond(job, HttpStatus.OK);
-    } catch (Exception e) {
-      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
-    }
-  }
-
   private ResponseEntity listWorkflowComponentWorkflowBundles() {
     // TEMP
     Collection<WorkflowComponentBundle> workflows
@@ -605,21 +502,5 @@ public class WorkflowController {
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.SOURCE);
     return respondEntity(sources, HttpStatus.OK);
-  }
-
-  private static final JsonParser jsonParser = new JsonParser();
-
-  private static ResponseEntity respondEntity(Object obj, HttpStatus httpStatus) {
-    JsonElement entity = jsonParser.parse(obj.toString());
-    JsonObject parent = new JsonObject();
-    parent.add("entities", entity);
-    return respond(parent, httpStatus);
-  }
-
-  private static ResponseEntity respond(Object obj, HttpStatus httpStatus) {
-    return ResponseEntity
-        .status(httpStatus)
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(obj.toString());
   }
 }
