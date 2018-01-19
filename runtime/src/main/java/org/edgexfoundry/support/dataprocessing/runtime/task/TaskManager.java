@@ -18,13 +18,9 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidParameterException;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -32,14 +28,12 @@ import java.util.zip.ZipInputStream;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField.UIFieldType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle.TopologyComponentType;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField.UIFieldType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +44,6 @@ public final class TaskManager implements DirectoryChangeEventListener {
   private static TaskManager instance = null;
 
   private static DirectoryWatcher directoryWatcher = null;
-  private static TaskTableManager taskTable = null;
 
   private static final int DEFAULTTASK = 0;
   private static final int USERTASK = 1;
@@ -81,7 +74,6 @@ public final class TaskManager implements DirectoryChangeEventListener {
 
   public void initialize() {
     try {
-      taskTable = TaskTableManager.getInstance();
       startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
@@ -107,100 +99,35 @@ public final class TaskManager implements DirectoryChangeEventListener {
     LOGGER.info("TaskManager terminated.");
   }
 
-  public TaskFormat getTaskModel(String name, TaskType type) {
-    List<TaskFormat> tasks = getTaskModelList();
-    TaskFormat ret = null;
-    for (TaskFormat task : tasks) {
-      if (task.getName().equalsIgnoreCase(name) && task.getType() == type) {
-        ret = new TaskFormat(task);
-        break;
-      }
-    }
-    return ret;
-  }
-
-  public List<TaskFormat> getTaskModel(String name) {
-    List<TaskFormat> tasks = getTaskModelList();
-    List<TaskFormat> ret = new ArrayList<>();
-    for (TaskFormat task : tasks) {
-      if (task.getName().equalsIgnoreCase(name)) {
-        ret.add(new TaskFormat(task));
-      }
-    }
-    return ret;
-  }
-
-  public List<TaskFormat> getTaskModel(TaskType type) {
-    List<TaskFormat> tasks = getTaskModelList();
-    List<TaskFormat> ret = new ArrayList<>();
-    for (TaskFormat task : tasks) {
-      if (task.getType() == type) {
-        ret.add(new TaskFormat(task));
-      }
-    }
-    return ret;
-  }
-
-  public List<TaskFormat> getTaskModelList() {
-    List<TaskFormat> tasks = new ArrayList<>();
-    List<Map<String, String>> taskList = null;
-    try {
-      taskList = taskTable.getAllTaskProperty();
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-    }
-
-    for (Map<String, String> result : taskList) {
-      String type = result.get(TaskTableManager.Entry.type.name());
-      String name = result.get(TaskTableManager.Entry.name.name());
-      String params = result.get(TaskTableManager.Entry.param.name());
-
-      TaskFormat task = new TaskFormat(TaskType.getType(type), name, params);
-      tasks.add(task);
-    }
-
-    return tasks;
-  }
-
-
   private List<String> getTaskModelNames(String fileName) {
     // Validate file name
     if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
-      LOGGER.error("Invalid file name received.");
-      return null;
+      LOGGER.debug("Invalid file name received.");
+      return Collections.emptyList();
     }
 
     // Validate file
     File f = new File(fileName);
     if (f == null || !f.exists() || !f.isFile()) {
-      LOGGER.error("{} does not exist or is invalid.", fileName);
-      return null;
+      LOGGER.debug("{} does not exist or is invalid.", fileName);
+      return Collections.emptyList();
     }
 
     LOGGER.info("Reading {}", fileName);
-
     // Collect all class names available inside jar
     List<String> classNames = new ArrayList<>();
-    ZipInputStream zip = null;
-    try {
-      zip = new ZipInputStream(new FileInputStream(f));
+    try (ZipInputStream zip = new ZipInputStream(new FileInputStream(f))) {
       for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
-        if (!entry.isDirectory() && entry.getName().endsWith(".class") && !entry.getName()
-            .contains("$")) {
+        // Extract class files
+        if (!entry.isDirectory()
+            && entry.getName().endsWith(".class")
+            && !entry.getName().contains("$")) {
           String className = entry.getName().replace('/', '.');
           classNames.add(className.substring(0, className.length() - ".class".length()));
         }
       }
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
-    } finally {
-      if (zip != null) {
-        try {
-          zip.close();
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
     }
 
     return classNames;
@@ -210,36 +137,28 @@ public final class TaskManager implements DirectoryChangeEventListener {
       int removable) {
     try {
       // Check if bundle already exists
-      TopologyComponentBundle bundle = TopologyTableManager.getInstance()
-          .getTopologyComponentBundle(model.getName(), TopologyComponentType.PROCESSOR,
+      WorkflowComponentBundle bundle = WorkflowTableManager.getInstance()
+          .getWorkflowComponentBundle(model.getName(), WorkflowComponentBundleType.PROCESSOR,
               "DPFW");
       if (bundle == null) {
         // make new bundle
-        bundle = new TopologyComponentBundle();
+        bundle = new WorkflowComponentBundle();
         bundle.setName(model.getName());
-        bundle.setType(TopologyComponentType.PROCESSOR);
+        bundle.setType(WorkflowComponentBundleType.PROCESSOR);
         //bundle.setSubType(model.getType().name());
         bundle.setSubType("DPFW");
       }
-      bundle = updateTopologyComponentBundle(bundle, model);
+      bundle = updateWorkflowComponentBundle(bundle, model);
       bundle.setBundleJar(jarPath);
       bundle.setTransformationClass(className);
       bundle.setBuiltin(removable == DEFAULTTASK);
 
       if (bundle.getId() == null) {
-        TopologyTableManager.getInstance().addTopologyComponentBundle(bundle);
+        WorkflowTableManager.getInstance().addWorkflowComponentBundle(bundle);
       } else {
-        TopologyTableManager.getInstance().addOrUpdateTopologyComponentBundle(bundle);
+        WorkflowTableManager.getInstance().addOrUpdateWorkflowComponentBundle(bundle);
       }
 
-      /*
-      taskTable.insertTask(model.getType().toString(),
-          model.getName(),
-          model.getDefaultParam().toString(),
-          jarPath,
-          className,
-          removable);
-          */
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return false;
@@ -247,9 +166,9 @@ public final class TaskManager implements DirectoryChangeEventListener {
     return true;
   }
 
-  private TopologyComponentBundle updateTopologyComponentBundle(TopologyComponentBundle bundle,
+  private WorkflowComponentBundle updateWorkflowComponentBundle(WorkflowComponentBundle bundle,
       TaskModel model) {
-    if(model.getName().equalsIgnoreCase("QUERY")) {
+    if (model.getName().equalsIgnoreCase("QUERY")) {
       bundle.setStreamingEngine("KAPACITOR");
     } else {
       bundle.setStreamingEngine("FLINK");
@@ -280,7 +199,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     outrecord.setType(UIFieldType.ARRAYSTRING);
     uiSpecification.addUIField(outrecord);
 
-    bundle.setTopologyComponentUISpecification(uiSpecification);
+    bundle.setWorkflowComponentUISpecification(uiSpecification);
     return bundle;
   }
 
@@ -339,13 +258,14 @@ public final class TaskManager implements DirectoryChangeEventListener {
     ArrayList<String> fileNames = this.directoryWatcher.scanFile(absPath);
     for (String fileName : fileNames) {
       List<String> classNames = getTaskModelNames(fileName);
-      if (null != classNames) {
+      if (classNames != null && !classNames.isEmpty()) {
         updateTasksFromJar(fileName, classNames, DEFAULTTASK);
       }
     }
     return true;
   }
 
+  @Override
   public ErrorFormat fileCreatedEventReceiver(String fileName) {
     if (null == fileName) {
       return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS);
@@ -362,6 +282,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     return new ErrorFormat();
   }
 
+  @Override
   public ErrorFormat fileRemovedEventReceiver(String fileName) {
     // Validate file name
     if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
@@ -371,108 +292,10 @@ public final class TaskManager implements DirectoryChangeEventListener {
 
     // Delete from database
     try {
-      taskTable.deleteTaskByPath(fileName);
+      // TODO:
+      //taskTable.deleteTaskByPath(fileName);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
-    }
-    return new ErrorFormat();
-  }
-
-  public ErrorFormat addTask(String name, byte[] data) {
-    String absPath = Settings.CUSTOM_JAR_PATH + name;
-    ErrorFormat response;
-    try {
-      Path path = Paths.get(absPath);
-      Files.write(path, data);
-
-      // Insert Information of jar file to DB
-      response = fileCreatedEventReceiver(absPath);
-      if (response.isError()) {
-        try {
-          Files.delete(path);
-          LOGGER.info(path + " was deleted.");
-        } catch (Exception e) {
-          return new ErrorFormat(ErrorType.DPFW_ERROR_PERMISSION, e.getMessage());
-        }
-      }
-    } catch (Exception e) {
-      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage());
-    }
-    return response;
-  }
-
-  public List<TaskFormat> getTaskByTypeAndName(TaskType type, String name) {
-    try {
-
-      List<TaskFormat> ret = new ArrayList<TaskFormat>();
-//            List<Map<String, String>> taskList = taskTable.getTaskByTypeAndName(type.toString(), name);
-      List<Map<String, String>> taskList = taskTable.getTaskByName(name);
-
-      for (Map<String, String> task : taskList) {
-        TaskFormat taskFormat = new TaskFormat();
-        taskFormat.setJar(new File(task.get(TaskTableManager.Entry.path.name())).getName());
-        taskFormat.setName(task.get(TaskTableManager.Entry.name.name()));
-        taskFormat.setType(TaskType.valueOf(task.get(TaskTableManager.Entry.type.name())));
-        taskFormat.setClassName(task.get(TaskTableManager.Entry.classname.name()));
-
-        ret.add(taskFormat);
-      }
-
-      return ret;
-    } catch (SQLException e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
-
-  public ErrorFormat deleteTask(TaskType type, String name) {
-    Map<String, String> res;
-    List<Map<String, String>> resList = null;
-    String jarPath = null;
-    int size = 0;
-
-    try {
-      resList = taskTable.getTaskByTypeAndName(type.toString(), name);
-    } catch (Exception e) {
-      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage());
-    }
-
-    if (null == resList || 0 >= resList.size()) {
-      LOGGER.info("No Tasks.");
-      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "No Tasks.");
-    } else {
-      res = resList.get(0);
-      String removable = res.get(TaskTableManager.Entry.removable.name()).toString();
-      if (DEFAULTTASK == Integer.parseInt(removable)) {
-        LOGGER.info("Can't delete default tasks.");
-        return new ErrorFormat(ErrorType.DPFW_ERROR_PERMISSION, "Can't delete default tasks.");
-      }
-    }
-
-    try {
-      jarPath = res.get(TaskTableManager.Entry.path.name()).toString();
-      size = taskTable.getJarReferenceCount(jarPath);
-      // remove from DB
-      if (size > 1) {
-        taskTable.deleteTaskByTypeAndName(type.toString(), name);
-
-        LOGGER.info(type.toString() + "/" + name + " was deleted.");
-      } else if (size == 1) {
-        // And Remove file if not exist another task in same jar file.
-        taskTable.deleteTaskByTypeAndName(type.toString(), name);
-
-        if (null != jarPath) {
-          Path path = Paths.get(jarPath);
-          try {
-            Files.delete(path);
-            LOGGER.info(jarPath + " was deleted.");
-          } catch (Exception e) {
-            return new ErrorFormat(ErrorType.DPFW_ERROR_PERMISSION, e.getMessage());
-          }
-        }
-      }
-    } catch (SQLException e) {
-      return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());
     }
     return new ErrorFormat();
   }

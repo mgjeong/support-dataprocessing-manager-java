@@ -16,8 +16,11 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import java.io.File;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
@@ -25,38 +28,68 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
 
-  private static TaskManager taskManager = null;
-  //private static JobManager jobManager = null;
+  private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
-  private static void initialize() {
+  private static void initialize() throws Exception {
 
-    try {
-      taskManager = TaskManager.getInstance();
+    // 1. Check if resource directory exists, make and copy resources if necessary
+    makeResourceDirectoryIfNecessary();
 
-      taskManager.scanTaskModel(Settings.FW_JAR_PATH);
+    // 2. Check if database exists, run bootstrap if necessary
+    makeDatabaseIfNecessary();
 
-      //jobManager = JobManager.getInstance();
-      //jobManager.initialize();
-    } catch (Exception e) {
-      e.printStackTrace();
+    // 3. Run task manager to scan for tasks
+    TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
+  }
+
+  private static void makeDatabaseIfNecessary() throws Exception {
+    // Check database
+    File db = new File(Settings.DOCKER_PATH + Settings.DB_PATH);
+    if (!db.exists()) {
+      LOGGER.info("Executing bootstrap on {}", Settings.DOCKER_PATH + Settings.DB_PATH);
+      Bootstrap bootstrap = new Bootstrap();
+      bootstrap.execute();
+    }
+  }
+
+  private static void makeResourceDirectoryIfNecessary() throws Exception {
+    // Check jar directory
+    File fwJarPath = new File(Settings.FW_JAR_PATH);
+    makeDirectory(fwJarPath);
+
+    // Check custom jar directory
+    File customJarPath = new File(Settings.CUSTOM_JAR_PATH);
+    makeDirectory(customJarPath);
+
+    // Check resource directory
+    File resourcePath = new File(Settings.RESOURCE_PATH);
+    makeDirectory(resourcePath);
+
+    // Copy resources
+    // TODO: copy engine-flink from resource?
+  }
+
+  private static void makeDirectory(File dirPath) throws Exception {
+    if (!dirPath.exists()) {
+      boolean success = dirPath.mkdirs();
+      if (!success) {
+        throw new Exception("Failed to create " + dirPath.getAbsolutePath());
+      }
+    } else if (!dirPath.isDirectory()) {
+      throw new Exception(dirPath.getAbsolutePath() + " is not a directory.");
     }
   }
 
   private static void terminate() {
-    // TaskManager related
-    if (taskManager != null) {
-      taskManager.terminate();
-    }
+    WorkflowTableManager.getInstance().terminate();
 
-    if (TopologyTableManager.getInstance() != null) {
-      TopologyTableManager.getInstance().terminate();
-    }
+    TaskManager.getInstance().terminate();
   }
 
   public static void main(String[] args) throws Exception {
-    SpringApplication.run(Application.class, args);
-
     initialize();
+
+    SpringApplication.run(Application.class, args);
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override

@@ -8,5 +8,5 @@ public interface Vertex {
 
   DataStream<DataSet> serve() throws Exception;
 
-  void setFluxIn(DataStream<DataSet> in);
+  void setInflux(DataStream<DataSet> influx);
 }

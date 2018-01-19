@@ -1,16 +1,15 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph;
 
 import java.util.Map;
-import javax.management.Query;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class QueryVertex implements ScriptVertex{
   final static Logger LOGGER = LoggerFactory.getLogger(QueryVertex.class);
-  TopologyProcessor config;
+  WorkflowProcessor config;
 
-  public QueryVertex(TopologyProcessor config) {
+  public QueryVertex(WorkflowProcessor config) {
     this.config = config;
   }
 

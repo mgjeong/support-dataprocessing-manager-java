@@ -17,25 +17,23 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 
 public interface Engine {
 
-  @Deprecated
-  JobResponseFormat createJob();
+  /**
+   * Creates an engine job instance from workflow data
+   */
+  Job create(WorkflowData workflow) throws Exception;
 
-  @Deprecated
-  JobResponseFormat createJob(String jobId);
+  /**
+   * Runs an engine job
+   */
+  Job run(Job job) throws Exception;
 
-  String createJob(TopologyData topology);
+  Job stop(Job job) throws Exception;
 
-  JobResponseFormat deploy(String topologyName);
-
-  JobResponseFormat run(String jobId);
-
-  JobResponseFormat stop(String jobId);
-
-  JobResponseFormat delete(String jobId);
+  Job delete(Job job) throws Exception;
 }
 

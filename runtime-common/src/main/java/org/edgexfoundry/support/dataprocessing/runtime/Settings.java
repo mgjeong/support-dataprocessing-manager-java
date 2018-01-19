@@ -21,14 +21,11 @@ public final class Settings {
   public static final String DOCKER_PATH = "/runtime/ha/";
   public static final String FW_JAR_PATH = DOCKER_PATH + "jar/task/";
   public static final String CUSTOM_JAR_PATH = DOCKER_PATH + "jar/task_user/";
+  public static final String RESOURCE_PATH = DOCKER_PATH + "resource/";
+
   public static final String DB_PATH = "DPFW.db";
-
   public static final String DB_TEST_PATH = "DPFW_TEST.db";
-
-  public static final String WEB_ADDRESS = "localhost";
-  public static final int WEB_PORT = 8082;
-  public static final String WEB_SCHEMA = "http";
-
+  public static final String DB_CLASS = "org.sqlite.JDBC";
 
   private Settings() {
 

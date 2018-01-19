@@ -4,25 +4,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyEdge;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyProcessor;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEdge;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ScriptGraphBuilder {
   private static final Logger LOGGER = LoggerFactory.getLogger(ScriptGraphBuilder.class);
-  private TopologyData jobConfig;
+  private WorkflowData jobConfig;
 
   private Map<ScriptVertex, List<ScriptVertex>> edges;
 
-  public ScriptGraph getInstance(TopologyData topologyData) throws Exception {
-    this.jobConfig = topologyData;
+  public ScriptGraph getInstance(WorkflowData workflowData) throws Exception {
+    this.jobConfig = workflowData;
     initConfig();
 
-    return new ScriptGraph(jobConfig.getTopologyName(), edges);
+    return new ScriptGraph(jobConfig.getWorkflowName(), edges);
   }
 
   private void initConfig() throws Exception{
@@ -30,23 +30,23 @@ public class ScriptGraphBuilder {
       throw new RuntimeException("Job configuration is null");
     }
     Map<Long, ScriptVertex> map = new HashMap<>();
-    for (TopologySource injectInfo : jobConfig.getSources()) {
+    for (WorkflowSource injectInfo : jobConfig.getSources()) {
       InjectVertex injector = new InjectVertex(injectInfo);
       map.put(injectInfo.getId(), injector);
     }
 
-    for (TopologySink deliverInfo : jobConfig.getSinks()) {
+    for (WorkflowSink deliverInfo : jobConfig.getSinks()) {
       DeliverVertex deliverer = new DeliverVertex(deliverInfo);
       map.put(deliverInfo.getId(), deliverer);
     }
 
-    for (TopologyProcessor queryInfo : jobConfig.getProcessors()) {
+    for (WorkflowProcessor queryInfo : jobConfig.getProcessors()) {
        QueryVertex query = new QueryVertex(queryInfo);
       map.put(queryInfo.getId(), query);
     }
 
     edges = new HashMap<>();
-    for (TopologyEdge edge : jobConfig.getEdges()) {
+    for (WorkflowEdge edge : jobConfig.getEdges()) {
       Long from = edge.getFromId();
       Long to = edge.getToId();
       if (map.containsKey(from) && map.containsKey(to)) {

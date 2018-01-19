@@ -17,16 +17,16 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JarLoader {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
   private URLClassLoader urlClassLoader = null;
@@ -43,11 +43,11 @@ public class JarLoader {
   }
 
   /**
-   * @param className This should be included the package name.
-   *                  likes "org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel"
-   * @return
+   * @param className This should be included the package name. likes
+   * "org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel"
    */
-  public Class getClassInstance(String className) throws ClassNotFoundException, NoClassDefFoundError {
+  public Class getClassInstance(String className)
+      throws ClassNotFoundException, NoClassDefFoundError {
 
     LOGGER.info("Attempting to load " + className);
     return urlClassLoader.loadClass(className);

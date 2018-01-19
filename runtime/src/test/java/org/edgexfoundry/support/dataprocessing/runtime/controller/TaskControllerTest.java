@@ -16,50 +16,15 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.TaskResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.io.*;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+/*
 @WebAppConfiguration
 @PrepareForTest(TaskManager.class)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @RunWith(PowerMockRunner.class)
+*/
 public class TaskControllerTest {
 
+/*
     private static MockMvc mockMvc;
 
     @InjectMocks
@@ -179,4 +144,5 @@ public class TaskControllerTest {
         File file = new File(resource.toURI());
         return new FileInputStream(file);
     }
+    */
 }

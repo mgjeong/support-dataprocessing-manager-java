@@ -1,23 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import java.util.List;
-import java.util.Map;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyData;
-import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.ScriptFactory;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph.ScriptGraph;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph.ScriptGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +22,26 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
+  public Job create(WorkflowData workflow) throws Exception {
+    return null;
+  }
+
+  @Override
+  public Job run(Job job) throws Exception {
+    return null;
+  }
+
+  @Override
+  public Job stop(Job job) throws Exception {
+    return null;
+  }
+
+  @Override
+  public Job delete(Job job) throws Exception {
+    return null;
+  }
+/*
+  @Override
   public JobResponseFormat createJob() {
     return new JobResponseFormat();
   }
@@ -47,10 +53,10 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
-  public String createJob(TopologyData topology) {
+  public String createJob(WorkflowData workflow) {
     String resultScript = "";
     try {
-      ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(topology)
+      ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(workflow)
           .initialize();
       resultScript = scriptGraph.generateScript();
     } catch (Exception e) {
@@ -63,7 +69,7 @@ public class KapacitorEngine extends AbstractEngine {
 
     this.script = resultScript;
 
-    String jobId = topology.getTopologyName();
+    String jobId = workflow.getWorkflowName();
     JsonObject jobInfo = getBaseJsonObject(jobId);
     LOGGER.info("Kapacitor script is following: {}", this.script);
     jobInfo.addProperty("script", this.script);
@@ -72,7 +78,7 @@ public class KapacitorEngine extends AbstractEngine {
     this.httpClient.post(TASK_ROOT, jobInfo.toString());
     LOGGER.info("Kapacitor Job Id {} is registered.", jobId);
 
-    return topology.getTopologyName();
+    return workflow.getWorkflowName();
   }
 
   @Override
@@ -190,5 +196,5 @@ public class KapacitorEngine extends AbstractEngine {
       return responseFormat;
     }
   }
-
+*/
 }

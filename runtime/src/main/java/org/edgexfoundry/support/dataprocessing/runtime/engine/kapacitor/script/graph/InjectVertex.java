@@ -2,12 +2,12 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.
 
 import java.util.HashMap;
 import java.util.Map;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySource;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 
 public class InjectVertex implements ScriptVertex {
-  TopologySource config;
+  WorkflowSource config;
 
-  public InjectVertex(TopologySource config) {
+  public InjectVertex(WorkflowSource config) {
     this.config = config;
   }
 
