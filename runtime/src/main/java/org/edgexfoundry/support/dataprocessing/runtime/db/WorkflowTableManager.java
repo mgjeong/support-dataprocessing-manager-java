@@ -50,7 +50,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    *
    * @return Collection of topologies
    */
-  public Collection<Workflow> listTopologies() {
+  public Collection<Workflow> listWorkflows() {
     String sql = "SELECT id, name, config FROM workflow";
     try (PreparedStatement ps = createPreparedStatement(getConnection(), sql);
         ResultSet rs = ps.executeQuery()) {

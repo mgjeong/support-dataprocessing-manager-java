@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
@@ -53,12 +54,12 @@ public class WorkflowController extends AbstractController {
 
   @ApiOperation(value = "Get workflows", notes = "Returns a list of all workflows.")
   @RequestMapping(value = "/workflows", method = RequestMethod.GET)
-  public ResponseEntity listTopologies(
+  public ResponseEntity listWorkflows(
       @RequestParam(value = "detail", required = false) Boolean detail,
       @RequestParam(value = "sort", required = false) String sortType,
       @RequestParam(value = "ascending", required = false) Boolean ascending,
       @RequestParam(value = "latencyTopN", required = false) Integer latencyTopN) {
-    Collection<Workflow> workflows = this.workflowTableManager.listTopologies();
+    Collection<Workflow> workflows = this.workflowTableManager.listWorkflows();
     Collection<WorkflowDetailed> workflowDetailedList = new ArrayList<>();
     for (Workflow workflow : workflows) {
       WorkflowDetailed detailed = new WorkflowDetailed();
@@ -135,6 +136,41 @@ public class WorkflowController extends AbstractController {
   public ResponseEntity addWorkflow(@RequestBody Workflow workflow) {
     Workflow createdWorkflow = this.workflowTableManager.addWorkflow(workflow);
     return respond(createdWorkflow, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Search workflow", notes = "Searches workflow.")
+  @RequestMapping(value = "/search", method = RequestMethod.GET)
+  public ResponseEntity searchWorkflow(
+      @RequestParam(value = "sort", required = false) String sortType,
+      @RequestParam(value = "desc", required = false) Boolean desc,
+      @RequestParam(value = "namespace", required = false) String namespace,
+      @RequestParam(value = "queryString", required = false) String queryString,
+      @RequestParam(value = "detail", required = false) Boolean detail,
+      @RequestParam(value = "latencyTopN", required = false) Integer latencyTopN) {
+    Collection<Workflow> workflows = this.workflowTableManager.listWorkflows();
+    Collection<WorkflowDetailed> workflowDetails = workflows.stream()
+        .filter(workflow -> { // filter by query string
+          if (queryString != null) {
+            return workflow.getName().toLowerCase().contains(queryString.toLowerCase());
+          } else {
+            return true;
+          }
+        })
+        .sorted((o1, o2) -> { // sort
+          if (sortType == null || sortType.equals("name")) {
+            return o1.getName().compareTo(o2.getName());
+          } else {
+            return o1.getId().compareTo(o2.getId());
+          }
+        })
+        .map(workflow -> { // map
+          WorkflowDetailed detailed = new WorkflowDetailed();
+          detailed.setWorkflow(workflow);
+          detailed.setRunning(RunningStatus.UNKNOWN);
+          return detailed;
+        })
+        .collect(Collectors.toSet());
+    return respondEntity(workflowDetails, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Add workflow editor metadata", notes = "Adds metadata required to edit a workflow.")

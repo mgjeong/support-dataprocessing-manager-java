@@ -51,9 +51,9 @@ public class WorkflowTableManagerTest {
   }
 
   @Test
-  public void testListTopologies() throws Exception {
-    Collection<Workflow> topologies = storageManager.listTopologies();
-    Assert.assertTrue(topologies != null); // may not be empty due to concurrent tests
+  public void testListWorkflows() throws Exception {
+    Collection<Workflow> workflows = storageManager.listWorkflows();
+    Assert.assertTrue(workflows != null); // may not be empty due to concurrent tests
   }
 
   @Test
