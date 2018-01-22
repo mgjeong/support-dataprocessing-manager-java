@@ -141,7 +141,7 @@ public class WorkflowComponent extends Format {
   }
 
   @JsonInclude(Include.NON_NULL)
-  public static class Config {
+  public static class Config extends Format {
 
     private Map<String, Object> properties = new HashMap<>();
 

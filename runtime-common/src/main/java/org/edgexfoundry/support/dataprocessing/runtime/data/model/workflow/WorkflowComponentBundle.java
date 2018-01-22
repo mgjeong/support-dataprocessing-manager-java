@@ -134,108 +134,107 @@ public class WorkflowComponentBundle extends Format {
       }
       this.fields.add(uiField);
     }
+  }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class UIField {
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public static class UIField extends Format {
 
-      public enum UIFieldType {
-        STRING("string"), ENUMSTRING("enumstring"), ARRAYSTRING("array.string"), ARRAYENUMSTRING(
-            "array.enumstring"),
-        NUMBER("number"), ARRAYNUMBER("array.number"), BOOLEAN("boolean"), ARRAYBOOLEAN(
-            "array.boolean"),
-        OBJECT("object"), ENUMOBJECT("enumobject"), ARRAYOBJECT("array.object"), ARRAYENUMOBJECT(
-            "array.enumobject"),
-        FILE("file");
+    public enum UIFieldType {
+      STRING("string"), ENUMSTRING("enumstring"), ARRAYSTRING("array.string"), ARRAYENUMSTRING(
+          "array.enumstring"),
+      NUMBER("number"), ARRAYNUMBER("array.number"), BOOLEAN("boolean"), ARRAYBOOLEAN(
+          "array.boolean"),
+      OBJECT("object"), ENUMOBJECT("enumobject"), ARRAYOBJECT("array.object"), ARRAYENUMOBJECT(
+          "array.enumobject"),
+      FILE("file");
 
-        private String uiFieldTypeText;
+      private String uiFieldTypeText;
 
-        UIFieldType(String uiFieldTypeText) {
-          this.uiFieldTypeText = uiFieldTypeText;
-        }
-
-        @JsonValue
-        public String getUiFieldTypeText() {
-          return this.uiFieldTypeText;
-        }
-
-        @Override
-        public String toString() {
-          return "UIFieldType{" +
-              "uiFieldTypeText='" + uiFieldTypeText + '\'' +
-              '}';
-        }
+      UIFieldType(String uiFieldTypeText) {
+        this.uiFieldTypeText = uiFieldTypeText;
       }
 
-      private String uiName;
-      private String fieldName;
-      private Boolean isUserInput;
-      private String tooltip;
-      private Boolean isOptional;
-      private UIFieldType type;
-      private String defaultValue;
-
-      public UIField() {
-
+      @JsonValue
+      public String getUiFieldTypeText() {
+        return this.uiFieldTypeText;
       }
 
-      public String getUiName() {
-        return uiName;
+      @Override
+      public String toString() {
+        return "UIFieldType{" +
+            "uiFieldTypeText='" + uiFieldTypeText + '\'' +
+            '}';
       }
+    }
 
-      public void setUiName(String uiName) {
-        this.uiName = uiName;
-      }
+    private String uiName;
+    private String fieldName;
+    private Boolean isUserInput;
+    private String tooltip;
+    private Boolean isOptional;
+    private UIFieldType type;
+    private String defaultValue;
 
-      public String getFieldName() {
-        return fieldName;
-      }
+    public UIField() {
 
-      public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-      }
+    }
 
-      @JsonProperty("isUserInput")
-      public Boolean getUserInput() {
-        return isUserInput;
-      }
+    public String getUiName() {
+      return uiName;
+    }
 
-      public void setUserInput(Boolean userInput) {
-        isUserInput = userInput;
-      }
+    public void setUiName(String uiName) {
+      this.uiName = uiName;
+    }
 
-      @JsonProperty("isOptional")
-      public Boolean getOptional() {
-        return isOptional;
-      }
+    public String getFieldName() {
+      return fieldName;
+    }
 
-      public void setOptional(Boolean optional) {
-        isOptional = optional;
-      }
+    public void setFieldName(String fieldName) {
+      this.fieldName = fieldName;
+    }
 
-      public String getTooltip() {
-        return tooltip;
-      }
+    @JsonProperty("isUserInput")
+    public Boolean getUserInput() {
+      return isUserInput;
+    }
 
-      public void setTooltip(String tooltip) {
-        this.tooltip = tooltip;
-      }
+    public void setUserInput(Boolean userInput) {
+      isUserInput = userInput;
+    }
 
-      public UIFieldType getType() {
-        return type;
-      }
+    @JsonProperty("isOptional")
+    public Boolean getOptional() {
+      return isOptional;
+    }
 
-      public void setType(UIFieldType type) {
-        this.type = type;
-      }
+    public void setOptional(Boolean optional) {
+      isOptional = optional;
+    }
 
-      public String getDefaultValue() {
-        return defaultValue;
-      }
+    public String getTooltip() {
+      return tooltip;
+    }
 
-      public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-      }
+    public void setTooltip(String tooltip) {
+      this.tooltip = tooltip;
+    }
 
+    public UIFieldType getType() {
+      return type;
+    }
+
+    public void setType(UIFieldType type) {
+      this.type = type;
+    }
+
+    public String getDefaultValue() {
+      return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+      this.defaultValue = defaultValue;
     }
   }
 }

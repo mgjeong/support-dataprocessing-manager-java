@@ -7,7 +7,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 public class WorkflowEditorMetadata extends Format {
 
   private Long workflowId;
-  private Long versionId = 1L;
   private String data;
   private Long timestamp;
 
@@ -21,14 +20,6 @@ public class WorkflowEditorMetadata extends Format {
 
   public void setWorkflowId(Long workflowId) {
     this.workflowId = workflowId;
-  }
-
-  public Long getVersionId() {
-    return versionId;
-  }
-
-  public void setVersionId(Long versionId) {
-    this.versionId = versionId;
   }
 
   public String getData() {

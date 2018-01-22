@@ -3,7 +3,6 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,11 +15,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 public class WorkflowEdge extends Format {
 
   private Long id;
-  private Long versionId;
   private Long workflowId;
   private Long fromId;
   private Long toId;
-  private Long versionTimestamp;
   private List<StreamGrouping> streamGroupings;
 
   public WorkflowEdge() {
@@ -33,14 +30,6 @@ public class WorkflowEdge extends Format {
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public Long getVersionId() {
-    return versionId;
-  }
-
-  public void setVersionId(Long versionId) {
-    this.versionId = versionId;
   }
 
   public Long getWorkflowId() {
@@ -65,16 +54,6 @@ public class WorkflowEdge extends Format {
 
   public void setToId(Long toId) {
     this.toId = toId;
-  }
-
-  @JsonProperty("timestamp")
-  public Long getVersionTimestamp() {
-    return versionTimestamp;
-  }
-
-  @JsonProperty("timestamp")
-  public void setVersionTimestamp(Long versionTimestamp) {
-    this.versionTimestamp = versionTimestamp;
   }
 
   public List<StreamGrouping> getStreamGroupings() {
