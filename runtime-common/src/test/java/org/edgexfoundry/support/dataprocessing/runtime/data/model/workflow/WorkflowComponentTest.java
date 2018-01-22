@@ -87,12 +87,12 @@ public class WorkflowComponentTest {
     configField.set(component, null);
     Assert.assertNull(component.getConfig("invalidKey"));
 
+    ObjectMapper objectMapper = Mockito.spy(new ObjectMapper());
+    Mockito.when(objectMapper.writeValueAsString(Mockito.any()))
+        .thenThrow(new JsonProcessingException("JsonProcessingException mocked!") {
+        });
+    Whitebox.setInternalState(component, "mapper", objectMapper);
     try {
-      ObjectMapper objectMapper = Mockito.spy(new ObjectMapper());
-      Mockito.when(objectMapper.writeValueAsString(Mockito.any()))
-          .thenThrow(new JsonProcessingException("JsonProcessingException mocked!") {
-          });
-      Whitebox.setInternalState(component, "mapper", objectMapper);
       component.addConfig("sample", 1);
       component.getConfigStr();
       Assert.fail("Should not reach here.");

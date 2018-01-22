@@ -1,6 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
 
+import java.net.MalformedURLException;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.junit.Assert;
 import org.junit.Test;
 
 
@@ -8,21 +11,19 @@ public class TaskModelLoaderTest {
 
   @Test
   public void testTaskLoader() {
-        /*
-        ClassLoader classLoader = this.getClass().getClassLoader();
+    ClassLoader classLoader = this.getClass().getClassLoader();
 
-        try {
-            TaskModelLoader loader = new TaskModelLoader("/jar/path.jar", classLoader);
-            Assert.assertNotNull(loader);
+    try {
+      TaskModelLoader loader = new TaskModelLoader("/jar/path.jar", classLoader);
+      Assert.assertNotNull(loader);
 
-            TaskModel tm = loader.newInstance("svm");
-            Assert.assertNotNull(tm);
+      TaskModel tm = loader.newInstance("svm");
+      Assert.assertNotNull(tm);
 
-        } catch (MalformedURLException e) {
-            System.err.println("MalformedURLException handling");
-        } catch (Exception e) {
-            System.err.println("Exception handling");
-        }
-        */
+    } catch (MalformedURLException e) {
+      System.err.println("MalformedURLException handling");
+    } catch (Exception e) {
+      System.err.println("Exception handling");
+    }
   }
 }
