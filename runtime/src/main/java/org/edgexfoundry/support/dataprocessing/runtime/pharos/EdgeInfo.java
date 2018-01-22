@@ -64,17 +64,16 @@ public class EdgeInfo {
         while (serviceIter.hasNext()) {
           String service = serviceIter.next();
 
-          if (engineType.equals("any") &&
+          if (engineType.equals("ANY") &&
               (service.equals(PharosConstants.FLINK_NAME) || service
                   .equals(PharosConstants.KAPACITOR_NAME))) {
             engineList.add((String) edgeInfo.get("host"));
             break;
-          } else if (engineType.equals("flink") && service.equals(PharosConstants.FLINK_NAME)) {
+          } else if (engineType.equals("FLINK") && service.equals(PharosConstants.FLINK_NAME)) {
             String flinkAddress = (String) edgeInfo.get("host");
             engineList.add(flinkAddress + ":" + PharosConstants.FLINK_PORT);
             break;
-          } else if (engineType.equals("kapacitor") && service
-              .equals(PharosConstants.KAPACITOR_NAME)) {
+          } else if (engineType.equals("KAPACITOR") && service.equals(PharosConstants.KAPACITOR_NAME)) {
             String kapacitorAddress = (String) edgeInfo.get("host");
             engineList.add(kapacitorAddress + ":" + PharosConstants.KAPACITOR_PORT);
             break;

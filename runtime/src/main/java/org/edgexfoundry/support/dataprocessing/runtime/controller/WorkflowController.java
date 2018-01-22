@@ -449,7 +449,7 @@ public class WorkflowController extends AbstractController {
     List<String> engineList;
 
     if (engineType == null) {
-      engineList = edgeInfo.getEngineList(groupId, "any");
+      engineList = edgeInfo.getEngineList(groupId, "ANY");
     } else {
       engineList = edgeInfo.getEngineList(groupId, engineType);
     }
