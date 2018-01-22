@@ -81,7 +81,6 @@ public class WorkflowTest {
     try {
       workflow.addConfig("sample", 1);
       workflow.getConfigStr();
-      //objectMapper.writeValueAsString(new HashMap<>());
       Assert.fail("Should not reach here.");
     } catch (RuntimeException e) {
       // Success
