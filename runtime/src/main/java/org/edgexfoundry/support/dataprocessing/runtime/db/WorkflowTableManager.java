@@ -323,7 +323,6 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         metadata.setData(rs.getString("data"));
         // TODO: Hard-coded
         metadata.setTimestamp(System.currentTimeMillis());
-        metadata.setVersionId(1L);
         return metadata;
       }
 
