@@ -6,11 +6,13 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Schema.Type;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Schema.Type;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowStream extends Format {
@@ -129,6 +131,10 @@ public class WorkflowStream extends Format {
     }
   }
 
+  public enum Grouping {
+    SHUFFLE, FIELDS
+  }
+
   @JsonInclude(Include.NON_NULL)
   public static class Field {
 
@@ -162,6 +168,96 @@ public class WorkflowStream extends Format {
 
     public void setOptional(boolean optional) {
       this.optional = optional;
+    }
+  }
+
+  public static class Stream {
+
+
+    private String id;
+    private Schema schema;
+
+    public Stream() {
+
+    }
+
+    public Stream(String id, List<Field> fields) {
+      //TODO: fields is not used!
+      this.id = id;
+    }
+
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public Schema getSchema() {
+      return schema;
+    }
+
+    public void setSchema(Schema schema) {
+      this.schema = schema;
+    }
+
+  }
+
+  public static class Schema {
+
+    public enum Type {
+      BOOLEAN(Boolean.class),
+      BYTE(Byte.class),
+      SHORT(Short.class),
+      INTEGER(Integer.class),
+      LONG(Long.class),
+      FLOAT(Float.class),
+      DOUBLE(Double.class),
+      STRING(String.class),
+      BINARY(byte[].class),
+      NESTED(Map.class),
+      ARRAY(List.class),
+      BLOB(InputStream.class);
+
+      private final Class<?> javaType;
+
+      Type(Class<?> javaType) {
+        this.javaType = javaType;
+      }
+
+      public Class<?> getJavaType() {
+        return this.javaType;
+      }
+
+      public static Schema.Type getTypeOfVal(String val) {
+        Schema.Type type = null;
+        Schema.Type[] types = values();
+        if (val != null && (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false"))) {
+          type = BOOLEAN;
+        }
+
+        for (int i = 1; type == null && i < STRING.ordinal(); ++i) {
+          Class clazz = types[i].getJavaType();
+
+          try {
+            Object result = clazz.getMethod("valueOf", String.class).invoke((Object) null, val);
+            if (!(result instanceof Float) || !((Float) result).isInfinite()) {
+              type = types[i];
+              break;
+            }
+          } catch (Exception var6) {
+            ;
+          }
+        }
+
+        if (type == null) {
+          type = STRING;
+        }
+
+        return type;
+      }
     }
   }
 }

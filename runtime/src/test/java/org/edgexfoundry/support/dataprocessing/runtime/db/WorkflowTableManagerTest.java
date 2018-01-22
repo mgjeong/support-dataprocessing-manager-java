@@ -3,17 +3,18 @@ package org.edgexfoundry.support.dataprocessing.runtime.db;
 import java.io.File;
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField.UIFieldType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Schema.Type;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Field;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Schema.Type;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -244,7 +245,7 @@ public class WorkflowTableManagerTest {
 
   private void addUIField(ComponentUISpecification componentUISpecification, String uiName,
       String fieldName, String tooltip) {
-    ComponentUISpecification.UIField field = new ComponentUISpecification.UIField();
+    UIField field = new UIField();
     field.setUiName(uiName);
     field.setFieldName(fieldName);
     field.setUserInput(true);

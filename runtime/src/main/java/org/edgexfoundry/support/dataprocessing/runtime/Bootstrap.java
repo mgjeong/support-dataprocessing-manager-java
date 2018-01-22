@@ -1,8 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.slf4j.Logger;
@@ -93,7 +94,7 @@ public class Bootstrap {
     runtimeWorkflow.setBundleJar("");
 
     ComponentUISpecification componentUISpecification = new ComponentUISpecification();
-    ComponentUISpecification.UIField runtimeHost = new ComponentUISpecification.UIField();
+    UIField runtimeHost = new UIField();
     runtimeHost.setUiName("Runtime host");
     runtimeHost.setFieldName("runtimeHost");
     runtimeHost.setUserInput(true);
@@ -102,7 +103,7 @@ public class Bootstrap {
     runtimeHost.setType(UIFieldType.STRING);
     runtimeHost.setDefaultValue("localhost:8082");
     componentUISpecification.addUIField(runtimeHost);
-    ComponentUISpecification.UIField targetHost = new ComponentUISpecification.UIField();
+    UIField targetHost = new UIField();
     targetHost.setUiName("Target host");
     targetHost.setFieldName("targetHost");
     targetHost.setUserInput(true);
@@ -132,7 +133,7 @@ public class Bootstrap {
 
   private void addUIField(ComponentUISpecification componentUISpecification, String uiName,
       String fieldName, String tooltip) {
-    ComponentUISpecification.UIField field = new ComponentUISpecification.UIField();
+    UIField field = new UIField();
     field.setUiName(uiName);
     field.setFieldName(fieldName);
     field.setUserInput(true);

@@ -2,9 +2,13 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
@@ -133,5 +137,46 @@ public class WorkflowComponent extends Format {
     } else {
       return null;
     }
+  }
+
+  @JsonInclude(Include.NON_NULL)
+  public static class Config extends Format {
+
+    private Map<String, Object> properties = new HashMap<>();
+
+    public Config() {
+
+    }
+
+    public Map<String, Object> getProperties() {
+      return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+      this.properties = properties;
+    }
+
+    public Object get(String key) {
+      return getObject(key);
+    }
+
+    private Object getObject(String key) {
+      Object value = properties.get(key);
+      if (value != null) {
+        return value;
+      } else {
+        throw new NoSuchElementException(key);
+      }
+    }
+
+    public Object get(String key, Object defaultValue) {
+      Object value = properties.get(key);
+      return value != null ? value : defaultValue;
+    }
+
+    public void put(String key, Object value) {
+      properties.put(key, value);
+    }
+
   }
 }
