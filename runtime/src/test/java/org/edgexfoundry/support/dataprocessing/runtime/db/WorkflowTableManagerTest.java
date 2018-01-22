@@ -14,7 +14,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Field;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Schema.Type;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.SchemaType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -217,7 +217,7 @@ public class WorkflowTableManagerTest {
       Field field = new Field();
       field.setName("fieldName");
       field.setOptional(false);
-      field.setType(Type.STRING);
+      field.setType(SchemaType.STRING);
       stream.addField(field);
       stream = storageManager.addWorkflowStream(stream);
       ((WorkflowSource) component).addOutputStream(stream);
