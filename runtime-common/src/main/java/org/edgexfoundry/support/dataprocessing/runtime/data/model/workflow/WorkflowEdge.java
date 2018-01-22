@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Stream.Grouping;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Grouping;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowEdge extends Format {

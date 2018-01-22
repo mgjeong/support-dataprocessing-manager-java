@@ -1,8 +1,8 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.ComponentUISpecification.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.slf4j.Logger;
