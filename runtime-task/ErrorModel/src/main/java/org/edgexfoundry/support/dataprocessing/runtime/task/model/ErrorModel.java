@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
+import java.util.ArrayList;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
@@ -24,7 +25,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.function.ErrorFuncti
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,7 +79,7 @@ public class ErrorModel extends AbstractTaskModel {
       this.observation = params.get("observation").toString();
     }
     if (params.containsKey("interval")) {
-      HashMap tInterval = (HashMap) params.get("interval");
+      HashMap<String, Object> tInterval = (HashMap<String, Object>) params.get("interval");
       if (tInterval.containsKey("data")) {
         Integer dataSize = ((Number) tInterval.get("data")).intValue();
         if (dataSize != null) {
@@ -122,8 +122,8 @@ public class ErrorModel extends AbstractTaskModel {
         error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.ME);
       } else if (this.algorithmType.equals("mae")) {
         error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.MAE);
-      } else if (this.algorithmType.equals("rmse")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.RMSE);
+      } else if (this.algorithmType.equals("mse")) {
+        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.MSE);
       } else if (this.algorithmType.equals("rmse")) {
         error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.RMSE);
       } else {
@@ -143,44 +143,62 @@ public class ErrorModel extends AbstractTaskModel {
   public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
     LOGGER.info("[Error] Entering calculation");
 
-    LinkedList<Number> value = null;
-    Double observe = in.getValue(this.observation, Double.class);
-    if (observe != null) {
-      if (observationList.size() >= this.mWindowSize) {
-        observationList.removeFirst();
-      }
-      observationList.addLast(observe.doubleValue());
-
-      for (int index = 0; index < inRecordKeys.size(); index++) {
-        Number predict = in.getValue(inRecordKeys.get(index), Number.class);
-
-        Object temp = targetList.get(inRecordKeys.get(index));
-        if (temp == null) {
-          value = new LinkedList<>();
-          LOGGER.info("Instantiate new Linked List for : {}", inRecordKeys.get(index));
-        } else if (temp instanceof LinkedList) {
-          value = (LinkedList<Number>) temp;
-        } else {
-          value = null;
+    if(in.getRecords().size() < 1) {
+      LinkedList<Number> value = null;
+      Double observe = in.getValue(this.observation, Double.class);
+      if (observe != null) {
+        if (observationList.size() >= this.mWindowSize) {
+          observationList.removeFirst();
         }
+        observationList.addLast(observe.doubleValue());
 
-        if (value != null) {
-          if (value.size() >= this.mWindowSize) {
-            value.removeFirst();
+        for (int index = 0; index < inRecordKeys.size(); index++) {
+          Number predict = in.getValue(inRecordKeys.get(index), Number.class);
+
+          Object temp = targetList.get(inRecordKeys.get(index));
+          if (temp == null) {
+            value = new LinkedList<Number>();
+            LOGGER.info("Instantiate new Linked List for : {}", inRecordKeys.get(index));
+          } else if (temp instanceof LinkedList) {
+            value = (LinkedList<Number>) temp;
+          } else {
+            value = null;
           }
-          value.addLast(predict);
-          targetList.put(inRecordKeys.get(index), value);
 
-          Double[] tArr = value.toArray(new Double[0]);
-          Double[] tObs = observationList.toArray(new Double[0]);
+          if (value != null) {
+            if (value.size() >= this.mWindowSize) {
+              value.removeFirst();
+            }
+            value.addLast(predict);
+            targetList.put(inRecordKeys.get(index), value);
 
-          in.setValue(outRecordKeys.get(index), getAverageError(tArr, tObs));
+            Double[] tArr = value.toArray(new Double[0]);
+            Double[] tObs = observationList.toArray(new Double[0]);
+
+            in.setValue(outRecordKeys.get(index), getAverageError(tArr, tObs));
+          }
         }
+      } else {
+        LOGGER.error("Failed to extract Observation value {} ", this.observation);
       }
     } else {
-      LOGGER.error("Failed to extract Observation value {} ", this.observation);
-    }
+      ArrayList<Number> observe = in.getValue(this.observation, ArrayList.class);
 
+      if(observe != null) {
+        for (int index = 0; index < inRecordKeys.size(); index++) {
+          ArrayList<Number> predict = in.getValue(inRecordKeys.get(index), ArrayList.class);
+
+          if(observe.size() == predict.size()) {
+            Double[] tArr = observe.toArray(new Double[0]);
+            Double[] tObs = predict.toArray(new Double[0]);
+
+            in.setValue(outRecordKeys.get(index), getAverageError(tArr, tObs));
+          } else {
+            LOGGER.error("Size of List not match Observe {} : Predict {}", observe.size(), predict.size());
+          }
+        }
+      }
+    }
     LOGGER.info("[Error] Returning calculation result");
     return in;
   }
