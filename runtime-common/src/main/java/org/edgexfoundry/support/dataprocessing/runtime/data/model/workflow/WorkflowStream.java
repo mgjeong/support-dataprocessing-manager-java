@@ -12,19 +12,18 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Schema.Type;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowStream extends Format {
 
   private Long id;
-  private Long versionId;
   private Long componentId;
   private String streamId;
   private String description;
   private Long workflowId;
   private List<Field> fields = new ArrayList<>();
-  private Long versionTimestamp;
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public WorkflowStream() {
 
@@ -36,14 +35,6 @@ public class WorkflowStream extends Format {
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public Long getVersionId() {
-    return versionId;
-  }
-
-  public void setVersionId(Long versionId) {
-    this.versionId = versionId;
   }
 
   public String getStreamId() {
@@ -67,6 +58,9 @@ public class WorkflowStream extends Format {
   }
 
   public void setWorkflowId(Long workflowId) {
+    if (workflowId == null) {
+      throw new RuntimeException("Invalid workflow id");
+    }
     this.workflowId = workflowId;
   }
 
@@ -75,15 +69,10 @@ public class WorkflowStream extends Format {
   }
 
   public void setFields(List<Field> fields) {
+    if (fields == null) {
+      throw new RuntimeException("Invalid fields");
+    }
     this.fields = fields;
-  }
-
-  public Long getVersionTimestamp() {
-    return versionTimestamp;
-  }
-
-  public void setVersionTimestamp(Long versionTimestamp) {
-    this.versionTimestamp = versionTimestamp;
   }
 
   @JsonIgnore
@@ -102,7 +91,6 @@ public class WorkflowStream extends Format {
       return "[]";
     } else {
       try {
-        ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this.fields);
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
@@ -113,12 +101,12 @@ public class WorkflowStream extends Format {
   @JsonIgnore
   public void setFieldsStr(String fields) {
     try {
-      if (!StringUtils.isEmpty(fields)) {
-        ObjectMapper mapper = new ObjectMapper();
-        this.fields = mapper
-            .readValue(fields, new TypeReference<List<Field>>() {
-            });
+      if (fields == null || StringUtils.isEmpty(fields)) {
+        throw new RuntimeException("Invalid fields");
       }
+      this.fields = mapper
+          .readValue(fields, new TypeReference<List<Field>>() {
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -126,9 +114,11 @@ public class WorkflowStream extends Format {
 
   @JsonIgnore
   public void addField(Field field) {
-    if (field != null && fields != null) {
-      fields.add(field);
+    if (field == null) {
+      throw new RuntimeException("Invalid field");
     }
+
+    fields.add(field);
   }
 
   public enum Grouping {
@@ -139,7 +129,7 @@ public class WorkflowStream extends Format {
   public static class Field {
 
     private String name;
-    private Schema.Type type;
+    private SchemaType type;
     boolean optional;
 
     public Field() {
@@ -154,11 +144,11 @@ public class WorkflowStream extends Format {
       this.name = name;
     }
 
-    public Type getType() {
+    public SchemaType getType() {
       return type;
     }
 
-    public void setType(Type type) {
+    public void setType(SchemaType type) {
       this.type = type;
     }
 
@@ -171,93 +161,28 @@ public class WorkflowStream extends Format {
     }
   }
 
-  public static class Stream {
+  public enum SchemaType {
+    BOOLEAN(Boolean.class),
+    BYTE(Byte.class),
+    SHORT(Short.class),
+    INTEGER(Integer.class),
+    LONG(Long.class),
+    FLOAT(Float.class),
+    DOUBLE(Double.class),
+    STRING(String.class),
+    BINARY(byte[].class),
+    NESTED(Map.class),
+    ARRAY(List.class),
+    BLOB(InputStream.class);
 
+    private final Class<?> javaType;
 
-    private String id;
-    private Schema schema;
-
-    public Stream() {
-
+    SchemaType(Class<?> javaType) {
+      this.javaType = javaType;
     }
 
-    public Stream(String id, List<Field> fields) {
-      //TODO: fields is not used!
-      this.id = id;
-    }
-
-
-    public String getId() {
-      return id;
-    }
-
-    public void setId(String id) {
-      this.id = id;
-    }
-
-    public Schema getSchema() {
-      return schema;
-    }
-
-    public void setSchema(Schema schema) {
-      this.schema = schema;
-    }
-
-  }
-
-  public static class Schema {
-
-    public enum Type {
-      BOOLEAN(Boolean.class),
-      BYTE(Byte.class),
-      SHORT(Short.class),
-      INTEGER(Integer.class),
-      LONG(Long.class),
-      FLOAT(Float.class),
-      DOUBLE(Double.class),
-      STRING(String.class),
-      BINARY(byte[].class),
-      NESTED(Map.class),
-      ARRAY(List.class),
-      BLOB(InputStream.class);
-
-      private final Class<?> javaType;
-
-      Type(Class<?> javaType) {
-        this.javaType = javaType;
-      }
-
-      public Class<?> getJavaType() {
-        return this.javaType;
-      }
-
-      public static Schema.Type getTypeOfVal(String val) {
-        Schema.Type type = null;
-        Schema.Type[] types = values();
-        if (val != null && (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false"))) {
-          type = BOOLEAN;
-        }
-
-        for (int i = 1; type == null && i < STRING.ordinal(); ++i) {
-          Class clazz = types[i].getJavaType();
-
-          try {
-            Object result = clazz.getMethod("valueOf", String.class).invoke((Object) null, val);
-            if (!(result instanceof Float) || !((Float) result).isInfinite()) {
-              type = types[i];
-              break;
-            }
-          } catch (Exception var6) {
-            ;
-          }
-        }
-
-        if (type == null) {
-          type = STRING;
-        }
-
-        return type;
-      }
+    public Class<?> getJavaType() {
+      return this.javaType;
     }
   }
 }
