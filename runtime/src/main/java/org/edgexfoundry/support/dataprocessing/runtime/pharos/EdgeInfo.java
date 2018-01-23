@@ -35,6 +35,14 @@ public class EdgeInfo {
       groupList.add(map);
     }
 
+    // TODO: temporary. Add group only if group list is empty
+    if (groupList.isEmpty()) {
+      Map<String, String> localGroup = new HashMap<>();
+      localGroup.put("id", "Local");
+      localGroup.put("name", "Local");
+      groupList.add(localGroup);
+    }
+
     return groupList;
   }
 
@@ -73,13 +81,21 @@ public class EdgeInfo {
             String flinkAddress = (String) edgeInfo.get("host");
             engineList.add(flinkAddress + ":" + PharosConstants.FLINK_PORT);
             break;
-          } else if (engineType.equals("KAPACITOR") && service.equals(PharosConstants.KAPACITOR_NAME)) {
+          } else if (engineType.equals("KAPACITOR") && service
+              .equals(PharosConstants.KAPACITOR_NAME)) {
             String kapacitorAddress = (String) edgeInfo.get("host");
             engineList.add(kapacitorAddress + ":" + PharosConstants.KAPACITOR_PORT);
             break;
           }
         }
       }
+    }
+
+    // TODO: temporary. Add localhost for debug/test purpose
+    if (engineType.equalsIgnoreCase("FLINK")) {
+      engineList.add("localhost:8081");
+    } else if (engineType.equalsIgnoreCase("KAPACITOR")) {
+      engineList.add("localhost:9092");
     }
 
     return engineList;
