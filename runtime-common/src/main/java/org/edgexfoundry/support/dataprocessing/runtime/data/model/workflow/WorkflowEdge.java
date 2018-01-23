@@ -86,7 +86,7 @@ public class WorkflowEdge extends Format {
   @JsonIgnore
   public void setStreamGroupingsStr(String groupings) {
     try {
-      if (groupings == null || StringUtils.isEmpty(groupings)) {
+      if (StringUtils.isEmpty(groupings)) {
         throw new RuntimeException("Invalid groupings");
       }
       this.streamGroupings = mapper

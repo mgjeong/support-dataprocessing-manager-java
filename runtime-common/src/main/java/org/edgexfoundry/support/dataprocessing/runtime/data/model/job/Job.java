@@ -94,7 +94,7 @@ public class Job extends Format {
   @JsonProperty("config")
   public void setConfigStr(String configStr) {
     try {
-      if (configStr == null || StringUtils.isEmpty(configStr)) {
+      if (StringUtils.isEmpty(configStr)) {
         throw new RuntimeException("Invalid config");
       }
       this.config = mapper

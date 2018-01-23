@@ -101,7 +101,7 @@ public class WorkflowStream extends Format {
   @JsonIgnore
   public void setFieldsStr(String fields) {
     try {
-      if (fields == null || StringUtils.isEmpty(fields)) {
+      if (StringUtils.isEmpty(fields)) {
         throw new RuntimeException("Invalid fields");
       }
       this.fields = mapper

@@ -63,7 +63,7 @@ public class Workflow extends Format {
   @JsonProperty("config")
   public void setConfigStr(String config) {
     try {
-      if (config == null || StringUtils.isEmpty(config)) {
+      if (StringUtils.isEmpty(config)) {
         throw new RuntimeException("Config is invalid.");
       }
 
