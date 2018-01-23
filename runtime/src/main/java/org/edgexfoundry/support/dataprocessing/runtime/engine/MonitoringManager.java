@@ -1,5 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Metrics;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -54,7 +56,7 @@ public class MonitoringManager implements Runnable {
   }
 
   public void start() {
-    thread.run();
+    thread.start();
   }
 
   public void enabled() {
@@ -100,7 +102,7 @@ public class MonitoringManager implements Runnable {
         for(Map.Entry<String, Engine> entry : engines.entrySet()) {
           Engine engine = entry.getValue();
           try {
-            engine.getMetrics();
+            Metrics metric = engine.getMetrics();
           } catch (Exception e) {
             e.printStackTrace();
           }

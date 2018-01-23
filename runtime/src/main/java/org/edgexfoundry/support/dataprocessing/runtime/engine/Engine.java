@@ -17,6 +17,7 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Metrics;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 
@@ -36,6 +37,6 @@ public interface Engine {
 
   Job delete(Job job) throws Exception;
 
-  Job getMetrics() throws Exception;
+  Metrics getMetrics() throws Exception;
 }
 

@@ -37,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Metrics;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
@@ -264,8 +265,18 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public Job getMetrics() throws Exception {
-//    this.httpClient.get();
+  public Metrics getMetrics() throws Exception {
+    JsonElement element = this.httpClient.get("/joboverview");
+
+    FlinkJobOverview overview = new Gson().fromJson(element.toString(), FlinkJobOverview.class);
+
+    for(FlinkJob job : overview.getFinished()) {
+      if(0 == job.getState().compareTo("FAILED")) {
+        long finished_time = job.getEndtime();
+      }
+    }
+
+
     return null;
   }
 

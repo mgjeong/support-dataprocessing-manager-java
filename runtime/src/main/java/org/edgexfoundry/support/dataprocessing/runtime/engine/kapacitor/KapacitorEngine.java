@@ -1,6 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Metrics;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
@@ -42,7 +43,7 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
-  public Job getMetrics() throws Exception {
+  public Metrics getMetrics() throws Exception {
     return null;
   }
 
