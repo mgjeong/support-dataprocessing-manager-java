@@ -24,8 +24,8 @@ public class WorkflowData {
   private List<WorkflowEdge> edges = new ArrayList<>();
   private WorkflowEditorMetadata workflowEditorMetadata;
 
-  @JsonIgnore
-  private final transient ObjectMapper mapper = new ObjectMapper();
+  // Make it transient so that gson does not parse this
+  private transient final ObjectMapper mapper = new ObjectMapper();
 
   public enum EngineType {
     MULTI, FLINK, KAPACITOR, UNKNOWN
@@ -64,7 +64,7 @@ public class WorkflowData {
   @JsonProperty("config")
   public void setConfig(String configStr) {
     try {
-      if (configStr == null || StringUtils.isEmpty(configStr)) {
+      if (StringUtils.isEmpty(configStr)) {
         throw new RuntimeException("Invalid config");
       }
       this.config = mapper

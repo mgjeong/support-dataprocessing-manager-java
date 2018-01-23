@@ -24,7 +24,6 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class Format implements Serializable, Cloneable {
 
-  @JsonIgnore
   protected final ObjectMapper mapper = new ObjectMapper();
 
   public static <T> T create(String data, Class<T> classType) throws Exception {

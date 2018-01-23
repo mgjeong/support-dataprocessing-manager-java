@@ -115,7 +115,7 @@ public class WorkflowComponent extends Format {
   @JsonIgnore
   public void setConfigStr(String config) {
     try {
-      if (config == null || StringUtils.isEmpty(config)) {
+      if (StringUtils.isEmpty(config)) {
         throw new RuntimeException("Invalid config");
       }
 
