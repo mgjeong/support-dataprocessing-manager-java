@@ -40,6 +40,12 @@ public class KapacitorEngine extends AbstractEngine {
   public Job delete(Job job) throws Exception {
     return null;
   }
+
+  @Override
+  public Job getMetrics() throws Exception {
+    return null;
+  }
+
 /*
   @Override
   public JobResponseFormat createJob() {

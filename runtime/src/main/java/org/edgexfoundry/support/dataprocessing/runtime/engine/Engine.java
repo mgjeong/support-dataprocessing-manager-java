@@ -35,5 +35,7 @@ public interface Engine {
   Job stop(Job job) throws Exception;
 
   Job delete(Job job) throws Exception;
+
+  Job getMetrics() throws Exception;
 }
 

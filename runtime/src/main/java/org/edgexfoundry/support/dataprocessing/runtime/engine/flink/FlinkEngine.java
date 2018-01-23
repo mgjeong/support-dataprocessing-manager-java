@@ -263,6 +263,12 @@ public class FlinkEngine extends AbstractEngine {
     return job;
   }
 
+  @Override
+  public Job getMetrics() throws Exception {
+//    this.httpClient.get();
+    return null;
+  }
+
   private String uploadLauncherJar(String path) {
     File jarFile = new File(path);
     JsonElement jsonString = this.httpClient.post("/jars/upload", jarFile);

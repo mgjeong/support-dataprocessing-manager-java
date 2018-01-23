@@ -18,12 +18,15 @@ package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+
+import javax.management.monitor.Monitor;
 
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
@@ -40,6 +43,9 @@ public class Application extends SpringBootServletInitializer {
 
     // 3. Run task manager to scan for tasks
     TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
+
+    // 4. Run Monitoring
+    MonitoringManager.getInstance().start();
   }
 
   private static void makeDatabaseIfNecessary() throws Exception {
@@ -84,6 +90,12 @@ public class Application extends SpringBootServletInitializer {
     WorkflowTableManager.getInstance().terminate();
 
     TaskManager.getInstance().terminate();
+
+    try {
+      MonitoringManager.getInstance().stop();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(String[] args) throws Exception {

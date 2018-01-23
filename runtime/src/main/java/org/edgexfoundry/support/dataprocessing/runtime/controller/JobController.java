@@ -12,6 +12,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,7 +62,8 @@ public class JobController extends AbstractController {
     // targetHost = "localhost:8081";
     workflowData.getConfig().put("targetHost", targetHost);
     String[] splits = targetHost.split(":");
-    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+//    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    Engine engine = EngineManager.getEngine(targetHost, EngineType.Flink);
 
     Job job;
     try {

@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS `job_state` (
   `jobId` TEXT NOT NULL,
   `state` TEXT,
   `startTime` LONG,
+  `finshTime` LONG,
+  `errors` TEXT,
   `engineId` TEXT,
   `engineType` TEXT,
   PRIMARY KEY (`jobId`),
