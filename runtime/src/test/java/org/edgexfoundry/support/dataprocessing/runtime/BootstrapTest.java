@@ -10,10 +10,13 @@ public class BootstrapTest {
 
   private static WorkflowTableManager workflowTableManager;
 
+  private static File dbFile = new File("./" + Settings.DB_TEST_PATH);
+
   @BeforeClass
   public static void initialize() {
-    File dbFile = new File("./" + Settings.DB_TEST_PATH);
-    dbFile.deleteOnExit();
+    if (dbFile.exists()) {
+      throw new RuntimeException(dbFile.getAbsolutePath() + " already exists.");
+    }
     //workflowTableManager = WorkflowTableManager.getInstance();
     //workflowTableManager.initialize("jdbc:sqlite:" + dbFile.getAbsolutePath());
     workflowTableManager = new WorkflowTableManager("jdbc:sqlite:" + dbFile.getAbsolutePath());
@@ -21,7 +24,7 @@ public class BootstrapTest {
 
   @Test
   public void testBootstrap() throws Exception {
-    Bootstrap bootstrap = new Bootstrap();
+    Bootstrap bootstrap = new Bootstrap("jdbc:sqlite:" + dbFile.getAbsolutePath());
     bootstrap.execute(); // insert
 
     // run twice to update
@@ -30,5 +33,8 @@ public class BootstrapTest {
 
   @AfterClass
   public static void terminate() {
+    if (dbFile.exists()) {
+      dbFile.delete();
+    }
   }
 }

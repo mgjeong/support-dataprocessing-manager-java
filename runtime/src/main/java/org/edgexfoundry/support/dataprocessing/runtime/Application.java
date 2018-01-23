@@ -17,7 +17,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
-import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,7 @@ public class Application extends SpringBootServletInitializer {
     File db = new File(Settings.DOCKER_PATH + Settings.DB_PATH);
     if (!db.exists()) {
       LOGGER.info("Executing bootstrap on {}", Settings.DOCKER_PATH + Settings.DB_PATH);
-      Bootstrap bootstrap = new Bootstrap();
+      Bootstrap bootstrap = new Bootstrap("jdbc:sqlite:" + db.getAbsolutePath());
       bootstrap.execute();
     }
   }

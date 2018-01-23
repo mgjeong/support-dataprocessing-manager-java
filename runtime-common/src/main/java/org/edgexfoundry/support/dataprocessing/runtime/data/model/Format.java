@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;

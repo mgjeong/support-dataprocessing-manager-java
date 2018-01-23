@@ -19,7 +19,7 @@ public class JobTableManagerTest {
   @BeforeClass
   public static void setup() {
     if (testDB.exists()) {
-      throw new RuntimeException("Test db already exists!");
+      throw new RuntimeException(testDB.getAbsolutePath()+" already exists!");
     }
     jobTable = new JobTableManager("jdbc:sqlite:" + testDB.getPath());
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
@@ -60,6 +60,47 @@ public class JobTableManagerTest {
       Assert.fail("Should not reach here");
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().contains("not found"));
+      // success
+    }
+  }
+
+  @Test
+  public void testAddWorkflowJobState() {
+    Job job = Job.create(2L);
+    try {
+      jobTable.addOrUpdateWorkflowJobState(job.getId(), job.getState());
+    } finally {
+      jobTable.removeWorkflowJob(job.getId());
+    }
+  }
+
+  @Test
+  public void testAddInvalidWorkflowJobState() {
+    Job job = Job.create(3L);
+    try {
+      jobTable.addOrUpdateWorkflowJobState(job.getId(), null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+  }
+
+  @Test
+  public void testAddWorkflowJob() {
+    Job job = Job.create(4L);
+    try {
+      jobTable.addOrUpdateWorkflowJob(job);
+    } finally {
+      jobTable.removeWorkflowJob(job.getId());
+    }
+  }
+
+  @Test
+  public void testAddInvalidWorkflowJob() {
+    try {
+      jobTable.addOrUpdateWorkflowJob(null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
       // success
     }
   }

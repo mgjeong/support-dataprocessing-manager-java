@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.Part;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
@@ -47,7 +48,8 @@ public class WorkflowController extends AbstractController {
   private EdgeInfo edgeInfo = null;
 
   public WorkflowController() {
-    this.workflowTableManager = WorkflowTableManager.getInstance();
+    this.workflowTableManager = new WorkflowTableManager(
+        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
     this.edgeInfo = new EdgeInfo();
   }
 

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
@@ -30,15 +29,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 
 public final class WorkflowTableManager extends AbstractStorageManager {
-
-  private static WorkflowTableManager instance = null;
-
-  public synchronized static WorkflowTableManager getInstance() {
-    if (instance == null) {
-      instance = new WorkflowTableManager("jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
-    }
-    return instance;
-  }
 
   public WorkflowTableManager(String jdbcUrl) {
     super(jdbcUrl);
@@ -262,45 +252,6 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         } else {
           connection.commit();
           return editorMetadata;
-        }
-      } catch (SQLException e) {
-        connection.rollback();
-        throw e;
-      } finally {
-        connection.setAutoCommit(oldState);
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Inserts or replaces existing workflow
-   *
-   * @param workflowId workflow id to update
-   * @param workflow workflow to update
-   * @return updated workflow
-   */
-  public Workflow updateWorkflow(Long workflowId, Workflow workflow) {
-    if (workflowId == null || workflow == null) {
-      throw new RuntimeException("Workflow or its id is null.");
-    }
-
-    String sql = "INSERT OR REPLACE INTO workflow (id, name, config) VALUES(?, ?, ?)";
-    try (Connection connection = getConnection();
-        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
-            workflow.getName(), workflow.getConfigStr())) {
-      boolean oldState = connection.getAutoCommit();
-      connection.setAutoCommit(false);
-      try {
-        int affectedRows;
-        affectedRows = ps.executeUpdate();
-        if (affectedRows == 0) {
-          throw new RuntimeException("Updating workflow failed, no rows affected.");
-        } else {
-          workflow.setId(workflowId);
-          connection.commit();
-          return workflow;
         }
       } catch (SQLException e) {
         connection.rollback();
@@ -1226,31 +1177,6 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         ps.executeUpdate();
         connection.commit();
         return (T) component;
-      } catch (SQLException e) {
-        connection.rollback();
-        throw e;
-      } finally {
-        connection.setAutoCommit(oldState);
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void removeWorkflowComponentStreams(Long workflowId, Long workflowComponentId) {
-    if (workflowId == null || workflowComponentId == null) {
-      throw new RuntimeException("Workflow id or component id is null.");
-    }
-
-    String sql = "DELETE FROM workflow_stream WHERE workflowId = ? AND componentId = ?";
-    try (Connection connection = getConnection();
-        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
-            workflowComponentId)) {
-      boolean oldState = connection.getAutoCommit();
-      connection.setAutoCommit(false);
-      try {
-        ps.executeUpdate();
-        connection.commit();
       } catch (SQLException e) {
         connection.rollback();
         throw e;
