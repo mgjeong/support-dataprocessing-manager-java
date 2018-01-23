@@ -2,6 +2,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
@@ -144,6 +145,17 @@ public class WorkflowDataTest {
     } catch (RuntimeException e) {
       // Success
     }
+  }
+
+  @Test
+  public void testToGson() {
+    WorkflowData workflowData = new WorkflowData();
+    workflowData.setWorkflowId(1L);
+    workflowData.setWorkflowName("sample");
+    workflowData.setConfig("{}");
+
+    String json = new Gson().toJson(workflowData);
+    Assert.assertNotNull(json);
   }
 
   private WorkflowEditorMetadata makeWorkflowEditorMetadata() {
