@@ -23,8 +23,6 @@ public class Job extends Format {
 
   private JobState state;
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
   public Job() {
 
   }

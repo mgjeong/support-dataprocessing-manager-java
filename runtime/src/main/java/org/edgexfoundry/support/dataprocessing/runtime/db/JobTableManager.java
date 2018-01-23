@@ -1,5 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,15 +16,14 @@ public class JobTableManager extends AbstractStorageManager {
 
   public synchronized static JobTableManager getInstance() {
     if (instance == null) {
-      instance = new JobTableManager(
-          "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH,
-          Settings.DB_CLASS);
+      instance = new JobTableManager("jdbc:sqlite:"
+          + Settings.DOCKER_PATH + Settings.DB_PATH);
     }
     return instance;
   }
 
-  private JobTableManager(String jdbcUrl, String jdbcClass) {
-    super(jdbcUrl, jdbcClass);
+  private JobTableManager(String jdbcUrl) {
+    super(jdbcUrl);
   }
 
   public JobState addOrUpdateWorkflowJobState(String jobId, JobState jobState) {
@@ -33,19 +33,28 @@ public class JobTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO job_state (jobId, state, startTime, engineId, engineType) "
         + "VALUES (?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        jobId, jobState.getState().name(), jobState.getStartTime(), jobState.getEngineId(),
-        jobState.getEngineType())) {
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Failed to insert job state.");
-      } else {
-        commit();
-        return jobState;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            jobId, jobState.getState().name(), jobState.getStartTime(), jobState.getEngineId(),
+            jobState.getEngineType())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Failed to insert job state.");
+        } else {
+          connection.commit();
+          return jobState;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -55,21 +64,43 @@ public class JobTableManager extends AbstractStorageManager {
       throw new RuntimeException("Workflow job is null.");
     }
 
-    String sql = "INSERT OR REPLACE INTO job (id, workflowId, config) VALUES (?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        job.getId(), job.getWorkflowId(),
-        job.getConfigStr())) {
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Failed to insert job.");
-      } else {
-        addOrUpdateWorkflowJobState(job.getId(), job.getState());
-        commit();
+    String sqlJob = "INSERT OR REPLACE INTO job (id, workflowId, config) VALUES (?, ?, ?)";
+    String sqlJobState = "INSERT OR REPLACE INTO job_state "
+        + "(jobId, state, startTime, engineId, engineType) "
+        + "VALUES (?, ?, ?, ?, ?)";
+    try (
+        Connection connection = getConnection();
+        PreparedStatement psJob = createPreparedStatement(connection, sqlJob,
+            job.getId(), job.getWorkflowId(), job.getConfigStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        int affectedRows;
+        affectedRows = psJob.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Failed to insert job.");
+        }
+
+        // Add state
+        try (PreparedStatement psJobState = createPreparedStatement(connection,
+            sqlJobState, job.getId(), job.getState().getState(), job.getState().getStartTime(),
+            job.getState().getEngineId(), job.getState().getEngineType())) {
+          affectedRows = psJobState.executeUpdate();
+          if (affectedRows == 0) {
+            throw new RuntimeException("Failed to insert job state.");
+          }
+        }
+
+        // Commit change
+        connection.commit();
         return job;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }

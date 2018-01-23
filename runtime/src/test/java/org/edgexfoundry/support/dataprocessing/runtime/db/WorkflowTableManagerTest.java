@@ -39,7 +39,7 @@ public class WorkflowTableManagerTest {
       throw new RuntimeException("Failed to clean " + sqliteFile.getPath());
     }
 
-    storageManager.initialize("jdbc:sqlite:" + sqliteFile.getPath(), Settings.DB_CLASS);
+    storageManager.initialize("jdbc:sqlite:" + sqliteFile.getPath());
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
     Resource resource = loader.getResource("db/sqlite/create_tables.sql");
     storageManager.executeSqlScript(resource);
@@ -257,7 +257,6 @@ public class WorkflowTableManagerTest {
 
   @AfterClass
   public static void cleanup() throws Exception {
-    storageManager.terminate();
     if (sqliteFile.exists()) {
       sqliteFile.delete();
     }

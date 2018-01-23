@@ -20,8 +20,6 @@ public class WorkflowEdge extends Format {
   private Long toId;
   private List<StreamGrouping> streamGroupings;
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
   public WorkflowEdge() {
 
   }

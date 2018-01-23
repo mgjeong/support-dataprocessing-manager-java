@@ -154,8 +154,4 @@ public class Bootstrap {
     Resource resource = resourceLoader.getResource("db/sqlite/create_tables.sql");
     storageManager.executeSqlScript(resource);
   }
-
-  public void terminate() {
-    storageManager.terminate();
-  }
 }

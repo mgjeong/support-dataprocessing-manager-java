@@ -81,8 +81,6 @@ public class Application extends SpringBootServletInitializer {
   }
 
   private static void terminate() {
-    WorkflowTableManager.getInstance().terminate();
-
     TaskManager.getInstance().terminate();
   }
 

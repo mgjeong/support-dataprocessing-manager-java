@@ -3,6 +3,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.db;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,14 +35,13 @@ public final class WorkflowTableManager extends AbstractStorageManager {
 
   public synchronized static WorkflowTableManager getInstance() {
     if (instance == null) {
-      instance = new WorkflowTableManager("jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH,
-          Settings.DB_CLASS);
+      instance = new WorkflowTableManager("jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
     }
     return instance;
   }
 
-  private WorkflowTableManager(String jdbcUrl, String jdbcClass) {
-    super(jdbcUrl, jdbcClass);
+  private WorkflowTableManager(String jdbcUrl) {
+    super(jdbcUrl);
   }
 
   /**
@@ -94,31 +94,39 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO workflow (name, config) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflow.getName(),
-        workflow.getConfigStr())) {
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating workflow failed, no rows affected.");
-      }
-
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          workflow.setId(generatedKeys.getLong(1));
-          commit();
-          return workflow;
-        } else {
-          throw new RuntimeException("Creating workflow failed, no ID obtained.");
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflow.getName(), workflow.getConfigStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating workflow failed, no rows affected.");
         }
+
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            workflow.setId(generatedKeys.getLong(1));
+            connection.commit();
+            return workflow;
+          } else {
+            throw new RuntimeException("Creating workflow failed, no ID obtained.");
+          }
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (Exception e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
-
 
   /**
    * Inserts or updates existing workflow
@@ -134,22 +142,29 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     workflow.setId(workflowId);
 
     String sql = "INSERT OR REPLACE INTO workflow (id, name, config) VALUES (?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowId,
-        workflow.getName(),
-        workflow.getConfigStr())) {
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating workflow failed, no rows affected.");
-      } else {
-        workflow.setId(workflowId);
-        commit();
-        return workflow;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowId, workflow.getName(), workflow.getConfigStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating workflow failed, no rows affected.");
+        } else {
+          workflow.setId(workflowId);
+          connection.commit();
+          return workflow;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (Exception e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -191,18 +206,28 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO workflow_editor_metadata (workflowId, data) VALUES (?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        editorMetadata.getWorkflowId(), editorMetadata.getData())) {
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating workflow editor metadata failed, no rows affected.");
-      } else {
-        commit();
-        return editorMetadata;
+    try (
+        Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            editorMetadata.getWorkflowId(), editorMetadata.getData())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating workflow editor metadata failed, no rows affected.");
+        } else {
+          connection.commit();
+          return editorMetadata;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -223,18 +248,28 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     editorMetadata.setWorkflowId(workflowId);
 
     String sql = "INSERT OR REPLACE INTO workflow_editor_metadata (workflowId, data) VALUES(?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        editorMetadata.getWorkflowId(), editorMetadata.getData())) {
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating workflow editor metadata failed, no rows affected.");
-      } else {
-        commit();
-        return editorMetadata;
+    try (
+        Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            editorMetadata.getWorkflowId(), editorMetadata.getData())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating workflow editor metadata failed, no rows affected.");
+        } else {
+          connection.commit();
+          return editorMetadata;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -252,20 +287,28 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO workflow (id, name, config) VALUES(?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId,
-        workflow.getName(), workflow.getConfigStr())) {
-
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating workflow failed, no rows affected.");
-      } else {
-        workflow.setId(workflowId);
-        commit();
-        return workflow;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
+            workflow.getName(), workflow.getConfigStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating workflow failed, no rows affected.");
+        } else {
+          workflow.setId(workflowId);
+          connection.commit();
+          return workflow;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -288,12 +331,21 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     removeWorkflowEditorMetadata(workflowId); // delete meta
 
     String sql = "DELETE FROM workflow WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId)) {
-      ps.executeUpdate();
-      commit();
-      return workflow;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+        return workflow;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -341,11 +393,20 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM workflow_editor_metadata WHERE workflowId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId)) {
-      ps.executeUpdate();
-      commit();
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -390,32 +451,41 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     String sql = "INSERT INTO workflow_component_bundle "
         + "(name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        bundle.getName(), bundle.getType().name(), bundle.getSubType(),
-        bundle.getStreamingEngine(),
-        bundle.getBundleJar(), bundle.getTransformationClass(),
-        bundle.getWorkflowComponentUISpecification().toString(),
-        bundle.getWorkflowComponentUISpecification().toString(),
-        bundle.isBuiltin() ? "0" : "1")) {
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating bundle failed, no rows affected.");
-      }
-
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          bundle.setId(generatedKeys.getLong(1));
-          commit();
-          return bundle;
-        } else {
-          throw new RuntimeException("Creating bundle failed, no ID obtained.");
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            bundle.getName(), bundle.getType().name(), bundle.getSubType(),
+            bundle.getStreamingEngine(),
+            bundle.getBundleJar(), bundle.getTransformationClass(),
+            bundle.getWorkflowComponentUISpecification().toString(),
+            bundle.getWorkflowComponentUISpecification().toString(),
+            bundle.isBuiltin() ? "0" : "1")) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating bundle failed, no rows affected.");
         }
+
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            bundle.setId(generatedKeys.getLong(1));
+            connection.commit();
+            return bundle;
+          } else {
+            throw new RuntimeException("Creating bundle failed, no ID obtained.");
+          }
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -435,27 +505,36 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     String sql = "INSERT OR REPLACE INTO workflow_component_bundle "
         + "(id, name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        bundle.getId(),
-        bundle.getName(), bundle.getType().name(), bundle.getSubType(),
-        bundle.getStreamingEngine(),
-        bundle.getBundleJar(), bundle.getTransformationClass(),
-        bundle.getWorkflowComponentUISpecification().toString(),
-        bundle.getWorkflowComponentUISpecification().toString(),
-        bundle.isBuiltin() ? '0' : '1')) {
-
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating bundle failed, no rows affected.");
-      } else {
-        commit();
-        return bundle;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            bundle.getId(),
+            bundle.getName(), bundle.getType().name(), bundle.getSubType(),
+            bundle.getStreamingEngine(),
+            bundle.getBundleJar(), bundle.getTransformationClass(),
+            bundle.getWorkflowComponentUISpecification().toString(),
+            bundle.getWorkflowComponentUISpecification().toString(),
+            bundle.isBuiltin() ? '0' : '1')) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Updating bundle failed, no rows affected.");
+        } else {
+          connection.commit();
+          return bundle;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
+
   }
 
   public WorkflowComponentBundle getWorkflowComponentBundle(String componentName,
@@ -491,12 +570,21 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM workflow_component_bundle WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowComponentBundleId)) {
-      ps.executeUpdate();
-      commit();
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowComponentBundleId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -557,30 +645,39 @@ public final class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO workflow_stream (workflowId, componentId, streamName, fields) VALUES"
         + "(?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowStream.getWorkflowId(), workflowStream.getComponentId(),
-        workflowStream.getStreamId(), workflowStream.getFieldsStr())) {
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating stream failed, no rows affected.");
-      }
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowStream.getWorkflowId(), workflowStream.getComponentId(),
+            workflowStream.getStreamId(), workflowStream.getFieldsStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new RuntimeException("Creating stream failed, no rows affected.");
+        }
 
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          workflowStream.setId(generatedKeys.getLong(1));
-          commit();
-          return workflowStream;
-        } else {
-          throw new RuntimeException("Creating stream failed, no ID obtained.");
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            workflowStream.setId(generatedKeys.getLong(1));
+            connection.commit();
+            return workflowStream;
+          } else {
+            throw new SQLException("Creating stream failed, no ID obtained.");
+          }
+        } catch (SQLException e) {
+          throw e;
         }
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -609,21 +706,30 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO workflow_stream (id, workflowId, componentId, streamName, fields) VALUES"
             + "(?,?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowStreamId,
-        stream.getWorkflowId(), stream.getComponentId(),
-        stream.getStreamId(), stream.getFieldsStr())) {
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating stream failed, no rows affected.");
-      } else {
-        commit();
-        return stream;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowStreamId,
+            stream.getWorkflowId(), stream.getComponentId(),
+            stream.getStreamId(), stream.getFieldsStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Updating stream failed, no rows affected.");
+        } else {
+          connection.commit();
+          return stream;
+        }
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -635,6 +741,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param streamId stream id
    * @return removed workflow stream
    */
+
   public WorkflowStream removeWorkflowStream(Long workflowId, Long streamId) {
     if (workflowId == null || streamId == null) {
       throw new RuntimeException("Workflow id or stream id is null.");
@@ -646,13 +753,22 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM workflow_stream WHERE workflowId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId,
-        streamId)) {
-      ps.executeUpdate();
-      commit();
-      return stream;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
+            streamId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+        return stream;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -722,30 +838,39 @@ public final class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO workflow_edge (workflowId, fromId, toId, streamGroupings) "
         + "VALUES (?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowEdge.getWorkflowId(), workflowEdge.getFromId(),
-        workflowEdge.getToId(), workflowEdge.getStreamGroupings())) {
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating edge failed, no rows affected.");
-      }
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowEdge.getWorkflowId(), workflowEdge.getFromId(),
+            workflowEdge.getToId(), workflowEdge.getStreamGroupings())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Creating edge failed, no rows affected.");
+        }
 
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          workflowEdge.setId(generatedKeys.getLong(1));
-          commit();
-          return workflowEdge;
-        } else {
-          throw new RuntimeException("Creating edge failed, no ID obtained.");
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            workflowEdge.setId(generatedKeys.getLong(1));
+            connection.commit();
+            return workflowEdge;
+          } else {
+            throw new SQLException("Creating edge failed, no ID obtained.");
+          }
+        } catch (SQLException e) {
+          throw e;
         }
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -769,20 +894,29 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO workflow_edge (id, workflowId, fromId, toId, streamGroupings) "
             + "VALUES (?,?,?,?,?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowEdgeId,
-        workflowEdge.getWorkflowId(), workflowEdge.getFromId(),
-        workflowEdge.getToId(), workflowEdge.getStreamGroupings())) {
-      // update
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating edge failed, no rows affected.");
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowEdgeId,
+            workflowEdge.getWorkflowId(), workflowEdge.getFromId(),
+            workflowEdge.getToId(), workflowEdge.getStreamGroupings())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        // update
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Updating edge failed, no rows affected.");
+        }
+        connection.commit();
+        return workflowEdge;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
-      commit();
-      return workflowEdge;
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -793,12 +927,21 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM workflow_edge WHERE workflowId = ? AND (fromId = ? OR toId = ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId,
-        componentId, componentId)) {
-      ps.executeUpdate();
-      commit();
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
+            componentId, componentId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -820,13 +963,21 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM workflow_edge WHERE workflowId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId,
-        edgeId)) {
-      ps.executeUpdate();
-      commit();
-      return edge;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId, edgeId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+        return edge;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -899,47 +1050,67 @@ public final class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO workflow_component (workflowId, componentBundleId, name, config) "
         + "VALUES (?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowId, workflowComponent.getWorkflowComponentBundleId(),
-        workflowComponent.getName(), workflowComponent.getConfigStr())) {
+    String sqlStream =
+        "INSERT INTO workflow_stream (workflowId, componentId, streamName, fields) VALUES"
+            + "(?,?,?,?)";
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowId, workflowComponent.getWorkflowComponentBundleId(),
+            workflowComponent.getName(), workflowComponent.getConfigStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
 
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Creating component failed, no rows affected.");
-      }
-
-      // Get auto-incremented id
-      try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-        if (generatedKeys.next()) {
-          workflowComponent.setId(generatedKeys.getLong(1));
-
-          // Insert output streams
-          List<WorkflowStream> streams = null;
-          if ((workflowComponent instanceof WorkflowSource)) {
-            streams = ((WorkflowSource) workflowComponent).getOutputStreams();
-          } else if ((workflowComponent instanceof WorkflowProcessor)) {
-            streams = ((WorkflowProcessor) workflowComponent).getOutputStreams();
-          }
-          if (streams != null) {
-            for (WorkflowStream stream : streams) {
-              stream.setWorkflowId(workflowId);
-              stream.setComponentId(workflowComponent.getId());
-              addWorkflowStream(stream);
-            }
-          }
-
-          commit();
-          return (T) workflowComponent;
-        } else {
-          throw new RuntimeException("Creating component failed, no ID obtained.");
+      try {
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Creating component failed, no rows affected.");
         }
+
+        // Get auto-incremented id
+        try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+          if (generatedKeys.next()) {
+            workflowComponent.setId(generatedKeys.getLong(1));
+
+            // Insert output streams
+            List<WorkflowStream> streams = null;
+            if ((workflowComponent instanceof WorkflowSource)) {
+              streams = ((WorkflowSource) workflowComponent).getOutputStreams();
+            } else if ((workflowComponent instanceof WorkflowProcessor)) {
+              streams = ((WorkflowProcessor) workflowComponent).getOutputStreams();
+            }
+
+            // Add stream
+            if (streams != null && !streams.isEmpty()) {
+              for (WorkflowStream stream : streams) {
+                stream.setWorkflowId(workflowId);
+                stream.setComponentId(workflowComponent.getId());
+                try (PreparedStatement psStream = createPreparedStatement(connection, sqlStream,
+                    stream.getWorkflowId(), stream.getComponentId(),
+                    stream.getStreamId(), stream.getFieldsStr())) {
+                  affectedRows = psStream.executeUpdate();
+                  if (affectedRows == 0) {
+                    throw new SQLException("Failed to insert stream");
+                  }
+                }
+              }
+            }
+
+            connection.commit();
+            return (T) workflowComponent;
+          } else {
+            throw new SQLException("Creating component failed, no ID obtained.");
+          }
+        }
+
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -964,37 +1135,59 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     String sql =
         "INSERT OR REPLACE INTO workflow_component (id, workflowId, componentBundleId, name, config) "
             + "VALUES (?, ?, ?, ?, ?)";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
-        workflowComponentId,
-        workflowId, workflowComponent.getWorkflowComponentBundleId(),
-        workflowComponent.getName(), workflowComponent.getConfigStr())) {
+    String sqlStream =
+        "INSERT OR REPLACE INTO workflow_stream (id, workflowId, componentId, streamName, fields) VALUES"
+            + "(?,?,?,?,?)";
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql,
+            workflowComponentId,
+            workflowId, workflowComponent.getWorkflowComponentBundleId(),
+            workflowComponent.getName(), workflowComponent.getConfigStr())) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
 
-      // insert
-      int affectedRows;
-      affectedRows = ps.executeUpdate();
-      if (affectedRows == 0) {
-        throw new RuntimeException("Updating component failed, no rows affected.");
-      }
-
-      // Update output streams
-      List<WorkflowStream> streams = null;
-      if ((workflowComponent instanceof WorkflowSource)) {
-        streams = ((WorkflowSource) workflowComponent).getOutputStreams();
-      } else if ((workflowComponent instanceof WorkflowProcessor)) {
-        streams = ((WorkflowProcessor) workflowComponent).getOutputStreams();
-      }
-      if (streams != null) {
-        for (WorkflowStream stream : streams) {
-          stream.setWorkflowId(workflowId);
-          stream.setComponentId(workflowComponentId);
-          addOrUpdateWorkflowStream(stream.getId(), stream);
+        // insert
+        int affectedRows;
+        affectedRows = ps.executeUpdate();
+        if (affectedRows == 0) {
+          throw new SQLException("Updating component failed, no rows affected.");
         }
-      }
 
-      commit();
-      return (T) workflowComponent;
+        // Update output streams
+        List<WorkflowStream> streams = null;
+        if ((workflowComponent instanceof WorkflowSource)) {
+          streams = ((WorkflowSource) workflowComponent).getOutputStreams();
+        } else if ((workflowComponent instanceof WorkflowProcessor)) {
+          streams = ((WorkflowProcessor) workflowComponent).getOutputStreams();
+        }
+
+        //  Update stream
+        if (streams != null && !streams.isEmpty()) {
+          for (WorkflowStream stream : streams) {
+            stream.setWorkflowId(workflowId);
+            stream.setComponentId(workflowComponentId);
+
+            try (PreparedStatement psStream = createPreparedStatement(connection, sqlStream,
+                stream.getId(), stream.getWorkflowId(), stream.getComponentId(),
+                stream.getStreamId(), stream.getFieldsStr())) {
+              affectedRows = psStream.executeUpdate();
+              if (affectedRows == 0) {
+                throw new SQLException("Failed to insert stream");
+              }
+            }
+          }
+        }
+
+        connection.commit();
+        return (T) workflowComponent;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -1024,13 +1217,22 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     // removeWorkflowComponentStreams(workflowId, workflowComponentId);
 
     String sql = "DELETE FROM workflow_component WHERE workflowId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId,
-        workflowComponentId)) {
-      ps.executeUpdate();
-      commit();
-      return (T) component;
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
+            workflowComponentId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+        return (T) component;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
@@ -1041,12 +1243,21 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "DELETE FROM workflow_stream WHERE workflowId = ? AND componentId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql, workflowId,
-        workflowComponentId)) {
-      ps.executeUpdate();
-      commit();
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
+            workflowComponentId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }

@@ -23,8 +23,6 @@ public class WorkflowStream extends Format {
   private Long workflowId;
   private List<Field> fields = new ArrayList<>();
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
   public WorkflowStream() {
 
   }

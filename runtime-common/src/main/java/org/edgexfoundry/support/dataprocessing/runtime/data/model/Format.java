@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
@@ -23,7 +24,8 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class Format implements Serializable, Cloneable {
 
-  private final ObjectMapper mapper = new ObjectMapper();
+  @JsonIgnore
+  protected final ObjectMapper mapper = new ObjectMapper();
 
   public static <T> T create(String data, Class<T> classType) throws Exception {
     return new ObjectMapper().readValue(data, classType);
