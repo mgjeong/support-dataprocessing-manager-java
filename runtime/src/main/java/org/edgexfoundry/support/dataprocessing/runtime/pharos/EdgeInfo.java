@@ -35,13 +35,12 @@ public class EdgeInfo {
       groupList.add(map);
     }
 
-    // TODO: temporary: add localhost as default group, if group does not exist
+    // TODO: temporary. Add group only if group list is empty
     if (groupList.isEmpty()) {
-      Map<String, String> group = new HashMap<>();
-      group.put("id", "Local");
-      group.put("name", "Local");
-
-      groupList.add(group);
+      Map<String, String> localGroup = new HashMap<>();
+      localGroup.put("id", "Local");
+      localGroup.put("name", "Local");
+      groupList.add(localGroup);
     }
 
     return groupList;
@@ -99,10 +98,10 @@ public class EdgeInfo {
       }
     }
 
-    // TODO: temporary, add localhost for debugging/testing purpose
+    // TODO: temporary. Add localhost for debug/test purpose
     if (engineType.equalsIgnoreCase("FLINK")) {
       engineList.add("localhost:8081");
-    } else {
+    } else if (engineType.equalsIgnoreCase("KAPACITOR")) {
       engineList.add("localhost:9092");
     }
 
