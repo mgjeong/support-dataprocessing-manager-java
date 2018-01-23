@@ -51,6 +51,9 @@ public class Job extends Format {
   }
 
   public void setWorkflowId(Long workflowId) {
+    if (workflowId == null) {
+      throw new RuntimeException("Invalid workflow id");
+    }
     this.workflowId = workflowId;
   }
 
@@ -61,6 +64,9 @@ public class Job extends Format {
 
   @JsonIgnore
   public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config");
+    }
     this.config = config;
   }
 
@@ -77,7 +83,6 @@ public class Job extends Format {
   @JsonProperty("config")
   public String getConfigStr() {
     try {
-      ObjectMapper mapper = new ObjectMapper();
       return mapper.writeValueAsString(config);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
@@ -87,12 +92,12 @@ public class Job extends Format {
   @JsonProperty("config")
   public void setConfigStr(String configStr) {
     try {
-      if (!StringUtils.isEmpty(configStr)) {
-        ObjectMapper mapper = new ObjectMapper();
-        this.config = mapper
-            .readValue(configStr, new TypeReference<Map<String, Object>>() {
-            });
+      if (StringUtils.isEmpty(configStr)) {
+        throw new RuntimeException("Invalid config");
       }
+      this.config = mapper
+          .readValue(configStr, new TypeReference<Map<String, Object>>() {
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

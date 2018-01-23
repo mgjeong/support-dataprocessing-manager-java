@@ -48,7 +48,6 @@ public class Workflow extends Format {
       return "{}";
     } else {
       try {
-        ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this.config);
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
@@ -59,12 +58,13 @@ public class Workflow extends Format {
   @JsonProperty("config")
   public void setConfigStr(String config) {
     try {
-      if (!StringUtils.isEmpty(config)) {
-        ObjectMapper mapper = new ObjectMapper();
-        this.config = mapper
-            .readValue(config, new TypeReference<Map<String, Object>>() {
-            });
+      if (StringUtils.isEmpty(config)) {
+        throw new RuntimeException("Config is invalid.");
       }
+
+      this.config = mapper
+          .readValue(config, new TypeReference<Map<String, Object>>() {
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -77,6 +77,9 @@ public class Workflow extends Format {
 
   @JsonIgnore
   public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Config is invalid.");
+    }
     this.config = config;
   }
 

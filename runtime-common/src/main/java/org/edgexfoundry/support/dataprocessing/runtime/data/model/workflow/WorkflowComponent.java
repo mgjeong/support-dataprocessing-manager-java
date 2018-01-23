@@ -97,13 +97,15 @@ public class WorkflowComponent extends Format {
   }
 
   public void setConfig(Config config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config.");
+    }
     this.config = config;
   }
 
   @JsonIgnore
   public String getConfigStr() {
     try {
-      ObjectMapper mapper = new ObjectMapper();
       return mapper.writeValueAsString(this.config);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
@@ -113,12 +115,13 @@ public class WorkflowComponent extends Format {
   @JsonIgnore
   public void setConfigStr(String config) {
     try {
-      if (!StringUtils.isEmpty(config)) {
-        ObjectMapper mapper = new ObjectMapper();
-        this.config = mapper
-            .readValue(config, new TypeReference<Config>() {
-            });
+      if (StringUtils.isEmpty(config)) {
+        throw new RuntimeException("Invalid config");
       }
+
+      this.config = mapper
+          .readValue(config, new TypeReference<Config>() {
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -167,11 +170,6 @@ public class WorkflowComponent extends Format {
       } else {
         throw new NoSuchElementException(key);
       }
-    }
-
-    public Object get(String key, Object defaultValue) {
-      Object value = properties.get(key);
-      return value != null ? value : defaultValue;
     }
 
     public void put(String key, Object value) {

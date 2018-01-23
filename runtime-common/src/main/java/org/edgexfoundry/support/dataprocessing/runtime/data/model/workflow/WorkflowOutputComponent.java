@@ -17,13 +17,17 @@ public abstract class WorkflowOutputComponent extends WorkflowComponent {
   }
 
   public void setOutputStreams(List<WorkflowStream> outputStreams) {
+    if (outputStreams == null) {
+      throw new RuntimeException("Invalid output streams");
+    }
     this.outputStreams = outputStreams;
   }
 
   @JsonIgnore
   public void addOutputStream(WorkflowStream stream) {
-    if (stream != null && outputStreams != null) {
-      outputStreams.add(stream);
+    if (stream == null) {
+      throw new RuntimeException("Invalid stream");
     }
+    outputStreams.add(stream);
   }
 }

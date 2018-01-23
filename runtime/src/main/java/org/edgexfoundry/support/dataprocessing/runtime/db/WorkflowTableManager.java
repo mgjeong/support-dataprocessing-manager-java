@@ -3,7 +3,6 @@ package org.edgexfoundry.support.dataprocessing.runtime.db;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -77,7 +76,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
       while (rs.next()) {
         bundles.add(mapToWorkflowComponentBundle(rs));
       }
-    } catch (SQLException | IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
     return bundles;
@@ -371,7 +370,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
       while (rs.next()) {
         bundles.add(mapToWorkflowComponentBundle(rs));
       }
-    } catch (SQLException | IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
     return bundles;
@@ -476,7 +475,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
       } else {
         return mapToWorkflowComponentBundle(rs);
       }
-    } catch (SQLException | IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -1071,7 +1070,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
   }
 
   private WorkflowComponentBundle mapToWorkflowComponentBundle(ResultSet rs)
-      throws SQLException, IOException {
+      throws Exception {
     WorkflowComponentBundle bundle = new WorkflowComponentBundle();
     bundle.setId(rs.getLong("id"));
     bundle.setName(rs.getString("name"));
