@@ -40,7 +40,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     return instance;
   }
 
-  private WorkflowTableManager(String jdbcUrl) {
+  public WorkflowTableManager(String jdbcUrl) {
     super(jdbcUrl);
   }
 

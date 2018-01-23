@@ -14,8 +14,9 @@ public class BootstrapTest {
   public static void initialize() {
     File dbFile = new File("./" + Settings.DB_TEST_PATH);
     dbFile.deleteOnExit();
-    workflowTableManager = WorkflowTableManager.getInstance();
-    workflowTableManager.initialize("jdbc:sqlite:" + dbFile.getAbsolutePath());
+    //workflowTableManager = WorkflowTableManager.getInstance();
+    //workflowTableManager.initialize("jdbc:sqlite:" + dbFile.getAbsolutePath());
+    workflowTableManager = new WorkflowTableManager("jdbc:sqlite:" + dbFile.getAbsolutePath());
   }
 
   @Test

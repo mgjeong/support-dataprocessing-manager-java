@@ -16,12 +16,7 @@ public abstract class AbstractStorageManager {
   private SQLiteDatabase database;
 
   public AbstractStorageManager(String jdbcUrl) {
-    this.database = new SQLiteDatabase();
-    initialize(jdbcUrl);
-  }
-
-  public void initialize(String jdbcUrl) {
-    this.database.initialize(jdbcUrl);
+    this.database = DatabaseManager.getInstance().getDatabase(jdbcUrl);
   }
 
   protected synchronized Connection getConnection() {
@@ -39,8 +34,9 @@ public abstract class AbstractStorageManager {
       try {
         ScriptUtils.executeSqlScript(conn, resource);
         conn.commit();
-      } catch (Exception e) {
+      } catch (SQLException e) {
         conn.rollback();
+        throw e;
       } finally {
         conn.setAutoCommit(oldState);
       }

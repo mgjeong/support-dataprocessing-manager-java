@@ -6,23 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 
 public class JobTableManager extends AbstractStorageManager {
 
-  private static JobTableManager instance = null;
-
-  public synchronized static JobTableManager getInstance() {
-    if (instance == null) {
-      instance = new JobTableManager("jdbc:sqlite:"
-          + Settings.DOCKER_PATH + Settings.DB_PATH);
-    }
-    return instance;
-  }
-
-  private JobTableManager(String jdbcUrl) {
+  public JobTableManager(String jdbcUrl) {
     super(jdbcUrl);
   }
 
@@ -43,7 +32,7 @@ public class JobTableManager extends AbstractStorageManager {
         int affectedRows;
         affectedRows = ps.executeUpdate();
         if (affectedRows == 0) {
-          throw new RuntimeException("Failed to insert job state.");
+          throw new SQLException("Failed to insert job state.");
         } else {
           connection.commit();
           return jobState;
@@ -68,8 +57,7 @@ public class JobTableManager extends AbstractStorageManager {
     String sqlJobState = "INSERT OR REPLACE INTO job_state "
         + "(jobId, state, startTime, engineId, engineType) "
         + "VALUES (?, ?, ?, ?, ?)";
-    try (
-        Connection connection = getConnection();
+    try (Connection connection = getConnection();
         PreparedStatement psJob = createPreparedStatement(connection, sqlJob,
             job.getId(), job.getWorkflowId(), job.getConfigStr())) {
       boolean oldState = connection.getAutoCommit();
@@ -78,7 +66,7 @@ public class JobTableManager extends AbstractStorageManager {
         int affectedRows;
         affectedRows = psJob.executeUpdate();
         if (affectedRows == 0) {
-          throw new RuntimeException("Failed to insert job.");
+          throw new SQLException("Failed to insert job.");
         }
 
         // Add state
@@ -87,7 +75,7 @@ public class JobTableManager extends AbstractStorageManager {
             job.getState().getEngineId(), job.getState().getEngineType())) {
           affectedRows = psJobState.executeUpdate();
           if (affectedRows == 0) {
-            throw new RuntimeException("Failed to insert job state.");
+            throw new SQLException("Failed to insert job state.");
           }
         }
 
@@ -152,9 +140,9 @@ public class JobTableManager extends AbstractStorageManager {
     return job;
   }
 
-  public Job getWorkflowJob(Long workflowId, String jobId) {
-    if (workflowId == null || jobId == null) {
-      throw new RuntimeException("Workflow id or job id is null.");
+  public Job getWorkflowJob(String jobId) {
+    if (jobId == null) {
+      throw new RuntimeException("Workflow job id is null.");
     }
 
     StringBuilder sb = new StringBuilder();
@@ -168,15 +156,42 @@ public class JobTableManager extends AbstractStorageManager {
     sb.append("job_state.engineType AS engineType ");
     sb.append("FROM job, job_state WHERE ");
     sb.append("job_state.jobId = job.id AND ");
-    sb.append("job.workflowId = ? AND job.id = ?");
+    sb.append("job.id = ?");
     String sql = sb.toString();
 
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId, jobId);
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, jobId);
         ResultSet rs = ps.executeQuery()) {
       if (rs.next()) {
         return mapToWorkflowJob(rs);
       } else {
-        throw new RuntimeException("Workflow job not found.");
+        throw new SQLException("Workflow job not found.");
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void removeWorkflowJob(String jobId) {
+    if (jobId == null) {
+      throw new RuntimeException("Workflow job id is null.");
+    }
+
+    String sql = "DELETE FROM job WHERE id = ?";
+    String sqlState = "DELETE FROM job_state WHERE jobId = ?";
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, jobId);
+        PreparedStatement psState = createPreparedStatement(connection, sqlState, jobId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        psState.executeUpdate();
+        connection.commit();
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);

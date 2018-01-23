@@ -76,45 +76,8 @@ public class SQLiteDatabaseTest {
     }
   }
 
-  @Test
-  public void testNestedConnection() {
-    try (Connection connectionA = database.getConnection();
-        Statement statementA = connectionA.createStatement()) {
-      boolean oldStateA = connectionA.getAutoCommit();
-      connectionA.setAutoCommit(false);
-
-      try {
-        statementA.execute("CREATE TABLE IF NOT EXISTS sample_a(`id` INTEGER)");
-
-        try (Connection connectionB = database.getConnection();
-            Statement statementB = connectionB.createStatement()) {
-          boolean oldStateB = connectionB.getAutoCommit();
-          connectionB.setAutoCommit(false);
-          try {
-            statementB.execute("CREATE TABLE IF NOT EXISTS sample_b(`id` INTEGER)");
-            connectionB.commit();
-          } catch (SQLException e) {
-            connectionB.rollback();
-            throw e;
-          } finally {
-            connectionB.setAutoCommit(oldStateB);
-          }
-        }
-        connectionA.commit();
-      } catch (SQLException e) {
-        connectionA.rollback();
-        throw e;
-      } finally {
-        connectionA.setAutoCommit(oldStateA);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      Assert.fail(e.getMessage());
-    }
-  }
-
   @AfterClass
-  public static void cleanUp() {
+  public static void cleanup() {
     if (databaseFile.exists()) {
       databaseFile.delete();
     }
