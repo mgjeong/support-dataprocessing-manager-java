@@ -495,7 +495,6 @@ public class WorkflowController extends AbstractController {
     for (String engine : engineList) {
       response.add(engine);
     }
-    response.add("localhost:8081");
 
     return respondEntity(response, HttpStatus.OK);
   }
