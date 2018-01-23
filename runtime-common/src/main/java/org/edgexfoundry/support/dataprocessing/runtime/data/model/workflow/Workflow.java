@@ -15,11 +15,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 public class Workflow extends Format {
 
   /**
-   * Mapper is thread-safe.
-   */
-  private final ObjectMapper mapper = new ObjectMapper();
-
-  /**
    * Unique identifier for a workflow.
    */
   private Long id;

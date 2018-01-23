@@ -24,7 +24,8 @@ public class WorkflowData {
   private List<WorkflowEdge> edges = new ArrayList<>();
   private WorkflowEditorMetadata workflowEditorMetadata;
 
-  private final ObjectMapper mapper = new ObjectMapper();
+  // Make it transient so that gson does not parse this
+  private transient final ObjectMapper mapper = new ObjectMapper();
 
   public enum EngineType {
     MULTI, FLINK, KAPACITOR, UNKNOWN
@@ -139,7 +140,7 @@ public class WorkflowData {
   }
 
   public void setWorkflowId(Long workflowId) {
-    if(workflowId == null){
+    if (workflowId == null) {
       throw new RuntimeException("Invalid workflow id");
     }
     this.workflowId = workflowId;

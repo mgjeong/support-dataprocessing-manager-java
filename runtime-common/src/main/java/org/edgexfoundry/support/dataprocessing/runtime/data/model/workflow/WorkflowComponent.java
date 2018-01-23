@@ -25,8 +25,6 @@ public class WorkflowComponent extends Format {
   private String classname = StringUtils.EMPTY;
   private Config config = new Config();
 
-  private final ObjectMapper mapper = new ObjectMapper();
-
   public WorkflowComponent() {
   }
 
