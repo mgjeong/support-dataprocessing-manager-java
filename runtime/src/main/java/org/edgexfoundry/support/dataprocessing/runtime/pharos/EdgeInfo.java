@@ -64,12 +64,7 @@ public class EdgeInfo {
         while (serviceIter.hasNext()) {
           String service = serviceIter.next();
 
-          if (engineType.equals("ANY") &&
-              (service.equals(PharosConstants.FLINK_NAME) ||
-                  service.equals(PharosConstants.KAPACITOR_NAME))) {
-            engineList.add((String) edgeInfo.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME));
-            break;
-          } else if (engineType.equals("FLINK") && service.equals(PharosConstants.FLINK_NAME)) {
+          if (engineType.equals("FLINK") && service.equals(PharosConstants.FLINK_NAME)) {
             String flinkAddress =
                 (String) edgeInfo.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME);
             engineList.add(flinkAddress + ":" + PharosConstants.FLINK_PORT);
