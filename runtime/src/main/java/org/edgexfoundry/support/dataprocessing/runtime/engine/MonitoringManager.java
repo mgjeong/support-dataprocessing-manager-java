@@ -113,10 +113,10 @@ public class MonitoringManager implements Runnable {
 
           for(JobState state : jobStates) {
             try {
-//              JobTableManager.getInstance().updateWorkflowJobState(state);
-              JobTableManager jobTableManager = new JobTableManager(
-                      "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
-              jobTableManager.updateWorkflowJobState(state);
+              JobTableManager.getInstance().updateWorkflowJobState(state);
+//              JobTableManager jobTableManager = new JobTableManager(
+//                      "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+//              jobTableManager.updateWorkflowJobState(state);
             } catch (Exception e) {
               e.printStackTrace();
             }

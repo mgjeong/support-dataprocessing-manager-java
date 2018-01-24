@@ -272,7 +272,7 @@ public class FlinkEngine extends AbstractEngine {
 
       JobState jobState = new JobState();
       jobState.setEngineId(flinkJob.getJid());
-      jobState.setFinshTime(flinkJob.getEndtime());
+      jobState.setFinishTime(flinkJob.getEndtime());
       if (0 == flinkJob.getState().compareTo("FAILED")) {
 
         jobState.setState(State.ERROR.name());

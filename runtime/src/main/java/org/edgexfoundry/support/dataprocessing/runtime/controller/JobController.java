@@ -133,4 +133,23 @@ public class JobController extends AbstractController {
     }
   }
 
+  @ApiOperation(value = "Monitor jobs", notes = "Monitor jobs")
+  @RequestMapping(value = "/workflows/monitor/jobs/", method = RequestMethod.GET)
+  public ResponseEntity monitorJobs() {
+    try {
+      return respond(jobTableManager.getWorkflowState(), HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Monitor Job", notes = "Monitor job")
+  @RequestMapping(value = "/workflows/monitor/jobs/{jobId}", method = RequestMethod.GET)
+  public ResponseEntity monitorJob(@PathVariable("jobId") String jobId) {
+    try {
+      return respond(jobTableManager.getWorkflowState(jobId), HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
 }
