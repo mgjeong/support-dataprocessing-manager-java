@@ -188,7 +188,6 @@ public class ErrorModel extends AbstractTaskModel {
       }
     } else {
       ArrayList<Number> observe = in.getValue(this.observation, ArrayList.class);
-
       if(observe != null) {
         for (int index = 0; index < inRecordKeys.size(); index++) {
           ArrayList<Number> predict = in.getValue(inRecordKeys.get(index), ArrayList.class);
