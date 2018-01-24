@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "Workflow UI", description = "API List for Workflow UI")
 @RequestMapping("/api/v1/catalog")
 public class WorkflowController extends AbstractController {
+
+  private final transient ObjectMapper mapper = new ObjectMapper();
 
   private WorkflowTableManager workflowTableManager = null;
 
@@ -452,12 +453,12 @@ public class WorkflowController extends AbstractController {
   public ResponseEntity importWorkflow(@RequestParam("file") Part part,
       @RequestParam("workflowName") final String workflowName) {
     try {
-      WorkflowData workflowData = new ObjectMapper()
+      WorkflowData workflowData = this.mapper
           .readValue(part.getInputStream(), WorkflowData.class);
       Workflow imported = this.workflowTableManager
           .importWorkflow(workflowName, workflowData);
       return respond(imported, HttpStatus.OK);
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -492,7 +493,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentWorkflowBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> workflows
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.WORKFLOW);
@@ -500,7 +500,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentLinkBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> workflows
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.LINK);
@@ -508,7 +507,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentProcessorBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> processors
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.PROCESSOR);
@@ -516,7 +514,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentSinkBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> sinks
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.SINK);
@@ -524,7 +521,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentSourceBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> sources
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.SOURCE);
