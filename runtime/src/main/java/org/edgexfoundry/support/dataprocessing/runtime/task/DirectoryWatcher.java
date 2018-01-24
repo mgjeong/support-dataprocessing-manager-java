@@ -100,7 +100,7 @@ public class DirectoryWatcher extends Thread {
       if (file.isDirectory()) {
         continue;
       } else {
-        fileList.add(absPath + file.getName());
+        fileList.add(file.getAbsolutePath());
       }
     }
 

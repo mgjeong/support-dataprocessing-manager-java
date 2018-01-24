@@ -70,16 +70,13 @@ public final class TaskManager implements DirectoryChangeEventListener {
     }
 
     this.directoryWatcher = new DirectoryWatcher(absPath, this);
+    this.directoryWatcher.start();
   }
 
   public void initialize() {
-    try {
-      startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
+    this.workflowTableManager = WorkflowTableManager.getInstance();
 
-      this.workflowTableManager = WorkflowTableManager.getInstance();
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-    }
+    startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
   }
 
   private void stopDirectoryWatcher() {
