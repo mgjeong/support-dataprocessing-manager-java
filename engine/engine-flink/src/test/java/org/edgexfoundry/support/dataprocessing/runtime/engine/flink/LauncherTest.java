@@ -20,6 +20,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -28,6 +29,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({Launcher.class, StreamExecutionEnvironment.class, JobGraphBuilder.class})
 public class LauncherTest {
 
+  @Test
+  public void test(){
+    System.out.println("Nothing");
+  }
   /*
   final static String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
   final static String TEST_JAR = TEST_DIR + "/launcher_test_job.jar";
