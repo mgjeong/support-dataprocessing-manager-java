@@ -48,7 +48,10 @@ public final class TaskManager implements DirectoryChangeEventListener {
   private static final int DEFAULTTASK = 0;
   private static final int USERTASK = 1;
 
+  private final WorkflowTableManager workflowTableManager;
+
   private TaskManager() {
+    this.workflowTableManager = WorkflowTableManager.getInstance();
   }
 
   public static TaskManager getInstance() {
@@ -137,7 +140,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
       int removable) {
     try {
       // Check if bundle already exists
-      WorkflowComponentBundle bundle = WorkflowTableManager.getInstance()
+      WorkflowComponentBundle bundle = workflowTableManager
           .getWorkflowComponentBundle(model.getName(), WorkflowComponentBundleType.PROCESSOR,
               "DPFW");
       if (bundle == null) {
@@ -154,9 +157,9 @@ public final class TaskManager implements DirectoryChangeEventListener {
       bundle.setBuiltin(removable == DEFAULTTASK);
 
       if (bundle.getId() == null) {
-        WorkflowTableManager.getInstance().addWorkflowComponentBundle(bundle);
+        workflowTableManager.addWorkflowComponentBundle(bundle);
       } else {
-        WorkflowTableManager.getInstance().addOrUpdateWorkflowComponentBundle(bundle);
+        workflowTableManager.addOrUpdateWorkflowComponentBundle(bundle);
       }
 
     } catch (Exception e) {

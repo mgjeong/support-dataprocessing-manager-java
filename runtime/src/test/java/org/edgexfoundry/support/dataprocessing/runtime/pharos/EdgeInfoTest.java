@@ -180,8 +180,8 @@ public class EdgeInfoTest {
     List<String> result2 = edgeInfo.getEngineList("test", "FLINK");
     List<String> result3 = edgeInfo.getEngineList("test", "STORM");
 
-    Assert.assertTrue(result1.size() == 1);
-    Assert.assertTrue(result2.size() == 1);
+    Assert.assertTrue(result1.size() == 2);
+    Assert.assertTrue(result2.size() == 2);
     Assert.assertTrue(result3.size() == 0);
   }
 }

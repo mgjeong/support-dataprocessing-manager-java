@@ -125,12 +125,15 @@ public class WorkflowComponentBundle extends Format {
     }
 
     public void setFields(List<UIField> fields) {
+      if (fields == null) {
+        throw new RuntimeException("Invalid fields");
+      }
       this.fields = fields;
     }
 
     public void addUIField(UIField uiField) {
       if (uiField == null) {
-        return;
+        throw new RuntimeException("Invalid field");
       }
       this.fields.add(uiField);
     }
@@ -159,12 +162,6 @@ public class WorkflowComponentBundle extends Format {
         return this.uiFieldTypeText;
       }
 
-      @Override
-      public String toString() {
-        return "UIFieldType{" +
-            "uiFieldTypeText='" + uiFieldTypeText + '\'' +
-            '}';
-      }
     }
 
     private String uiName;

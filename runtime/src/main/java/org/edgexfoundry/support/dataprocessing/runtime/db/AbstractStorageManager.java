@@ -13,31 +13,13 @@ public abstract class AbstractStorageManager {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageManager.class);
 
-  private Database database;
-  private transient boolean isTerminated = false;
+  private SQLiteDatabase database;
 
-  public AbstractStorageManager(String jdbcUrl, String jdbcClass) {
-    this.database = Database.getInstance();
-    initialize(jdbcUrl, jdbcClass);
+  public AbstractStorageManager(String jdbcUrl) {
+    this.database = DatabaseManager.getInstance().getDatabase(jdbcUrl);
   }
 
-  public void initialize(String jdbcUrl, String jdbcClass) {
-    this.database.initialize(jdbcUrl, jdbcClass);
-  }
-
-  protected Connection getTransaction() throws SQLException {
-    if (isTerminated) {
-      return null;
-    }
-
-    return this.database.getTransaction();
-  }
-
-  protected synchronized Connection getConnection() throws SQLException {
-    if (isTerminated) {
-      return null;
-    }
-
+  protected synchronized Connection getConnection() {
     return this.database.getConnection();
   }
 
@@ -46,42 +28,33 @@ public abstract class AbstractStorageManager {
       throw new RuntimeException("Resource is null.");
     }
 
-    try {
-      ScriptUtils.executeSqlScript(getTransaction(), resource);
-      commit();
+    try (Connection conn = getConnection()) {
+      boolean oldState = conn.getAutoCommit();
+      conn.setAutoCommit(false);
+      try {
+        ScriptUtils.executeSqlScript(conn, resource);
+        conn.commit();
+      } catch (SQLException e) {
+        conn.rollback();
+        throw e;
+      } finally {
+        conn.setAutoCommit(oldState);
+      }
     } catch (SQLException e) {
-      rollback();
       throw new RuntimeException(e);
     }
   }
 
-  public synchronized void commit() {
-    this.database.commit();
-  }
-
-  public synchronized void rollback() {
-    this.database.rollback();
-  }
-
-
   protected PreparedStatement createPreparedStatement(Connection con, String sql, Object... params)
       throws SQLException {
-    PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-    for (int i = 0; i < params.length; i++) {
-      ps.setObject(i + 1, params[i]);
-    }
-    return ps;
-  }
-
-  public synchronized void terminate() {
-    if (isTerminated) {
-      return;
-    }
-    isTerminated = true;
-
-    if (database != null) {
-      database.close();
+    try {
+      PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      for (int i = 0; i < params.length; i++) {
+        ps.setObject(i + 1, params[i]);
+      }
+      return ps;
+    } catch (Exception e) {
+      throw new SQLException(e);
     }
   }
-
 }

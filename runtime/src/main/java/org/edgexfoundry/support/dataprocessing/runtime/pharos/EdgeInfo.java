@@ -35,11 +35,27 @@ public class EdgeInfo {
       groupList.add(map);
     }
 
+    // TODO: temporary. Add group only if group list is empty
+    if (groupList.isEmpty()) {
+      Map<String, String> localGroup = new HashMap<>();
+      localGroup.put("id", "Local");
+      localGroup.put("name", "Local");
+      groupList.add(localGroup);
+    }
+
     return groupList;
   }
 
   public List<String> getEngineList(String groupId, String engineType) {
-    List<String> edgeIdList = pharosRestClient.getEdgeIdList(groupId);
+
+    List<String> edgeIdList;
+    try {
+      edgeIdList = pharosRestClient.getEdgeIdList(groupId);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      edgeIdList = new ArrayList<>();
+    }
+
     Iterator<String> iter = edgeIdList.iterator();
 
     List<String> engineList = new ArrayList<String>();
@@ -78,6 +94,13 @@ public class EdgeInfo {
           }
         }
       }
+    }
+
+    // TODO: temporary. Add localhost for debug/test purpose
+    if (engineType.equalsIgnoreCase("FLINK")) {
+      engineList.add("localhost:8081");
+    } else if (engineType.equalsIgnoreCase("KAPACITOR")) {
+      engineList.add("localhost:9092");
     }
 
     return engineList;
