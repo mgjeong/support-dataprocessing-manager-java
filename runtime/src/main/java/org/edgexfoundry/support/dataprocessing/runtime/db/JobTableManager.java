@@ -50,6 +50,26 @@ public class JobTableManager extends AbstractStorageManager {
     }
   }
 
+  public JobState updateWorkflowJobState(JobState jobState) {
+    String sql = "UPDATE job_state SET state=?, finishTime=?, errorMessage=? where engineId=?";
+
+    try (PreparedStatement ps = createPreparedStatement(getTransaction(), sql,
+        jobState.getState().name(), jobState.getFinshTime(), jobState.getErrorMessage(),
+        jobState.getEngineId())) {
+      int affectedRows;
+      affectedRows = ps.executeUpdate();
+      if (affectedRows == 0) {
+        throw new RuntimeException("Failed to insert job state.");
+      } else {
+        commit();
+        return jobState;
+      }
+    } catch (SQLException e) {
+      rollback();
+      throw new RuntimeException(e);
+    }
+  }
+
   public Job addOrUpdateWorkflowJob(Job job) {
     if (job == null) {
       throw new RuntimeException("Workflow job is null.");

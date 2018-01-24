@@ -45,7 +45,7 @@ public class Application extends SpringBootServletInitializer {
     TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
 
     // 4. Run Monitoring
-    MonitoringManager.getInstance().start();
+    MonitoringManager.getInstance().setInterval(10).start();
   }
 
   private static void makeDatabaseIfNecessary() throws Exception {

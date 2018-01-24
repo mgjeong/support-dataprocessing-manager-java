@@ -7,6 +7,14 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 @JsonInclude(Include.NON_NULL)
 public class JobState extends Format {
 
+  public Long getFinshTime() {
+    return finshTime;
+  }
+
+  public void setFinshTime(Long finshTime) {
+    this.finshTime = finshTime;
+  }
+
   public enum State {
     CREATED, RUNNING, STOPPED, ERROR;
 
@@ -26,6 +34,7 @@ public class JobState extends Format {
 
   private State state;
   private Long startTime;
+  private Long finshTime;
   private String engineId;
   private String engineType;
   private String errorMessage;

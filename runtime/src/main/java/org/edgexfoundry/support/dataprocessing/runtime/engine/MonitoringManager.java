@@ -1,7 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Metrics;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
+import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -39,8 +41,9 @@ public class MonitoringManager implements Runnable {
 
   }
 
-  private void setInterval(long interval) {
+  public MonitoringManager setInterval(long interval) {
     this.interval = interval;
+    return this;
   }
 
   private void createThread() {
@@ -49,17 +52,20 @@ public class MonitoringManager implements Runnable {
     thread = new Thread(this);
   }
 
-  public void stop() throws InterruptedException {
+  public MonitoringManager stop() throws InterruptedException {
     disabled();
 
     thread.join();
+
+    return this;
   }
 
-  public void start() {
+  public MonitoringManager start() {
     thread.start();
+    return this;
   }
 
-  public void enabled() {
+  public MonitoringManager enabled() {
     try {
 
       semaphore.acquire();
@@ -70,10 +76,10 @@ public class MonitoringManager implements Runnable {
     } finally {
       semaphore.release();
     }
-
+    return this;
   }
 
-  public void disabled() {
+  public MonitoringManager disabled() {
     try {
 
       semaphore.acquire();
@@ -84,6 +90,7 @@ public class MonitoringManager implements Runnable {
     } finally {
       semaphore.release();
     }
+    return this;
   }
 
 
@@ -101,15 +108,21 @@ public class MonitoringManager implements Runnable {
 
         for(Map.Entry<String, Engine> entry : engines.entrySet()) {
           Engine engine = entry.getValue();
-          try {
-            Metrics metric = engine.getMetrics();
-          } catch (Exception e) {
-            e.printStackTrace();
+          ArrayList<JobState> jobStates = engine.getMetrics();
+
+          for(JobState state : jobStates) {
+            try {
+              JobTableManager.getInstance().updateWorkflowJobState(state);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
           }
         }
 
         Thread.sleep(interval * 1000);  // Seconds.
       } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (Exception e) {
         e.printStackTrace();
       } finally {
         semaphore.release();

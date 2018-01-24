@@ -1,12 +1,14 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Metrics;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 public class KapacitorEngine extends AbstractEngine {
 
@@ -43,7 +45,7 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
-  public Metrics getMetrics() throws Exception {
+  public ArrayList<JobState> getMetrics() throws Exception {
     return null;
   }
 
