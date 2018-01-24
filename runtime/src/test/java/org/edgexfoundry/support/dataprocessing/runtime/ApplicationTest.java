@@ -28,7 +28,7 @@ import org.springframework.util.StringUtils;
 
 @Configuration
 public class ApplicationTest {
-
+/* TODO: Is it a good idea to test Application.main ?
   @Rule
   public OutputCapture outputCapture = new OutputCapture();
 
@@ -54,5 +54,5 @@ public class ApplicationTest {
   private String getOutput() {
     return this.outputCapture.toString();
   }
-
+*/
 }

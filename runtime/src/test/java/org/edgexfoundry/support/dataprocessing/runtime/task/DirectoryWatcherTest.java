@@ -15,6 +15,9 @@
  *
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
+
+import org.junit.Test;
+
 /*
 import Settings;
 import ErrorFormat;
@@ -30,6 +33,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 */
 public class DirectoryWatcherTest {
+  @Test
+  public void test(){
+    System.out.println("Pass");
+  }
 
     //FIXLATER:
     /*

@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.Collection;
 import java.util.stream.Collectors;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
@@ -32,8 +33,10 @@ public class JobController extends AbstractController {
   private JobTableManager jobTableManager = null;
 
   public JobController() {
-    this.workflowTableManager = WorkflowTableManager.getInstance();
-    this.jobTableManager = JobTableManager.getInstance();
+    this.workflowTableManager = new WorkflowTableManager(
+        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+    this.jobTableManager = new JobTableManager(
+        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
   }
 
   @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")
@@ -105,7 +108,7 @@ public class JobController extends AbstractController {
   public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
       @PathVariable("jobId") String jobId, RedirectAttributes redirectAttributes) {
     try {
-      Job job = jobTableManager.getWorkflowJob(workflowId, jobId);
+      Job job = jobTableManager.getWorkflowJob(jobId);
       String targetHost = job.getConfig("targetHost");
       String[] splits = targetHost.split(":");
       FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));

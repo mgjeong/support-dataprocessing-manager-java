@@ -29,7 +29,7 @@ public class JarLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
-  private URLClassLoader urlClassLoader = null;
+  protected URLClassLoader urlClassLoader = null;
   private ClassLoader classLoader = null;
 
   public JarLoader(String jarPath, ClassLoader classLoader) throws Exception {

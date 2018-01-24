@@ -16,10 +16,10 @@ public class Bootstrap {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Bootstrap.class);
 
-  private final WorkflowTableManager storageManager = WorkflowTableManager.getInstance();
+  private final WorkflowTableManager workflowTableManager;
 
-  public Bootstrap() {
-
+  public Bootstrap(String jdbcUrl) {
+    workflowTableManager = new WorkflowTableManager(jdbcUrl);
   }
 
   private void addBuiltinWorkflowComponentBundles() {
@@ -45,13 +45,13 @@ public class Bootstrap {
     dpfwSink.setBuiltin(true);
 
     WorkflowComponentBundle existingBundle =
-        storageManager.getWorkflowComponentBundle(dpfwSink.getName(), dpfwSink.getType(),
+        workflowTableManager.getWorkflowComponentBundle(dpfwSink.getName(), dpfwSink.getType(),
             dpfwSink.getSubType());
     if (existingBundle == null) {
-      dpfwSink = storageManager.addWorkflowComponentBundle(dpfwSink);
+      dpfwSink = workflowTableManager.addWorkflowComponentBundle(dpfwSink);
     } else {
       dpfwSink.setId(existingBundle.getId());
-      dpfwSink = storageManager.addOrUpdateWorkflowComponentBundle(dpfwSink);
+      dpfwSink = workflowTableManager.addOrUpdateWorkflowComponentBundle(dpfwSink);
     }
     LOGGER.info("Sink id={}/name={} added.", dpfwSink.getId(), dpfwSink.getName());
   }
@@ -74,13 +74,13 @@ public class Bootstrap {
     dpfwSource.setBuiltin(true);
 
     WorkflowComponentBundle existingBundle =
-        storageManager.getWorkflowComponentBundle(dpfwSource.getName(), dpfwSource.getType(),
+        workflowTableManager.getWorkflowComponentBundle(dpfwSource.getName(), dpfwSource.getType(),
             dpfwSource.getSubType());
     if (existingBundle == null) {
-      dpfwSource = storageManager.addWorkflowComponentBundle(dpfwSource);
+      dpfwSource = workflowTableManager.addWorkflowComponentBundle(dpfwSource);
     } else {
       dpfwSource.setId(existingBundle.getId());
-      dpfwSource = storageManager.addOrUpdateWorkflowComponentBundle(dpfwSource);
+      dpfwSource = workflowTableManager.addOrUpdateWorkflowComponentBundle(dpfwSource);
     }
     LOGGER.info("Source id={}/name={} added.", dpfwSource.getId(), dpfwSource.getName());
   }
@@ -118,14 +118,14 @@ public class Bootstrap {
     runtimeWorkflow.setBuiltin(true);
 
     WorkflowComponentBundle existingBundle =
-        storageManager
+        workflowTableManager
             .getWorkflowComponentBundle(runtimeWorkflow.getName(), runtimeWorkflow.getType(),
                 runtimeWorkflow.getSubType());
     if (existingBundle == null) {
-      runtimeWorkflow = storageManager.addWorkflowComponentBundle(runtimeWorkflow);
+      runtimeWorkflow = workflowTableManager.addWorkflowComponentBundle(runtimeWorkflow);
     } else {
       runtimeWorkflow.setId(existingBundle.getId());
-      runtimeWorkflow = storageManager.addOrUpdateWorkflowComponentBundle(runtimeWorkflow);
+      runtimeWorkflow = workflowTableManager.addOrUpdateWorkflowComponentBundle(runtimeWorkflow);
     }
     LOGGER.info("Workflow id={}/name={} added.",
         runtimeWorkflow.getId(), runtimeWorkflow.getName());
@@ -152,10 +152,6 @@ public class Bootstrap {
   private void createTablesIfNotExist() {
     ResourceLoader resourceLoader = new DefaultResourceLoader(getClass().getClassLoader());
     Resource resource = resourceLoader.getResource("db/sqlite/create_tables.sql");
-    storageManager.executeSqlScript(resource);
-  }
-
-  public void terminate() {
-    storageManager.terminate();
+    workflowTableManager.executeSqlScript(resource);
   }
 }
