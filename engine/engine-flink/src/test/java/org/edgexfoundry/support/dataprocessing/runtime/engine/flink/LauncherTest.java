@@ -18,23 +18,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
-
-import java.io.File;
-import java.util.jar.JarFile;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -42,6 +28,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({Launcher.class, StreamExecutionEnvironment.class, JobGraphBuilder.class})
 public class LauncherTest {
 
+  /*
   final static String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
   final static String TEST_JAR = TEST_DIR + "/launcher_test_job.jar";
   final static String TEST_JSON = TEST_DIR + "/launcher_test_job.json";
@@ -133,5 +120,5 @@ public class LauncherTest {
     // Running with an empty job occurs IllegalStateException
     launcher.main(ARGS_FOR_EXTERNAL_CONFIG);
   }
-
+*/
 }
