@@ -62,6 +62,9 @@ public class WorkflowEdge extends Format {
 
   public void setStreamGroupings(
       List<StreamGrouping> streamGroupings) {
+    if(streamGroupings == null){
+      throw new RuntimeException("Invalid stream groupings");
+    }
     this.streamGroupings = streamGroupings;
   }
 
@@ -71,7 +74,6 @@ public class WorkflowEdge extends Format {
       return "[]";
     } else {
       try {
-        ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this.streamGroupings);
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
@@ -82,12 +84,12 @@ public class WorkflowEdge extends Format {
   @JsonIgnore
   public void setStreamGroupingsStr(String groupings) {
     try {
-      if (!StringUtils.isEmpty(groupings)) {
-        ObjectMapper mapper = new ObjectMapper();
-        this.streamGroupings = mapper
-            .readValue(groupings, new TypeReference<List<StreamGrouping>>() {
-            });
+      if (StringUtils.isEmpty(groupings)) {
+        throw new RuntimeException("Invalid groupings");
       }
+      this.streamGroupings = mapper
+          .readValue(groupings, new TypeReference<List<StreamGrouping>>() {
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

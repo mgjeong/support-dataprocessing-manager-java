@@ -19,6 +19,9 @@ public class WorkflowEditorMetadata extends Format {
   }
 
   public void setWorkflowId(Long workflowId) {
+    if (workflowId == null) {
+      throw new RuntimeException("Invalid workflow id");
+    }
     this.workflowId = workflowId;
   }
 
