@@ -51,8 +51,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
   private final WorkflowTableManager workflowTableManager;
 
   private TaskManager() {
-    this.workflowTableManager = new WorkflowTableManager(
-        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+    this.workflowTableManager = WorkflowTableManager.getInstance();
   }
 
   public static TaskManager getInstance() {

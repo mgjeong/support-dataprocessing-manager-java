@@ -18,8 +18,8 @@ public class Bootstrap {
 
   private final WorkflowTableManager workflowTableManager;
 
-  public Bootstrap(String jdbcUrl) {
-    workflowTableManager = new WorkflowTableManager(jdbcUrl);
+  public Bootstrap() {
+    workflowTableManager = WorkflowTableManager.getInstance();
   }
 
   private void addBuiltinWorkflowComponentBundles() {

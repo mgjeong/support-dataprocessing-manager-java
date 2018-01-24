@@ -16,16 +16,11 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
-public class AbstractStorageManagerTest {
-
-  private static File testDB = new File("./abstract_test.db");
+public class AbstractStorageManagerTest extends DatabaseTest{
   private static SampleTableManager sampleTableManager;
 
   @BeforeClass
   public static void setup() {
-    if (testDB.exists()) {
-      throw new RuntimeException(testDB.getAbsolutePath() + " already exists.");
-    }
     sampleTableManager = new SampleTableManager("jdbc:sqlite:" + testDB.getAbsolutePath());
   }
 
@@ -84,13 +79,6 @@ public class AbstractStorageManagerTest {
       Assert.fail("Should not reach here.");
     } catch (SQLException e) {
       // success
-    }
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    if (testDB.exists()) {
-      testDB.delete();
     }
   }
 

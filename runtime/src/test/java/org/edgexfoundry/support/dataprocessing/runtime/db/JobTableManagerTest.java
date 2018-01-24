@@ -1,9 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
-import java.io.File;
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,17 +9,18 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
-public class JobTableManagerTest {
+public class JobTableManagerTest extends DatabaseTest {
 
-  private static final File testDB = new File("./test_job.db");
   private static JobTableManager jobTable;
 
   @BeforeClass
-  public static void setup() {
-    if (testDB.exists()) {
-      throw new RuntimeException(testDB.getAbsolutePath()+" already exists!");
-    }
-    jobTable = new JobTableManager("jdbc:sqlite:" + testDB.getPath());
+  public static void setup() throws Exception {
+    jobTable = JobTableManager.getInstance();
+    java.lang.reflect.Field databaseField = AbstractStorageManager.class.getDeclaredField("database");
+    databaseField.setAccessible(true);
+    databaseField.set(jobTable,
+        DatabaseManager.getInstance().getDatabase("jdbc:sqlite:" + testDB.getAbsolutePath()));
+
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
     Resource resource = loader.getResource("db/sqlite/create_tables.sql");
     jobTable.executeSqlScript(resource);
@@ -102,13 +101,6 @@ public class JobTableManagerTest {
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success
-    }
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    if (testDB.exists()) {
-      testDB.delete();
     }
   }
 }
