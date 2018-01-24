@@ -46,7 +46,7 @@ public class Application extends SpringBootServletInitializer {
     File db = new File(Settings.DOCKER_PATH + Settings.DB_PATH);
     if (!db.exists()) {
       LOGGER.info("Executing bootstrap on {}", Settings.DOCKER_PATH + Settings.DB_PATH);
-      Bootstrap bootstrap = new Bootstrap("jdbc:sqlite:" + db.getAbsolutePath());
+      Bootstrap bootstrap = new Bootstrap();
       bootstrap.execute();
     }
   }
