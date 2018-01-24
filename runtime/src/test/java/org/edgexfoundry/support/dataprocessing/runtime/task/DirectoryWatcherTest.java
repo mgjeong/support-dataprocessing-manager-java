@@ -66,14 +66,14 @@ public class DirectoryWatcherTest {
 
   @Test
   public void bFileCreateEventReceive() {
-    watcher = new DirectoryWatcher();
+    watcher = new DirectoryWatcher(".");
     watcher.setDirectoryChangeEventListener(listener);
     watcher.start();
     Assert.assertNotNull(watcher);
 
     isCalled = false;
 
-    File file = new File(Settings.DOCKER_PATH + "TEST.TXT");
+    File file = new File("./TEST.TXT");
     try {
       file.createNewFile();
       lock.await(2000, TimeUnit.MILLISECONDS);
@@ -94,15 +94,14 @@ public class DirectoryWatcherTest {
   @Test
   public void cFileRemoveEventReceive() {
     // Force to generate IOException by setting the wrong path.
-    watcher = new DirectoryWatcher("WRONGPATH\n");
-
-    watcher = new DirectoryWatcher(Settings.DOCKER_PATH);
+    watcher = new DirectoryWatcher(".");
+    watcher.setDirectoryChangeEventListener(listener);
     watcher.start();
     Assert.assertNotNull(watcher);
 
     isCalled = false;
 
-    File file = new File(Settings.DOCKER_PATH + "TEST2.TXT");
+    File file = new File("./TEST2.TXT");
     try {
       file.createNewFile();
     } catch (IOException e) {
