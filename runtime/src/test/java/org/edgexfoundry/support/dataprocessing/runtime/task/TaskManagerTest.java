@@ -16,36 +16,49 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.io.IOUtils;
-import org.junit.AfterClass;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.spy;
+
+import java.lang.reflect.Field;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.mockito.InjectMocks;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-// Try to make a class which extends TaskTableManager
-// to handle all methods called in this test
-// Then, inject that class into TaskManager member.
-@PowerMockIgnore("javax.net.ssl.*")
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
+@PrepareForTest({TaskManager.class, WorkflowTableManager.class})
 public class TaskManagerTest {
 
   @Test
-  public void test(){
-    System.out.println("Pass");
+  public void testInitialize() throws Exception {
+    TaskManager taskManager = createTaskManager();
+    // normal
+    taskManager.initialize();
+    Assert.assertNotNull(taskManager);
+  }
+
+  @Test
+  public void testTerminate() throws Exception {
+    TaskManager taskManager = createTaskManager();
+    taskManager.terminate();
+  }
+
+  private TaskManager createTaskManager() throws Exception {
+    TaskManager taskManager = spy(TaskManager.getInstance());
+    DirectoryWatcher directoryWatcher = mock(DirectoryWatcher.class);
+    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+
+    Field workflowTableManagerField = TaskManager.class.getDeclaredField("workflowTableManager");
+    workflowTableManagerField.setAccessible(true);
+    workflowTableManagerField.set(taskManager, workflowTableManager);
+
+    Field directoryWatcherField = TaskManager.class.getDeclaredField("directoryWatcher");
+    directoryWatcherField.setAccessible(true);
+    directoryWatcherField.set(taskManager, directoryWatcher);
+
+    return taskManager;
   }
   /*
   @InjectMocks
