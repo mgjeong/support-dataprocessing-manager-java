@@ -2,7 +2,6 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
@@ -32,10 +31,8 @@ public class JobController extends AbstractController {
   private JobTableManager jobTableManager = null;
 
   public JobController() {
-    this.workflowTableManager = new WorkflowTableManager(
-        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
-    this.jobTableManager = new JobTableManager(
-        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+    this.workflowTableManager = WorkflowTableManager.getInstance();
+    this.jobTableManager = JobTableManager.getInstance();
   }
 
   @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")

@@ -31,7 +31,13 @@ public class WorkflowTableManagerTest extends DatabaseTest {
 
   @BeforeClass
   public static void setup() throws Exception {
-    workflowTable = new WorkflowTableManager("jdbc:sqlite:" + testDB.getPath());
+    workflowTable = WorkflowTableManager.getInstance();
+    java.lang.reflect.Field databaseField = AbstractStorageManager.class
+        .getDeclaredField("database");
+    databaseField.setAccessible(true);
+    databaseField.set(workflowTable,
+        DatabaseManager.getInstance().getDatabase("jdbc:sqlite:" + testDB.getAbsolutePath()));
+
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
     Resource resource = loader.getResource("db/sqlite/create_tables.sql");
     workflowTable.executeSqlScript(resource);

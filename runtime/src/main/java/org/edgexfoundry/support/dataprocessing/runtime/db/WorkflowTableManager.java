@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
@@ -30,7 +31,16 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 
 public final class WorkflowTableManager extends AbstractStorageManager {
 
-  public WorkflowTableManager(String jdbcUrl) {
+  private static WorkflowTableManager instance = null;
+
+  public static synchronized WorkflowTableManager getInstance() {
+    if (instance == null) {
+      instance = new WorkflowTableManager(Settings.JDBC_PATH);
+    }
+    return instance;
+  }
+
+  private WorkflowTableManager(String jdbcUrl) {
     super(jdbcUrl);
   }
 
@@ -78,7 +88,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflow workflow to add
    * @return workflow with a new id assigned
    */
-  public Workflow addWorkflow(Workflow workflow) {
+  public synchronized Workflow addWorkflow(Workflow workflow) {
     if (workflow == null) {
       throw new RuntimeException("Workflow is null.");
     }
@@ -125,7 +135,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflow workflow to update
    * @return updated workflow
    */
-  public Workflow addOrUpdateWorkflow(Long workflowId, Workflow workflow) {
+  public synchronized Workflow addOrUpdateWorkflow(Long workflowId, Workflow workflow) {
     if (workflow == null || workflowId == null) {
       throw new RuntimeException("Workflow or id is null.");
     }
@@ -190,7 +200,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param editorMetadata new workflow editor metadata
    * @return inserted workflow editor metadata
    */
-  public WorkflowEditorMetadata addWorkflowEditorMetadata(WorkflowEditorMetadata editorMetadata) {
+  public synchronized WorkflowEditorMetadata addWorkflowEditorMetadata(
+      WorkflowEditorMetadata editorMetadata) {
     if (editorMetadata == null) {
       throw new RuntimeException("Workflow editor metadata is null.");
     }
@@ -229,7 +240,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param editorMetadata updated editor metadata
    * @return updated editor metadata
    */
-  public WorkflowEditorMetadata addOrUpdateWorkflowEditorMetadata(
+  public synchronized WorkflowEditorMetadata addOrUpdateWorkflowEditorMetadata(
       Long workflowId,
       WorkflowEditorMetadata editorMetadata) {
     if (workflowId == null || editorMetadata == null) {
@@ -269,7 +280,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    *
    * @param workflowId workflow id
    */
-  public Workflow removeWorkflow(Long workflowId) {
+  public synchronized Workflow removeWorkflow(Long workflowId) {
     if (workflowId == null) {
       throw new RuntimeException("Workflow id is null.");
     }
@@ -338,7 +349,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    *
    * @param workflowId workflow id
    */
-  public void removeWorkflowEditorMetadata(Long workflowId) {
+  public synchronized void removeWorkflowEditorMetadata(Long workflowId) {
     if (workflowId == null) {
       throw new RuntimeException("Workflow id is null.");
     }
@@ -394,7 +405,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param bundle bundle to insert
    * @return inserted bundle with id assigned
    */
-  public WorkflowComponentBundle addWorkflowComponentBundle(WorkflowComponentBundle bundle) {
+  public synchronized WorkflowComponentBundle addWorkflowComponentBundle(
+      WorkflowComponentBundle bundle) {
     if (bundle == null) {
       throw new RuntimeException("Workflow component bundle is null.");
     }
@@ -446,7 +458,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param bundle bundle to update
    * @return updated bundle
    */
-  public WorkflowComponentBundle addOrUpdateWorkflowComponentBundle(
+  public synchronized WorkflowComponentBundle addOrUpdateWorkflowComponentBundle(
       WorkflowComponentBundle bundle) {
     if (bundle == null) {
       throw new RuntimeException("Workflow component bundle is null.");
@@ -513,7 +525,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    *
    * @param workflowComponentBundleId bundle id to remove
    */
-  public void removeWorkflowComponentBundle(Long workflowComponentBundleId) {
+  public synchronized void removeWorkflowComponentBundle(Long workflowComponentBundleId) {
     if (workflowComponentBundleId == null) {
       throw new RuntimeException("Workflow component bundle id is null.");
     }
@@ -587,7 +599,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowStream workflow stream
    * @return workflow stream with updated id
    */
-  public WorkflowStream addWorkflowStream(WorkflowStream workflowStream) {
+  public synchronized WorkflowStream addWorkflowStream(WorkflowStream workflowStream) {
     if (workflowStream == null) {
       throw new RuntimeException("WorkflowStream is null.");
     }
@@ -638,7 +650,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param stream workflow stream to update
    * @return updated workflow stream
    */
-  public WorkflowStream addOrUpdateWorkflowStream(Long workflowStreamId, WorkflowStream stream) {
+  public synchronized WorkflowStream addOrUpdateWorkflowStream(Long workflowStreamId,
+      WorkflowStream stream) {
     if (stream == null) {
       throw new RuntimeException("Workflow stream is null.");
     }
@@ -691,7 +704,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @return removed workflow stream
    */
 
-  public WorkflowStream removeWorkflowStream(Long workflowId, Long streamId) {
+  public synchronized WorkflowStream removeWorkflowStream(Long workflowId, Long streamId) {
     if (workflowId == null || streamId == null) {
       throw new RuntimeException("Workflow id or stream id is null.");
     }
@@ -779,7 +792,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowEdge workflow edge to add
    * @return updated workflow edge
    */
-  public WorkflowEdge addWorkflowEdge(Long workflowId, WorkflowEdge workflowEdge) {
+  public synchronized WorkflowEdge addWorkflowEdge(Long workflowId, WorkflowEdge workflowEdge) {
     if (workflowId == null || workflowEdge == null) {
       throw new RuntimeException("Workflow id or edge is null.");
     }
@@ -832,7 +845,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowEdge edge
    * @return updated workflow edge
    */
-  public WorkflowEdge addOrUpdateWorkflowEdge(Long workflowId, Long workflowEdgeId,
+  public synchronized WorkflowEdge addOrUpdateWorkflowEdge(Long workflowId, Long workflowEdgeId,
       WorkflowEdge workflowEdge) {
     if (workflowId == null || workflowEdgeId == null || workflowEdge == null) {
       throw new RuntimeException("Workflow id, edge id or edge is null.");
@@ -870,7 +883,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
   }
 
-  private void removeWorkflowComponentEdges(Long workflowId, Long componentId) {
+  private synchronized void removeWorkflowComponentEdges(Long workflowId, Long componentId) {
     if (workflowId == null || componentId == null) {
       throw new RuntimeException("Workflow id or component id is null.");
     }
@@ -901,7 +914,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowId workflow id
    * @param edgeId edge id
    */
-  public WorkflowEdge removeWorkflowEdge(Long workflowId, Long edgeId) {
+  public synchronized WorkflowEdge removeWorkflowEdge(Long workflowId, Long edgeId) {
     if (workflowId == null || edgeId == null) {
       throw new RuntimeException("Workflow id or edge id is null.");
     }
@@ -991,7 +1004,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowComponent workflow component to insert
    * @return updated workflow component
    */
-  public <T extends WorkflowComponent> T addWorkflowComponent(Long workflowId,
+  public synchronized <T extends WorkflowComponent> T addWorkflowComponent(Long workflowId,
       WorkflowComponent workflowComponent) {
     if (workflowId == null || workflowComponent == null) {
       throw new RuntimeException("Either workflow id or component is null.");
@@ -1072,7 +1085,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowComponent workflow component to update
    * @return updated workflow component
    */
-  public <T extends WorkflowComponent> T addOrUpdateWorkflowComponent(Long workflowId,
+  public synchronized <T extends WorkflowComponent> T addOrUpdateWorkflowComponent(Long workflowId,
       Long workflowComponentId,
       WorkflowComponent workflowComponent) {
     if (workflowId == null || workflowComponentId == null || workflowComponent == null) {
@@ -1148,7 +1161,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
    * @param workflowComponentId component id
    */
 
-  public <T extends WorkflowComponent> T removeWorkflowComponent(Long workflowId,
+  public synchronized <T extends WorkflowComponent> T removeWorkflowComponent(Long workflowId,
       Long workflowComponentId) {
     if (workflowId == null || workflowComponentId == null) {
       throw new RuntimeException("Workflow id or component id is null.");

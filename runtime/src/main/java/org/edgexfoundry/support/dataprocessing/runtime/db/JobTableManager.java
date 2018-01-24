@@ -6,12 +6,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 
 public class JobTableManager extends AbstractStorageManager {
 
-  public JobTableManager(String jdbcUrl) {
+  private static JobTableManager instance = null;
+
+  public static synchronized JobTableManager getInstance() {
+    if (instance == null) {
+      instance = new JobTableManager(Settings.JDBC_PATH);
+    }
+    return instance;
+  }
+
+  private JobTableManager(String jdbcUrl) {
     super(jdbcUrl);
   }
 
@@ -44,8 +54,8 @@ public class JobTableManager extends AbstractStorageManager {
       throw new RuntimeException(e);
     }
   }
-
-  public JobState addOrUpdateWorkflowJobState(String jobId, JobState jobState) {
+  
+  public synchronized JobState addOrUpdateWorkflowJobState(String jobId, JobState jobState) {
     if (jobId == null || jobState == null) {
       throw new RuntimeException("Job id or job state is null.");
     }
@@ -78,7 +88,7 @@ public class JobTableManager extends AbstractStorageManager {
     }
   }
 
-  public Job addOrUpdateWorkflowJob(Job job) {
+  public synchronized Job addOrUpdateWorkflowJob(Job job) {
     if (job == null) {
       throw new RuntimeException("Workflow job is null.");
     }
@@ -201,7 +211,7 @@ public class JobTableManager extends AbstractStorageManager {
     }
   }
 
-  public void removeWorkflowJob(String jobId) {
+  public synchronized void removeWorkflowJob(String jobId) {
     if (jobId == null) {
       throw new RuntimeException("Workflow job id is null.");
     }
