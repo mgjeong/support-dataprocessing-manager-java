@@ -18,7 +18,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import io.swagger.annotations.Api;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,14 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class TaskController extends AbstractController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
-  private TaskManager taskManager;
 
   public TaskController() {
-    try {
-      taskManager = TaskManager.getInstance();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 /*
   @ApiOperation(value = "Add New Custom Task", notes = "Add New Custom Task")
