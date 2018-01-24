@@ -14,8 +14,13 @@ public class JobTableManagerTest extends DatabaseTest {
   private static JobTableManager jobTable;
 
   @BeforeClass
-  public static void setup() {
-    jobTable = new JobTableManager("jdbc:sqlite:" + testDB.getPath());
+  public static void setup() throws Exception {
+    jobTable = JobTableManager.getInstance();
+    java.lang.reflect.Field databaseField = AbstractStorageManager.class.getDeclaredField("database");
+    databaseField.setAccessible(true);
+    databaseField.set(jobTable,
+        DatabaseManager.getInstance().getDatabase("jdbc:sqlite:" + testDB.getAbsolutePath()));
+
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
     Resource resource = loader.getResource("db/sqlite/create_tables.sql");
     jobTable.executeSqlScript(resource);

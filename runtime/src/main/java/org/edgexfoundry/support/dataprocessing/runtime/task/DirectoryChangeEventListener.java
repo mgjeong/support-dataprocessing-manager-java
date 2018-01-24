@@ -20,7 +20,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFor
 
 public interface DirectoryChangeEventListener {
 
-    ErrorFormat fileCreatedEventReceiver(String fileName);
+  ErrorFormat fileCreatedEventReceiver(String fileName);
 
-    ErrorFormat fileRemovedEventReceiver(String fileName);
+  ErrorFormat fileRemovedEventReceiver(String fileName);
 }
