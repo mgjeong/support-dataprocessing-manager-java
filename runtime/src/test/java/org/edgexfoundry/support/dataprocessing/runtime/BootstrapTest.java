@@ -10,7 +10,7 @@ public class BootstrapTest {
 
   private static WorkflowTableManager workflowTableManager;
 
-  private static File dbFile = new File("./" + Settings.DB_TEST_PATH);
+  private static File dbFile = new File("./bootstrap_test.db");
 
   @BeforeClass
   public static void initialize() {

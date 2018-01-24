@@ -400,14 +400,13 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO workflow_component_bundle "
-        + "(name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
+        + "(name, type, subType, streamingEngine, path, classname, param, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
             bundle.getName(), bundle.getType().name(), bundle.getSubType(),
             bundle.getStreamingEngine(),
             bundle.getBundleJar(), bundle.getTransformationClass(),
-            bundle.getWorkflowComponentUISpecification().toString(),
             bundle.getWorkflowComponentUISpecification().toString(),
             bundle.isBuiltin() ? "0" : "1")) {
       boolean oldState = connection.getAutoCommit();
@@ -454,7 +453,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT OR REPLACE INTO workflow_component_bundle "
-        + "(id, name, type, subType, streamingEngine, path, classname, param, componentUISpecification, removable) "
+        + "(id, name, type, subType, streamingEngine, path, classname, param, removable) "
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
@@ -462,7 +461,6 @@ public final class WorkflowTableManager extends AbstractStorageManager {
             bundle.getName(), bundle.getType().name(), bundle.getSubType(),
             bundle.getStreamingEngine(),
             bundle.getBundleJar(), bundle.getTransformationClass(),
-            bundle.getWorkflowComponentUISpecification().toString(),
             bundle.getWorkflowComponentUISpecification().toString(),
             bundle.isBuiltin() ? '0' : '1')) {
       boolean oldState = connection.getAutoCommit();
