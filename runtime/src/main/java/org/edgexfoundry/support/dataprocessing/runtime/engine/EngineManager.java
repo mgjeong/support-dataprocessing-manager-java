@@ -3,6 +3,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ public final class EngineManager {
   private static HashMap<String, Engine> engines = new HashMap<String, Engine>();
 
 
-  public static Engine getEngine(String host, EngineType engineType) {
+  public static Engine getEngine(String host, WorkflowData.EngineType engineType) {
     Engine engine = engines.get(host);
 
     if (null == engine) {
@@ -26,7 +27,7 @@ public final class EngineManager {
   }
 
 
-  private static Engine createEngine(EngineType engineType, String host) {
+  private static Engine createEngine(WorkflowData.EngineType engineType, String host) {
 
     Engine engine = null;
 

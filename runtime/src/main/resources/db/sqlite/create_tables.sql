@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS `workflow_component_bundle` (
   `path` TEXT NOT NULL,
   `classname` TEXT NOT NULL,
   `param` TEXT NOT NULL,
-  `componentUISpecification` TEXT NOT NULL,
   `removable` CHAR(1) NOT NULL DEFAULT '0'
 );
 

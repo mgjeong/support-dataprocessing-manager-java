@@ -1,5 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 
@@ -112,7 +113,10 @@ public class MonitoringManager implements Runnable {
 
           for(JobState state : jobStates) {
             try {
-              JobTableManager.getInstance().updateWorkflowJobState(state);
+//              JobTableManager.getInstance().updateWorkflowJobState(state);
+              JobTableManager jobTableManager = new JobTableManager(
+                      "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+              jobTableManager.updateWorkflowJobState(state);
             } catch (Exception e) {
               e.printStackTrace();
             }

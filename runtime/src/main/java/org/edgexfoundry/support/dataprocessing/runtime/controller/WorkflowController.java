@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.Part;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
@@ -43,12 +43,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/catalog")
 public class WorkflowController extends AbstractController {
 
+  private final transient ObjectMapper mapper = new ObjectMapper();
+
   private WorkflowTableManager workflowTableManager = null;
+
+  /**
+   * Use getter to access edge info, as it is initialized lazily.
+   */
   private EdgeInfo edgeInfo = null;
 
   public WorkflowController() {
-    this.workflowTableManager = WorkflowTableManager.getInstance();
-    this.edgeInfo = new EdgeInfo();
+    this.workflowTableManager = new WorkflowTableManager(
+        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+  }
+
+  // Lazy edge info initialization
+  private synchronized EdgeInfo getEdgeInfo() {
+    if (edgeInfo == null) {
+      edgeInfo = new EdgeInfo();
+    }
+    return edgeInfo;
   }
 
   @ApiOperation(value = "Get workflows", notes = "Returns a list of all workflows.")
@@ -85,7 +99,7 @@ public class WorkflowController extends AbstractController {
     Workflow workflow = this.workflowTableManager.getWorkflow(workflowId);
     if (workflow == null) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, "Workflow does not exist."),
-          HttpStatus.NOT_FOUND);
+          HttpStatus.OK);
     }
 
     if (detail != null && detail) {
@@ -113,6 +127,10 @@ public class WorkflowController extends AbstractController {
   public ResponseEntity listWorkflowComponentBundles(
       @PathVariable("component") WorkflowComponentBundleType componentType
   ) {
+    if (componentType == null) {
+      return respondEntity(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS), HttpStatus.OK);
+    }
+
     switch (componentType) {
       case SOURCE:
         return listWorkflowComponentSourceBundles();
@@ -126,7 +144,7 @@ public class WorkflowController extends AbstractController {
         return listWorkflowComponentLinkBundles();
       default:
         return respondEntity(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS),
-            HttpStatus.BAD_REQUEST);
+            HttpStatus.OK);
     }
   }
 
@@ -435,12 +453,12 @@ public class WorkflowController extends AbstractController {
   public ResponseEntity importWorkflow(@RequestParam("file") Part part,
       @RequestParam("workflowName") final String workflowName) {
     try {
-      WorkflowData workflowData = new ObjectMapper()
+      WorkflowData workflowData = this.mapper
           .readValue(part.getInputStream(), WorkflowData.class);
       Workflow imported = this.workflowTableManager
           .importWorkflow(workflowName, workflowData);
       return respond(imported, HttpStatus.OK);
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -450,7 +468,7 @@ public class WorkflowController extends AbstractController {
   @ApiOperation(value = "Get edge group list", notes = "Get edge group list")
   @RequestMapping(value = "/edge/groups", method = RequestMethod.GET)
   public ResponseEntity getGroupList() {
-    return respondEntity(edgeInfo.getGroupList(), HttpStatus.OK);
+    return respondEntity(getEdgeInfo().getGroupList(), HttpStatus.OK);
   }
 
   @ApiOperation(value = "Get engine list", notes = "Get engine list")
@@ -460,9 +478,9 @@ public class WorkflowController extends AbstractController {
     List<String> engineList;
 
     if (engineType == null) {
-      engineList = edgeInfo.getEngineList(groupId, "ANY");
+      engineList = getEdgeInfo().getEngineList(groupId, "ANY");
     } else {
-      engineList = edgeInfo.getEngineList(groupId, engineType);
+      engineList = getEdgeInfo().getEngineList(groupId, engineType);
     }
 
     JsonArray response = new JsonArray();
@@ -475,7 +493,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentWorkflowBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> workflows
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.WORKFLOW);
@@ -483,7 +500,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentLinkBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> workflows
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.LINK);
@@ -491,7 +507,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentProcessorBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> processors
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.PROCESSOR);
@@ -499,7 +514,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentSinkBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> sinks
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.SINK);
@@ -507,7 +521,6 @@ public class WorkflowController extends AbstractController {
   }
 
   private ResponseEntity listWorkflowComponentSourceBundles() {
-    // TEMP
     Collection<WorkflowComponentBundle> sources
         = this.workflowTableManager
         .listWorkflowComponentBundles(WorkflowComponentBundleType.SOURCE);

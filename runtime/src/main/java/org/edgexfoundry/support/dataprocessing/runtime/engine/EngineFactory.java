@@ -16,22 +16,23 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 
 public class EngineFactory {
 
-    public static Engine createEngine(EngineType engineType, String host, Integer port) {
+    public static Engine createEngine(WorkflowData.EngineType engineType, String host, Integer port) {
         final Engine engine;
 
         switch (engineType) {
-            case Flink:
+            case FLINK:
                 engine = new FlinkEngine(host, port);
                 break;
-            case Kapacitor:
+            case KAPACITOR:
                 engine = new KapacitorEngine(host, port);
                 break;
-            case Spark: // TODO
+//            case Spark: // TODO
             default:
                 throw new RuntimeException("Unsupported engine type selected.");
         }

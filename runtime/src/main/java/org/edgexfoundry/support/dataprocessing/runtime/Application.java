@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import java.io.File;
-import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
@@ -26,7 +24,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 
-import javax.management.monitor.Monitor;
+import java.io.File;
 
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
@@ -53,7 +51,7 @@ public class Application extends SpringBootServletInitializer {
     File db = new File(Settings.DOCKER_PATH + Settings.DB_PATH);
     if (!db.exists()) {
       LOGGER.info("Executing bootstrap on {}", Settings.DOCKER_PATH + Settings.DB_PATH);
-      Bootstrap bootstrap = new Bootstrap();
+      Bootstrap bootstrap = new Bootstrap("jdbc:sqlite:" + db.getAbsolutePath());
       bootstrap.execute();
     }
   }
@@ -87,8 +85,6 @@ public class Application extends SpringBootServletInitializer {
   }
 
   private static void terminate() {
-    WorkflowTableManager.getInstance().terminate();
-
     TaskManager.getInstance().terminate();
 
     try {

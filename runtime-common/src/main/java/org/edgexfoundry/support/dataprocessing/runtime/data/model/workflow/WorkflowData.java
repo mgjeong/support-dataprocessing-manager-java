@@ -25,6 +25,7 @@ public class WorkflowData {
   private WorkflowEditorMetadata workflowEditorMetadata;
 
   // Make it transient so that gson does not parse this
+  @JsonIgnore
   private transient final ObjectMapper mapper = new ObjectMapper();
 
   public enum EngineType {

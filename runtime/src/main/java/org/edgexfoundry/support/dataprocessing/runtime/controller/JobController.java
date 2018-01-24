@@ -2,8 +2,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.util.Collection;
-import java.util.stream.Collectors;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
@@ -14,16 +13,14 @@ import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -35,8 +32,10 @@ public class JobController extends AbstractController {
   private JobTableManager jobTableManager = null;
 
   public JobController() {
-    this.workflowTableManager = WorkflowTableManager.getInstance();
-    this.jobTableManager = JobTableManager.getInstance();
+    this.workflowTableManager = new WorkflowTableManager(
+        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
+    this.jobTableManager = new JobTableManager(
+        "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
   }
 
   @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")
@@ -63,7 +62,7 @@ public class JobController extends AbstractController {
     workflowData.getConfig().put("targetHost", targetHost);
     String[] splits = targetHost.split(":");
 //    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-    Engine engine = EngineManager.getEngine(targetHost, EngineType.Flink);
+    Engine engine = EngineManager.getEngine(targetHost, workflowData.getEngineType());
 
     Job job;
     try {
@@ -81,6 +80,17 @@ public class JobController extends AbstractController {
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
           HttpStatus.OK);
+    }
+  }
+
+  protected Engine createEngine(String targetHost, WorkflowData.EngineType engineType) {
+    String[] splits = targetHost.split(":");
+    if (engineType == WorkflowData.EngineType.FLINK) {
+      return new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    } else if (engineType == WorkflowData.EngineType.KAPACITOR) {
+      return new KapacitorEngine(splits[0], Integer.parseInt(splits[1]));
+    } else {
+      throw new RuntimeException("Unsupported operation.");
     }
   }
 
@@ -107,12 +117,11 @@ public class JobController extends AbstractController {
   @ApiOperation(value = "Stop job", notes = "Stop job")
   @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
   public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
-      @PathVariable("jobId") String jobId, RedirectAttributes redirectAttributes) {
+      @PathVariable("jobId") String jobId) {
     try {
-      Job job = jobTableManager.getWorkflowJob(workflowId, jobId);
+      Job job = jobTableManager.getWorkflowJob(jobId);
       String targetHost = job.getConfig("targetHost");
-      String[] splits = targetHost.split(":");
-      FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+      Engine engine = createEngine(targetHost, WorkflowData.EngineType.FLINK);
 
       try {
         job = engine.stop(job);
