@@ -22,6 +22,9 @@ public class WorkflowDetailed extends Format {
   }
 
   public void setWorkflow(Workflow workflow) {
+    if (workflow == null) {
+      throw new RuntimeException("Invalid workflow");
+    }
     this.workflow = workflow;
   }
 
@@ -30,6 +33,9 @@ public class WorkflowDetailed extends Format {
   }
 
   public void setRunning(RunningStatus running) {
+    if (running == null) {
+      throw new RuntimeException("Invalid running status");
+    }
     this.running = running;
   }
 }

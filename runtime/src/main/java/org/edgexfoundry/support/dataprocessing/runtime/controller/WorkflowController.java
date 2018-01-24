@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.EngineTypeResponse;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
@@ -415,30 +414,6 @@ public class WorkflowController extends AbstractController {
       @PathVariable("streamId") Long streamId) {
     WorkflowStream removed = this.workflowTableManager.removeWorkflowStream(workflowId, streamId);
     return respond(removed, HttpStatus.OK);
-  }
-
-  @ApiOperation(value = "Check workflow whether unique engine type", notes = "Check workflow whether unique engine type")
-  @RequestMapping(value = "/workflows/{workflowId}/actions/enginetype", method = RequestMethod.GET)
-  public ResponseEntity checkEngineType(@PathVariable("workflowId") Long workflowId) {
-    Workflow result = this.workflowTableManager.getWorkflow(workflowId);
-    WorkflowData workflowData = this.workflowTableManager.doExportWorkflow(result);
-    WorkflowData.EngineType engineType = workflowData.getEngineType();
-
-    if (engineType == WorkflowData.EngineType.FLINK
-        || engineType == WorkflowData.EngineType.KAPACITOR) {
-      EngineTypeResponse engineTypeResponse = null;
-      if (engineType == WorkflowData.EngineType.FLINK) {
-        engineTypeResponse = new EngineTypeResponse("flink");
-      } else {
-        engineTypeResponse = new EngineTypeResponse("kapacitor");
-      }
-      return respond(engineTypeResponse, HttpStatus.OK);
-    } else {
-      return respond(
-          new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_TYPE,
-              "Query and Algorithm task can not be in the same workflow"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 
   @ApiOperation(value = "Export workflow", notes = "Exports a workflow")
