@@ -3,25 +3,22 @@ package org.edgexfoundry.support.dataprocessing.runtime.db;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sqlite.SQLiteDataSource;
 
-public class SQLiteDatabaseTest {
+public class SQLiteDatabaseTest extends DatabaseTest {
 
   private static SQLiteDatabase database = new SQLiteDatabase();
-  private static File databaseFile = new File("./test.db");
 
   @BeforeClass
   public static void setupDatabase() {
-    database.initialize("jdbc:sqlite:" + databaseFile.getPath());
+    database.initialize("jdbc:sqlite:" + testDB.getPath());
   }
 
   @Test
@@ -73,13 +70,6 @@ public class SQLiteDatabaseTest {
     } catch (InterruptedException e) {
       e.printStackTrace();
       Assert.fail(e.getMessage());
-    }
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    if (databaseFile.exists()) {
-      databaseFile.delete();
     }
   }
 

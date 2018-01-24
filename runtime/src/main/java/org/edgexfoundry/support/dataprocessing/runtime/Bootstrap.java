@@ -146,7 +146,7 @@ public class Bootstrap {
   public void execute() throws Exception {
     createTablesIfNotExist();
 
-    addBuiltinWorkflowComponentBundles();
+    //addBuiltinWorkflowComponentBundles();
   }
 
   private void createTablesIfNotExist() {

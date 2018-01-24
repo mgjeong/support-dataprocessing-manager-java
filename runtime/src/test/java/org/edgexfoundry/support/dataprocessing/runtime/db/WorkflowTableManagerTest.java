@@ -1,6 +1,5 @@
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
-import java.io.File;
 import java.util.Collection;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
@@ -19,7 +18,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Field;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.SchemaType;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,16 +25,12 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
-public class WorkflowTableManagerTest {
+public class WorkflowTableManagerTest extends DatabaseTest {
 
   private static WorkflowTableManager workflowTable;
-  private static File testDB = new File("./workflow_table_test.db");
 
   @BeforeClass
   public static void setup() throws Exception {
-    if (testDB.exists()) {
-      throw new RuntimeException(testDB.getAbsolutePath() + " already exists!");
-    }
     workflowTable = new WorkflowTableManager("jdbc:sqlite:" + testDB.getPath());
     ResourceLoader loader = new DefaultResourceLoader(ClassLoader.getSystemClassLoader());
     Resource resource = loader.getResource("db/sqlite/create_tables.sql");
@@ -482,10 +476,4 @@ public class WorkflowTableManagerTest {
     componentUISpecification.addUIField(field);
   }
 
-  @AfterClass
-  public static void cleanup() throws Exception {
-    if (testDB.exists()) {
-      testDB.delete();
-    }
-  }
 }
