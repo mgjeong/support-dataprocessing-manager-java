@@ -12,14 +12,14 @@ public class EdgeInfo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EdgeInfo.class);
 
-  private RestClient restClient;
+  private PharosRestClient pharosRestClient;
 
   public EdgeInfo() {
-    restClient = new RestClient();
+    pharosRestClient = new PharosRestClient();
   }
 
   public List<Map<String, String>> getGroupList() {
-    List<String> groupIdList = restClient.getGroupList();
+    List<String> groupIdList = pharosRestClient.getGroupList();
     Iterator<String> iter = groupIdList.iterator();
 
     List<Map<String, String>> groupList = new ArrayList<Map<String, String>>();
@@ -39,42 +39,45 @@ public class EdgeInfo {
   }
 
   public List<String> getEngineList(String groupId, String engineType) {
-    List<String> edgeIdList = restClient.getEdgeIdList(groupId);
+    List<String> edgeIdList = pharosRestClient.getEdgeIdList(groupId);
     Iterator<String> iter = edgeIdList.iterator();
 
     List<String> engineList = new ArrayList<String>();
 
     while (iter.hasNext()) {
       String edgeId = iter.next();
-      Map<String, ?> edgeInfo = restClient.getEdgeInfo(edgeId);
+      Map<String, ?> edgeInfo = pharosRestClient.getEdgeInfo(edgeId);
 
       if (edgeInfo == null) {
         continue;
       }
 
-      List<String> apps = (List<String>) edgeInfo.get("apps");
+      List<String> apps = (List<String>) edgeInfo.get(PharosConstants.PHAROS_JSON_SCHEMA_APPS);
       Iterator<String> appIter = apps.iterator();
 
       while (appIter.hasNext()) {
         String appId = appIter.next();
 
-        List<String> services = restClient.getServiceList(edgeId, appId);
+        List<String> services = pharosRestClient.getServiceList(edgeId, appId);
         Iterator<String> serviceIter = services.iterator();
 
         while (serviceIter.hasNext()) {
           String service = serviceIter.next();
 
           if (engineType.equals("ANY") &&
-              (service.equals(PharosConstants.FLINK_NAME) || service
-                  .equals(PharosConstants.KAPACITOR_NAME))) {
-            engineList.add((String) edgeInfo.get("host"));
+              (service.equals(PharosConstants.FLINK_NAME) ||
+                  service.equals(PharosConstants.KAPACITOR_NAME))) {
+            engineList.add((String) edgeInfo.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME));
             break;
           } else if (engineType.equals("FLINK") && service.equals(PharosConstants.FLINK_NAME)) {
-            String flinkAddress = (String) edgeInfo.get("host");
+            String flinkAddress =
+                (String) edgeInfo.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME);
             engineList.add(flinkAddress + ":" + PharosConstants.FLINK_PORT);
             break;
-          } else if (engineType.equals("KAPACITOR") && service.equals(PharosConstants.KAPACITOR_NAME)) {
-            String kapacitorAddress = (String) edgeInfo.get("host");
+          } else if (engineType.equals("KAPACITOR") &&
+              service.equals(PharosConstants.KAPACITOR_NAME)) {
+            String kapacitorAddress =
+                (String) edgeInfo.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME);
             engineList.add(kapacitorAddress + ":" + PharosConstants.KAPACITOR_PORT);
             break;
           }
