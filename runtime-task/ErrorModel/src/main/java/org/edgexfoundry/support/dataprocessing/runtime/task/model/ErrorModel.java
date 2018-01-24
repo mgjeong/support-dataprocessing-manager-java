@@ -33,7 +33,6 @@ import java.util.List;
  * Computes Error <p> Flink requires this class to be serializable.
  */
 public class ErrorModel extends AbstractTaskModel {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorModel.class);
 
   private String algorithmType = null;
@@ -52,6 +51,7 @@ public class ErrorModel extends AbstractTaskModel {
 
   /**
    * @desc Get type of this model
+   * @return TaskType.ERROR
    */
   @Override
   public TaskType getType() {
@@ -60,6 +60,7 @@ public class ErrorModel extends AbstractTaskModel {
 
   /**
    * @desc Get name of this model
+   * @return "error"
    */
   @Override
   public String getName() {
@@ -68,6 +69,7 @@ public class ErrorModel extends AbstractTaskModel {
 
   /**
    * @desc Set parameters for this model
+   * @param params
    */
   @Override
   public void setParam(TaskModelParam params) {
@@ -97,6 +99,7 @@ public class ErrorModel extends AbstractTaskModel {
 
   /**
    * @desc Get default parameters for the reference
+   * @return TaskModelParam
    */
   @Override
   public TaskModelParam getDefaultParam() {
@@ -129,7 +132,6 @@ public class ErrorModel extends AbstractTaskModel {
       } else {
         LOGGER.error("Not Supporting Type : {}", this.algorithmType);
       }
-
     } else {
       LOGGER.error("Length Not Match - Target {}, Observe {}", targets.length, observe.length);
     }
@@ -137,7 +139,10 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Cacluate error value
+   * @desc Calculate error value
+   * @param in : Data in json format to be processed
+   * @param inRecordKeys : Target data key name
+   * @param outRecordKeys : Data key name for processing result
    */
   @Override
   public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {

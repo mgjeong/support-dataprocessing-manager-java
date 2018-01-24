@@ -96,6 +96,7 @@ public class ErrorModelTest {
     params.put("observation", "/records/FIELD1");
     TaskModelParam interval = new TaskModelParam();
     interval.put("data", 3);
+    interval.put("time", 3);
     params.put("interval", interval);
 
     model.setParam(params);
@@ -256,6 +257,120 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "me");
     params.put("observation", "/FIELD1");
+    TaskModelParam interval = new TaskModelParam();
+    interval.put("data", 3);
+    params.put("interval", interval);
+
+    ErrorModel model = new ErrorModel();
+    model.setParam(params);
+
+    for (int i = 0; i < records.length; i++) {
+
+      DataSet dataSet = DataSet.create();
+      dataSet.put("/FIELD2", (0.5*i));
+      dataSet.put("/FIELD2", (1.5*i));
+      dataSet.put("/FIELD3", (2.5*i));
+
+      dataSet = model.calculate(dataSet, target, output);
+
+      if (dataSet == null) {
+        System.out.println("ignored input " + i);
+      } else {
+        //System.out.println("Prediction : " + cls);
+        System.out.println(dataSet.toString());
+      }
+    }
+  }
+
+  @Test
+  public void testPredictionError() {
+    List<String> target = new ArrayList<>();
+    for (int index = 2; index <= 3; index++) {
+      //target.add("/FIELD"+index);
+      target.add("/FIELD" + index);
+    }
+
+    List<String> output = new ArrayList<>();
+    output.add("/Out1");
+    TaskModelParam params = new TaskModelParam();
+    params.put("type", "aa");
+    params.put("observation", "/FIELD1");
+    TaskModelParam interval = new TaskModelParam();
+    interval.put("data", 3);
+    params.put("interval", interval);
+
+    ErrorModel model = new ErrorModel();
+    model.setParam(params);
+
+    for (int i = 0; i < records.length; i++) {
+
+      DataSet dataSet = DataSet.create();
+      dataSet.put("/FIELD2", (0.5*i));
+      dataSet.put("/FIELD2", (1.5*i));
+      dataSet.put("/FIELD3", (2.5*i));
+
+      dataSet = model.calculate(dataSet, target, output);
+
+      if (dataSet == null) {
+        System.out.println("ignored input " + i);
+      } else {
+        //System.out.println("Prediction : " + cls);
+        System.out.println(dataSet.toString());
+      }
+    }
+  }
+
+  @Test
+  public void testPredictionError2() {
+    List<String> target = new ArrayList<>();
+    for (int index = 2; index <= 3; index++) {
+      //target.add("/FIELD"+index);
+      target.add("/records/FIELD" + index);
+    }
+
+    List<String> output = new ArrayList<>();
+    output.add("/Out1");
+    TaskModelParam params = new TaskModelParam();
+    params.put("type", "aa");
+    params.put("observation", "/FIELD10");
+    TaskModelParam interval = new TaskModelParam();
+    interval.put("data", 3);
+    params.put("interval", interval);
+
+    ErrorModel model = new ErrorModel();
+    model.setParam(params);
+
+    for (int i = 0; i < records.length; i++) {
+
+      DataSet dataSet = DataSet.create();
+      dataSet.put("/FIELD2", (0.5*i));
+      dataSet.put("/FIELD2", (1.5*i));
+      dataSet.put("/FIELD3", (2.5*i));
+
+      dataSet = model.calculate(dataSet, target, output);
+
+      if (dataSet == null) {
+        System.out.println("ignored input " + i);
+      } else {
+        //System.out.println("Prediction : " + cls);
+        System.out.println(dataSet.toString());
+      }
+    }
+  }
+
+  @Test
+  public void testPredictionError3() {
+    List<String> target = new ArrayList<>();
+    for (int index = 2; index <= 3; index++) {
+      //target.add("/FIELD"+index);
+      target.add("/records/FIELD" + (index+10));
+    }
+
+    List<String> output = new ArrayList<>();
+    output.add("/Out1");
+    TaskModelParam params = new TaskModelParam();
+    params.put("type", "aa");
+    params.put("observation", "/FIELD10");
     TaskModelParam interval = new TaskModelParam();
     interval.put("data", 3);
     params.put("interval", interval);
