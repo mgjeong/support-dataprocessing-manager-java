@@ -19,7 +19,7 @@ public class BootstrapTest {
     }
     //workflowTableManager = WorkflowTableManager.getInstance();
     //workflowTableManager.initialize("jdbc:sqlite:" + dbFile.getAbsolutePath());
-    workflowTableManager = new WorkflowTableManager("jdbc:sqlite:" + dbFile.getAbsolutePath());
+    //workflowTableManager = new WorkflowTableManager("jdbc:sqlite:" + dbFile.getAbsolutePath());
   }
 
   @Test

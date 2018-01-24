@@ -401,7 +401,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "INSERT INTO workflow_component_bundle "
         + "(name, type, subType, streamingEngine, path, classname, param, removable) "
-        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
             bundle.getName(), bundle.getType().name(), bundle.getSubType(),
@@ -454,7 +454,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "INSERT OR REPLACE INTO workflow_component_bundle "
         + "(id, name, type, subType, streamingEngine, path, classname, param, removable) "
-        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
             bundle.getId(),
@@ -1213,7 +1213,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     bundle.setSubType(rs.getString("subType"));
     bundle.setStreamingEngine(rs.getString("streamingEngine"));
 
-    String ui = rs.getString("componentUISpecification");
+    String ui = rs.getString("param");
     ComponentUISpecification uiSpecification = ComponentUISpecification
         .create(ui, ComponentUISpecification.class);
     bundle.setWorkflowComponentUISpecification(uiSpecification);
