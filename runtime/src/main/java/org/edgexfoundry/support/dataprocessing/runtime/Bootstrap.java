@@ -18,7 +18,7 @@ public class Bootstrap {
 
   private final WorkflowTableManager workflowTableManager;
 
-  public Bootstrap(String jdbcUrl) {
+  public Bootstrap() {
     workflowTableManager = WorkflowTableManager.getInstance();
   }
 
