@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 /*
 @WebAppConfiguration
 @PrepareForTest(TaskManager.class)
@@ -23,6 +26,12 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 @RunWith(PowerMockRunner.class)
 */
 public class TaskControllerTest {
+
+  @Test
+  public void testConstructor() {
+    TaskController taskController = new TaskController();
+    Assert.assertNotNull(taskController);
+  }
 
 /*
     private static MockMvc mockMvc;

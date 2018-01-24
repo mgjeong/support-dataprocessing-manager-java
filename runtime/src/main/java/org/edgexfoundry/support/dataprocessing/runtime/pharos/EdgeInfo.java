@@ -47,7 +47,14 @@ public class EdgeInfo {
   }
 
   public List<String> getEngineList(String groupId, String engineType) {
-    List<String> edgeIdList = restClient.getEdgeIdList(groupId);
+    List<String> edgeIdList;
+    try {
+      edgeIdList = restClient.getEdgeIdList(groupId);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      edgeIdList = new ArrayList<>();
+    }
+
     Iterator<String> iter = edgeIdList.iterator();
 
     List<String> engineList = new ArrayList<String>();

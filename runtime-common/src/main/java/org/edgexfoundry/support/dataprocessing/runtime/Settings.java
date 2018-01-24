@@ -24,8 +24,7 @@ public final class Settings {
   public static final String RESOURCE_PATH = DOCKER_PATH + "resource/";
 
   public static final String DB_PATH = "DPFW.db";
-  public static final String DB_TEST_PATH = "DPFW_TEST.db";
-  public static final String DB_CLASS = "org.sqlite.JDBC";
+  public static final String JDBC_PATH = "jdbc:sqlite:" + DOCKER_PATH + DB_PATH;
 
   private Settings() {
 

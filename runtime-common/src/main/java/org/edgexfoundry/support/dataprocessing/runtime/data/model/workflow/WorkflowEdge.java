@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
@@ -18,7 +18,7 @@ public class WorkflowEdge extends Format {
   private Long workflowId;
   private Long fromId;
   private Long toId;
-  private List<StreamGrouping> streamGroupings;
+  private List<StreamGrouping> streamGroupings = new ArrayList<>();
 
   public WorkflowEdge() {
 
@@ -62,7 +62,7 @@ public class WorkflowEdge extends Format {
 
   public void setStreamGroupings(
       List<StreamGrouping> streamGroupings) {
-    if(streamGroupings == null){
+    if (streamGroupings == null) {
       throw new RuntimeException("Invalid stream groupings");
     }
     this.streamGroupings = streamGroupings;

@@ -10,9 +10,12 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,7 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -56,10 +58,7 @@ public class JobController extends AbstractController {
 
     // Create
     String targetHost = (String) workflowData.getConfig().get("targetHost");
-    // targetHost = "localhost:8081";
-    workflowData.getConfig().put("targetHost", targetHost);
-    String[] splits = targetHost.split(":");
-    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    Engine engine = createEngine(targetHost, workflowData.getEngineType());
 
     Job job;
     try {
@@ -77,6 +76,17 @@ public class JobController extends AbstractController {
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
           HttpStatus.OK);
+    }
+  }
+
+  protected Engine createEngine(String targetHost, EngineType engineType) {
+    String[] splits = targetHost.split(":");
+    if (engineType == EngineType.FLINK) {
+      return new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    } else if (engineType == EngineType.KAPACITOR) {
+      return new KapacitorEngine(splits[0], Integer.parseInt(splits[1]));
+    } else {
+      throw new RuntimeException("Unsupported operation.");
     }
   }
 
@@ -103,12 +113,11 @@ public class JobController extends AbstractController {
   @ApiOperation(value = "Stop job", notes = "Stop job")
   @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
   public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
-      @PathVariable("jobId") String jobId, RedirectAttributes redirectAttributes) {
+      @PathVariable("jobId") String jobId) {
     try {
-      Job job = jobTableManager.getWorkflowJob(workflowId, jobId);
+      Job job = jobTableManager.getWorkflowJob(jobId);
       String targetHost = job.getConfig("targetHost");
-      String[] splits = targetHost.split(":");
-      FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+      Engine engine = createEngine(targetHost, EngineType.FLINK);
 
       try {
         job = engine.stop(job);
