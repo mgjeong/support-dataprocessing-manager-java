@@ -50,17 +50,17 @@ public class FlinkEngine extends AbstractEngine {
   private static final String DEFAULT_LAUNCHER_JAR_LOCATION = DEFAULT_JOB_JAR_LOCATION + "engine-flink.jar";
 
   private HTTP httpClient = null;
+
   private String host;
   private int port;
 
   public FlinkEngine(String host, int port) {
 
     setHost(host);
-    setFlinkPort(port);
+    setPort(port);
 
     this.httpClient = new HTTP();
     this.httpClient.initialize(host, port, "http");
-
   }
 
   private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) {
@@ -322,7 +322,7 @@ public class FlinkEngine extends AbstractEngine {
     return port;
   }
 
-  public void setFlinkPort(int port) {
+  public void setPort(int port) {
     this.port = port;
   }
 

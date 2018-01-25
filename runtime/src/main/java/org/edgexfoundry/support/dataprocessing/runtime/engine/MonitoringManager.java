@@ -32,7 +32,6 @@ public class MonitoringManager implements Runnable {
   }
 
   public static WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
-
     ArrayList<WorkflowMetric.GroupInfo> groups = new ArrayList<>();
     WorkflowMetric metrics = new WorkflowMetric();
 
