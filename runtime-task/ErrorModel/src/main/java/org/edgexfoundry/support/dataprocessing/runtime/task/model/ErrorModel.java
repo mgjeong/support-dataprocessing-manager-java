@@ -101,7 +101,6 @@ public class ErrorModel extends AbstractTaskModel {
    * @desc Get default parameters for the reference
    * @return TaskModelParam
    */
-  @Override
   public TaskModelParam getDefaultParam() {
     TaskModelParam params = new TaskModelParam();
     params.put("type", new String("mse"));

@@ -17,31 +17,40 @@
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.util.List;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 
 public abstract class AbstractTaskModel implements TaskModel {
-    private List<String> inRecordKeys;
-    private List<String> outRecordKeys;
 
-    /**
-     * This default constructor (with no argument) is required for dynamic instantiation from TaskFactory.
-     */
-    public AbstractTaskModel() { }
+  @TaskParam(key = "inrecord", uiName = "In records",
+      uiType = UiFieldType.ARRAYSTRING, tooltip = "Enter in records")
+  private List<String> inRecordKeys;
+  @TaskParam(key = "outrecord", uiName = "Out records",
+      uiType = UiFieldType.ARRAYSTRING, tooltip = "Enter out records")
+  private List<String> outRecordKeys;
 
-    @Override
-    public void setInRecordKeys(List<String> inRecordKeys) {
-        this.inRecordKeys = inRecordKeys;
-    }
+  /**
+   * This default constructor (with no argument) is required for dynamic instantiation from
+   * TaskFactory.
+   */
+  public AbstractTaskModel() {
+  }
 
-    @Override
-    public void setOutRecordKeys(List<String> outRecordKeys) {
-        this.outRecordKeys = outRecordKeys;
-    }
+  @Override
+  public void setInRecordKeys(List<String> inRecordKeys) {
+    this.inRecordKeys = inRecordKeys;
+  }
 
-    @Override
-    public DataSet calculate(DataSet in) {
-        return calculate(in, this.inRecordKeys, this.outRecordKeys);
+  @Override
+  public void setOutRecordKeys(List<String> outRecordKeys) {
+    this.outRecordKeys = outRecordKeys;
+  }
 
-    }
+  @Override
+  public DataSet calculate(DataSet in) {
+    return calculate(in, this.inRecordKeys, this.outRecordKeys);
 
-    public abstract DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys);
+  }
+
+  public abstract DataSet calculate(DataSet in, List<String> inRecordKeys,
+      List<String> outRecordKeys);
 }

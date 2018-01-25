@@ -18,11 +18,11 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
@@ -33,7 +33,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,51 +174,56 @@ public final class TaskManager implements DirectoryChangeEventListener {
 
     // UI component
     ComponentUISpecification uiSpecification = new ComponentUISpecification();
-    TaskModelParam params = model.getDefaultParam();
-    for (Map.Entry<String, Object> param : params.entrySet()) {
-      // recursively add ui field
-      addTaskUIField(param.getKey(), param.getValue(), uiSpecification);
+    List<Field> fields = new ArrayList<>();
+
+    Class clazz = model.getClass();
+    do {
+      Field[] declaredFields = clazz.getDeclaredFields();
+      for (Field declaredField : declaredFields) {
+        if (declaredField.isAnnotationPresent(TaskParam.class)) {
+          fields.add(declaredField);
+        }
+      }
+
+      Class newClazz = clazz.getSuperclass();
+      if (clazz == newClazz) {
+        break;
+      } else {
+        clazz = newClazz;
+      }
+    } while (clazz != null);
+
+    for (Field field : fields) {
+      TaskParam taskParam = field.getAnnotation(TaskParam.class);
+      UIField uiField = makeUIField(field, taskParam);
+      if (uiField != null) {
+        uiSpecification.addUIField(uiField);
+      }
     }
-
-    // Add inrecord, outrecord
-    UIField inrecord = new UIField();
-    inrecord.setUiName("inrecord");
-    inrecord.setFieldName("inrecord");
-    inrecord.setTooltip("Enter inrecord");
-    inrecord.setOptional(false);
-    inrecord.setType(UiFieldType.ARRAYSTRING);
-    uiSpecification.addUIField(inrecord);
-
-    UIField outrecord = new UIField();
-    outrecord.setUiName("outrecord");
-    outrecord.setFieldName("outrecord");
-    outrecord.setTooltip("Enter outrecord");
-    outrecord.setOptional(false);
-    outrecord.setType(UiFieldType.ARRAYSTRING);
-    uiSpecification.addUIField(outrecord);
 
     bundle.setWorkflowComponentUISpecification(uiSpecification);
     return bundle;
   }
 
-  private void addTaskUIField(String key, Object value, ComponentUISpecification uiSpecification) {
-    if (value instanceof TaskModelParam) {
-      for (Map.Entry<String, Object> child : ((TaskModelParam) value).entrySet()) {
-        addTaskUIField(key + "/" + child.getKey(), child.getValue(), uiSpecification);
+  private UIField makeUIField(Field taskField, TaskParam taskParam) {
+    UIField uiField = new UIField();
+    uiField.setUiName(taskParam.uiName());
+    uiField.setType(taskParam.uiType());
+    uiField.setOptional(taskParam.isOptional());
+    uiField.setDefaultValue(taskParam.defaultValue());
+    uiField.setTooltip(taskParam.tooltip());
+    uiField.setUserInput(true);
+    uiField.setFieldName(taskParam.key());
+
+    if (taskField.getType().isEnum()) {
+      Object[] options = taskField.getType().getEnumConstants();
+      for (Object option : options) {
+        if (option != null) {
+          uiField.addOption(option.toString());
+        }
       }
-    } else {
-      UIField uiField = new UIField();
-      uiField.setUiName(key);
-      uiField.setFieldName(key);
-      uiField.setTooltip("Enter " + key);
-      uiField.setOptional(false);
-      if (value instanceof Number) {
-        uiField.setType(UiFieldType.NUMBER);
-      } else {
-        uiField.setType(UiFieldType.STRING);
-      }
-      uiSpecification.addUIField(uiField);
     }
+    return uiField;
   }
 
   private void updateTasksFromJar(String absJarPath, List<String> classNames, int removable) {

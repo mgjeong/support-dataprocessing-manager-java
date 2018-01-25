@@ -16,6 +16,8 @@ public @interface TaskParam {
 
   String key();
 
+  String defaultValue() default "";
+
   String tooltip() default "";
 
   boolean isOptional() default false;

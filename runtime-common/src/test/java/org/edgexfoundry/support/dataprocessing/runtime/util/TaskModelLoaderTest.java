@@ -74,11 +74,6 @@ public class TaskModelLoaderTest {
     }
 
     @Override
-    public TaskModelParam getDefaultParam() {
-      return new TaskModelParam();
-    }
-
-    @Override
     public void setParam(TaskModelParam param) {
 
     }

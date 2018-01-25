@@ -16,159 +16,144 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.function.CommonFunction;
 import org.edgexfoundry.support.dataprocessing.runtime.task.function.SigmoidFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Computes linear/logistic regression.
- * <p>
- * Flink requires this class to be serializable.
+ * Computes linear/logistic regression. <p> Flink requires this class to be serializable.
  */
 public abstract class RegressionModel extends AbstractTaskModel {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegressionModel.class);
 
-    // Distance functions could be extended..
-    public static final int LINEAR = 1;
-    public static final int LOGISTIC = 2;
+  private static final Logger LOGGER = LoggerFactory.getLogger(RegressionModel.class);
 
-    private int algorithmType;
-    private double error;
-    private double[] weights = null;
-    private TaskType taskType;
-    private String name;
+  private TaskType taskType;
+  private String name;
 
-    public RegressionModel(TaskType type, String name, int algoType) {
-        this.taskType = type;
-        this.name = name;
-        this.algorithmType = algoType;
-        this.weights = null;
-    }
-    @Override
-    public TaskType getType() {
-        return this.taskType;
-    }
+  @TaskParam(key = "weights", uiName = "Weights", uiType = UiFieldType.ARRAYNUMBER, tooltip = "Enter weights")
+  protected List<Double> weights;
 
-    @Override
-    public String getName() {
-        return this.name;
-    }
+  @TaskParam(key = "error", uiName = "Error", uiType = UiFieldType.NUMBER, tooltip = "Enter error term")
+  protected Double error;
 
-    public RegressionModel setWeights(double[] weights) {
-        if (weights.length > 0) {
-            this.weights = weights.clone();
-        }
+  @TaskParam(key = "type", uiName = "Regression Type", uiType = UiFieldType.STRING, tooltip = "Select regression type")
+  protected RegressionType regressionType;
 
-        return this;
-    }
+  public enum RegressionType {
+    Linear,
+    Logistic
+  }
 
-    public int getAlgorithmType() {
-        return this.algorithmType;
-    }
+  public RegressionModel(TaskType type, String name, RegressionType regressionType) {
+    this.taskType = type;
+    this.name = name;
+    this.regressionType = regressionType;
+    this.weights = null;
+  }
 
-    public void setError(double error) {
-        this.error = error;
-    }
+  @Override
+  public TaskType getType() {
+    return this.taskType;
+  }
 
-    public void setAlgorithmType(int algorithmType) {
-        this.algorithmType = algorithmType;
-    }
+  @Override
+  public String getName() {
+    return this.name;
+  }
 
-    public void setAlgorithmType(String algorithmType) {
-        if (algorithmType.equalsIgnoreCase("logistic")) {
-            this.setAlgorithmType(LOGISTIC);
-        } else {
-            this.setAlgorithmType(LINEAR);
-        }
-    }
+  public RegressionType getRegressionType() {
+    return this.regressionType;
+  }
 
-    private double calWithLinearFunction(Double[] dataInstance) {
-        double result = 0.0;
+  public void setError(Double error) {
+    this.error = error;
+  }
 
-        result = CommonFunction.product(dataInstance, weights);
-        result += this.error;
+  private double calWithLinearFunction(Double[] dataInstance) {
+    double result = 0.0;
 
-        return result;
-    }
+    double[] w = weights.stream().mapToDouble(Double::doubleValue).toArray();
+    result = CommonFunction.product(dataInstance, w);
+    result += this.error;
 
-    private double calWithLogisticFunction(Double[] dataInstance) {
-        double result = 0.0;
+    return result;
+  }
 
-        result = CommonFunction.product(dataInstance, weights);
-        result += this.error;
+  private double calWithLogisticFunction(Double[] dataInstance) {
+    double result = 0.0;
 
-        return SigmoidFunction.calculate(result, SigmoidFunction.TYPESIGMOID.LOGISTIC);
+    double[] w = weights.stream().mapToDouble(Double::doubleValue).toArray();
+    result = CommonFunction.product(dataInstance, w);
+    result += this.error;
+
+    return SigmoidFunction.calculate(result, SigmoidFunction.TYPESIGMOID.LOGISTIC);
+  }
+
+  @Override
+  public void setParam(TaskModelParam params) {
+
+    if (params.containsKey("weights")) {
+      this.weights = (List<Double>) params.get("weights");
     }
 
-    @Override
-    public void setParam(TaskModelParam params) {
-
-        if (params.containsKey("weights")) {
-            List<Number> weights = (List<Number>) params.get("weights");
-            this.setWeights(TaskModelParam.transformToNativeDouble1DArray(weights));
-        }
-
-        if (params.containsKey("error")) {
-            setError(Double.parseDouble(params.get("error").toString()));
-        }
-        if (params.containsKey("type")) {
-            this.setAlgorithmType(params.get("type").toString());
-        }
+    if (params.containsKey("error")) {
+      setError(Double.parseDouble(params.get("error").toString()));
+      this.error = (Double) params.get("error");
     }
-
-    @Override
-    public TaskModelParam getDefaultParam() {
-        TaskModelParam params = new TaskModelParam();
-        Double[] trainedWeights = {
-                0.2, -0.7
-        };
-        ArrayList<Double> trainedW = new ArrayList<>();
-        for (Double w : trainedWeights) {
-            trainedW.add(Double.valueOf(w));
-        }
-        params.put("weights", trainedW);
-        params.put("error", new String("-1.7"));
-        params.put("type", new String("logistic"));
-
-        return params;
+    if (params.containsKey("type")) {
+      this.regressionType = RegressionType.valueOf((String) params.get("type"));
     }
+  }
 
-    @Override
-    public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
-        LOGGER.info("[Regression] Entering calculation");
-        List<Number> scores = new ArrayList<>();
-        List<List<Number>> vectors = new ArrayList<>();
+  @Override
+  public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
+    LOGGER.info("[Regression] Entering calculation");
+    List<Number> scores = new ArrayList<>();
+    List<List<Number>> vectors = new ArrayList<>();
+    for (int index = 0; index < inRecordKeys.size(); index++) {
+      List<Number> values = in.getValue(inRecordKeys.get(index), List.class);
+      vectors.add(values);
+    }
+    if (vectors.size() == inRecordKeys.size()) {
+      for (int loop = 0; loop < vectors.get(0).size(); loop++) {
+        Double[] dataInstance = new Double[inRecordKeys.size()];
         for (int index = 0; index < inRecordKeys.size(); index++) {
-            List<Number> values = in.getValue(inRecordKeys.get(index), List.class);
-            vectors.add(values);
+          dataInstance[index] = vectors.get(index).get(loop).doubleValue();
         }
-        if (vectors.size() == inRecordKeys.size()) {
-            for (int loop = 0; loop < vectors.get(0).size(); loop++) {
-                Double[] dataInstance = new Double[inRecordKeys.size()];
-                for (int index = 0; index < inRecordKeys.size(); index++) {
-                    dataInstance[index] = vectors.get(index).get(loop).doubleValue();
-                }
-                if (this.algorithmType == LINEAR) {
-                    scores.add(calWithLinearFunction(dataInstance));
-                    in.setValue(outRecordKeys.get(0), scores);
-                } else if (this.algorithmType == LOGISTIC) {
-                    scores.add(calWithLogisticFunction(dataInstance));
-                    in.setValue(outRecordKeys.get(0), scores);
-                }
-            }
-        } else {
-            LOGGER.error("[Regression] Feature value extraction from given data failed~!!");
+        if (this.regressionType == RegressionType.Linear) {
+          scores.add(calWithLinearFunction(dataInstance));
+          in.setValue(outRecordKeys.get(0), scores);
+        } else if (this.regressionType == RegressionType.Logistic) {
+          scores.add(calWithLogisticFunction(dataInstance));
+          in.setValue(outRecordKeys.get(0), scores);
         }
-
-        LOGGER.info("[Regression] Returning calculation result");
-        return in;
+      }
+    } else {
+      LOGGER.error("[Regression] Feature value extraction from given data failed~!!");
     }
+
+    LOGGER.info("[Regression] Returning calculation result");
+    return in;
+  }
+
+  public TaskModelParam getDefaultParam() {
+    TaskModelParam params = new TaskModelParam();
+    List<Double> trainedWeights = new ArrayList<>();
+    trainedWeights.add(0.2);
+    trainedWeights.add(-0.7);
+    params.put("weights", trainedWeights);
+    params.put("error", -1.7);
+    params.put("type", RegressionType.Logistic.name());
+
+    return params;
+  }
 }

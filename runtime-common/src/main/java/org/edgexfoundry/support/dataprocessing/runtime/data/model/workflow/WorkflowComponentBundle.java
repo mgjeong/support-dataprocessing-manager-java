@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 
@@ -149,9 +150,18 @@ public class WorkflowComponentBundle extends Format {
     private Boolean isOptional;
     private UiFieldType type;
     private String defaultValue;
+    private List<String> options = new ArrayList<>();
 
     public UIField() {
 
+    }
+
+    public List<String> getOptions() {
+      return options;
+    }
+
+    public void setOptions(List<String> options) {
+      this.options = options;
     }
 
     public String getUiName() {
@@ -210,6 +220,12 @@ public class WorkflowComponentBundle extends Format {
 
     public void setDefaultValue(String defaultValue) {
       this.defaultValue = defaultValue;
+    }
+
+    public void addOption(String option) {
+      if (!StringUtils.isEmpty(option)) {
+        this.options.add(option);
+      }
     }
   }
 }

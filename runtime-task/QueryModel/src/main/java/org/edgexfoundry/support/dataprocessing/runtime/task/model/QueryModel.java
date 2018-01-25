@@ -23,7 +23,6 @@ public class QueryModel extends AbstractTaskModel {
         return "query";
     }
 
-    @Override
     public TaskModelParam getDefaultParam() {
         TaskModelParam param = new TaskModelParam();
         param.put("request", "TOPIC1|movingAverage(<BC>,5).as(<avg>)");

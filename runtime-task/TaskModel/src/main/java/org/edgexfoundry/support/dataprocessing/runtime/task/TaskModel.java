@@ -25,9 +25,6 @@ public interface TaskModel extends Serializable {
 
   String getName();
 
-  @Deprecated
-  TaskModelParam getDefaultParam();
-
   void setParam(TaskModelParam param);
 
   void setInRecordKeys(List<String> inRecordKeys);

@@ -70,7 +70,6 @@ public class SVMModel extends AbstractTaskModel {
         return "svm";
     }
 
-    @Override
     /**
      * Override function
      * Get default parameter values for the reference

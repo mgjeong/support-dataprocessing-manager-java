@@ -19,6 +19,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 import org.edgexfoundry.support.dataprocessing.runtime.task.model.LinearRegressionModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.model.LogisticRegressionModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.model.RegressionModel;
+import org.edgexfoundry.support.dataprocessing.runtime.task.model.RegressionModel.RegressionType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,8 +68,6 @@ public class RegressionModelTest {
 
     @Test
     public void testSetParam() {
-        int linear = 1;
-        int logistic = 2;
         RegressionModel model1 = new LinearRegressionModel();
         RegressionModel model2 = new LogisticRegressionModel();
 
@@ -83,11 +82,11 @@ public class RegressionModelTest {
 
         param.put("type", "linear");
         model1.setParam(param);
-        Assert.assertEquals(linear, model1.getAlgorithmType());
+        Assert.assertEquals(RegressionType.Linear, model1.getRegressionType());
 
         param.put("type", "logistic");
         model2.setParam(param);
-        Assert.assertEquals(logistic, model2.getAlgorithmType());
+        Assert.assertEquals(RegressionType.Logistic, model2.getRegressionType());
     }
 
     @Test
