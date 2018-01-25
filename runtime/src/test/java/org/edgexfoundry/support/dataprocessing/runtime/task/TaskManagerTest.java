@@ -24,30 +24,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 import org.mockito.InjectMocks;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-// Try to make a class which extends TaskTableManager
-// to handle all methods called in this test
-// Then, inject that class into TaskManager member.
-@PowerMockIgnore("javax.net.ssl.*")
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
+@PrepareForTest({TaskManager.class, WorkflowTableManager.class})
 public class TaskManagerTest {
 
-  @Test
-  public void test(){
-    System.out.println("Pass");
-  }
-  /*
   @InjectMocks
   private static TaskManager taskManager;
 
@@ -131,5 +121,4 @@ public class TaskManagerTest {
     }
     return null;
   }
-  */
 }
