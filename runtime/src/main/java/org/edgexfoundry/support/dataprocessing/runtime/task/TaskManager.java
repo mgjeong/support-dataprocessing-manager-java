@@ -31,9 +31,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorTyp
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,7 +187,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     inrecord.setFieldName("inrecord");
     inrecord.setTooltip("Enter inrecord");
     inrecord.setOptional(false);
-    inrecord.setType(UIFieldType.ARRAYSTRING);
+    inrecord.setType(UiFieldType.ARRAYSTRING);
     uiSpecification.addUIField(inrecord);
 
     UIField outrecord = new UIField();
@@ -195,7 +195,7 @@ public final class TaskManager implements DirectoryChangeEventListener {
     outrecord.setFieldName("outrecord");
     outrecord.setTooltip("Enter outrecord");
     outrecord.setOptional(false);
-    outrecord.setType(UIFieldType.ARRAYSTRING);
+    outrecord.setType(UiFieldType.ARRAYSTRING);
     uiSpecification.addUIField(outrecord);
 
     bundle.setWorkflowComponentUISpecification(uiSpecification);
@@ -214,9 +214,9 @@ public final class TaskManager implements DirectoryChangeEventListener {
       uiField.setTooltip("Enter " + key);
       uiField.setOptional(false);
       if (value instanceof Number) {
-        uiField.setType(UIFieldType.NUMBER);
+        uiField.setType(UiFieldType.NUMBER);
       } else {
-        uiField.setType(UIFieldType.STRING);
+        uiField.setType(UiFieldType.STRING);
       }
       uiSpecification.addUIField(uiField);
     }

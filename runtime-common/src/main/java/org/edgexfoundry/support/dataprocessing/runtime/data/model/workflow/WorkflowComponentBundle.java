@@ -2,10 +2,10 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowComponentBundle extends Format {
@@ -142,34 +142,12 @@ public class WorkflowComponentBundle extends Format {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public static class UIField extends Format {
 
-    public enum UIFieldType {
-      STRING("string"), ENUMSTRING("enumstring"), ARRAYSTRING("array.string"), ARRAYENUMSTRING(
-          "array.enumstring"),
-      NUMBER("number"), ARRAYNUMBER("array.number"), BOOLEAN("boolean"), ARRAYBOOLEAN(
-          "array.boolean"),
-      OBJECT("object"), ENUMOBJECT("enumobject"), ARRAYOBJECT("array.object"), ARRAYENUMOBJECT(
-          "array.enumobject"),
-      FILE("file");
-
-      private String uiFieldTypeText;
-
-      UIFieldType(String uiFieldTypeText) {
-        this.uiFieldTypeText = uiFieldTypeText;
-      }
-
-      @JsonValue
-      public String getUiFieldTypeText() {
-        return this.uiFieldTypeText;
-      }
-
-    }
-
     private String uiName;
     private String fieldName;
     private Boolean isUserInput;
     private String tooltip;
     private Boolean isOptional;
-    private UIFieldType type;
+    private UiFieldType type;
     private String defaultValue;
 
     public UIField() {
@@ -218,11 +196,11 @@ public class WorkflowComponentBundle extends Format {
       this.tooltip = tooltip;
     }
 
-    public UIFieldType getType() {
+    public UiFieldType getType() {
       return type;
     }
 
-    public void setType(UIFieldType type) {
+    public void setType(UiFieldType type) {
       this.type = type;
     }
 
