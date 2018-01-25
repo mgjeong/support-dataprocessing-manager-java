@@ -1,9 +1,13 @@
 Data Processing Manager
 ================================
 
-Data Processing Manager manages the data processing engines(s) for IoT.
-  - Register/Execute/Stop/Update/Delete data processing job(s) into engines
-  - Monitor the status of engines and their jobs
+Data Processing Manager makes it easy to manage, deploy and monitor data workflow(s) to multiple data processing engines of your choice.
+
+
+### Features
+  - Deploy data workflow to data processing engines as one or more workflow jobs
+  - Execute/Stop/Update/Delete workflow jobs
+  - Monitor workflow job status
  
 ## Prerequisites ##
 - Remember, you must configure proxies if necessary.
