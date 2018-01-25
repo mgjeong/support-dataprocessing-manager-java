@@ -20,6 +20,11 @@ public class WorkflowMetric extends Format {
     private long running;
     private long stop;
 
+    public Work(long running, long stop) {
+      setRunning(running);
+      setStop(stop);
+    }
+
     public long getRunning() {
       return running;
     }
@@ -37,7 +42,7 @@ public class WorkflowMetric extends Format {
     }
   }
 
-  public static class GroupInfo extends Format {
+  public static class   GroupInfo extends Format {
     private String groupId;
     private Work works;
 

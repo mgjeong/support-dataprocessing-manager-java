@@ -50,10 +50,17 @@ public class FlinkEngine extends AbstractEngine {
   private static final String DEFAULT_LAUNCHER_JAR_LOCATION = DEFAULT_JOB_JAR_LOCATION + "engine-flink.jar";
 
   private HTTP httpClient = null;
+  private String flinkHost;
+  private int flinkPort;
 
   public FlinkEngine(String flinkHost, int flinkPort) {
+
+    setFlinkHost(flinkHost);
+    setFlinkPort(flinkPort);
+
     this.httpClient = new HTTP();
     this.httpClient.initialize(flinkHost, flinkPort, "http");
+
   }
 
   private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) {
@@ -299,6 +306,22 @@ public class FlinkEngine extends AbstractEngine {
     JsonObject jsonResponse = jsonString.getAsJsonObject();
     String jarId = jsonResponse.get("filename").getAsString(); // TODO: Exception handling
     return jarId;
+  }
+
+  public String getFlinkHost() {
+    return flinkHost;
+  }
+
+  public void setFlinkHost(String flinkHost) {
+    this.flinkHost = flinkHost;
+  }
+
+  public int getFlinkPort() {
+    return flinkPort;
+  }
+
+  public void setFlinkPort(int flinkPort) {
+    this.flinkPort = flinkPort;
   }
 
   private static class ShellProcessResult {
