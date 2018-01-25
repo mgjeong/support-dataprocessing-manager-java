@@ -38,4 +38,4 @@ echo -ne "Setting neccessary files..."
 cp ${rsc_path}/setldd.sh ${output_path}/
 is_extracted ${output_path}/setldd.sh
 
-cp /usr/bin/qemu-arm-static ${output_path}/
+cp /usr/bin/qemu-arm-static ${cur_path}/

@@ -1,5 +1,5 @@
 FROM armhf/golang:1.8-alpine AS buildenv 
-COPY docker_files/resources/qemu-arm-static /usr/bin
+COPY qemu-arm-static /usr/bin
 
 # Starting to build docker image
 RUN apk add --no-cache bash
@@ -35,7 +35,7 @@ RUN ./setldd.sh inject /dependencies/
 RUN ./setldd.sh deliver /dependencies/
 
 FROM armhf/alpine
-COPY docker_files/resources/qemu-arm-static /usr/bin
+COPY qemu-arm-static /usr/bin
 
 RUN apk add --no-cache bash
 
