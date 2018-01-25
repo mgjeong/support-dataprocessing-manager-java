@@ -12,6 +12,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 import org.springframework.http.HttpStatus;
@@ -75,8 +76,7 @@ public class JobController extends AbstractController {
 
       return respond(job, HttpStatus.OK);
     } catch (Exception e) {
-      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
-          HttpStatus.OK);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()), HttpStatus.OK);
     }
   }
 
@@ -99,9 +99,7 @@ public class JobController extends AbstractController {
   public ResponseEntity getWorkflowJobs(@PathVariable("workflowId") Long workflowId) {
     try {
       Collection<Job> jobs = jobTableManager.listWorkflowJobs(workflowId);
-      jobs = jobs.stream().filter(
-          workflowJob -> workflowJob.getState().getState() == State.RUNNING)
-          .collect(Collectors.toSet());
+      jobs = jobs.stream().filter(workflowJob -> workflowJob.getState().getState() == State.RUNNING).collect(Collectors.toSet());
       return respondEntity(jobs, HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
@@ -113,8 +111,7 @@ public class JobController extends AbstractController {
    **/
   @ApiOperation(value = "Stop job", notes = "Stop job")
   @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
-  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
-      @PathVariable("jobId") String jobId) {
+  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId, @PathVariable("jobId") String jobId) {
     try {
       Job job = jobTableManager.getWorkflowJob(jobId);
       String targetHost = job.getConfig("targetHost");
@@ -134,20 +131,20 @@ public class JobController extends AbstractController {
   }
 
   @ApiOperation(value = "Monitor jobs", notes = "Monitor jobs")
-  @RequestMapping(value = "/workflows/monitor/jobs/", method = RequestMethod.GET)
+  @RequestMapping(value = "/workflows/monitor/", method = RequestMethod.GET)
   public ResponseEntity monitorJobs() {
     try {
-      return respond(jobTableManager.getWorkflowState(), HttpStatus.OK);
+      return respond(MonitoringManager.getInstance().getWorkflowsState(), HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }
   }
 
   @ApiOperation(value = "Monitor Job", notes = "Monitor job")
-  @RequestMapping(value = "/workflows/monitor/jobs/{jobId}", method = RequestMethod.GET)
-  public ResponseEntity monitorJob(@PathVariable("jobId") String jobId) {
+  @RequestMapping(value = "/workflows/monitor/{groupId}", method = RequestMethod.GET)
+  public ResponseEntity monitorJob(@PathVariable("groupId") String groupId) {
     try {
-      return respond(jobTableManager.getWorkflowState(jobId), HttpStatus.OK);
+      return respond(MonitoringManager.getInstance().getGroupState(groupId), HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }

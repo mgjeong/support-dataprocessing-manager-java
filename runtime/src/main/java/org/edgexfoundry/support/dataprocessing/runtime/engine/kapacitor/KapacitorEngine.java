@@ -49,6 +49,16 @@ public class KapacitorEngine extends AbstractEngine {
     return null;
   }
 
+  @Override
+  public String getHost() {
+    return null;
+  }
+
+  @Override
+  public int getPort() {
+    return 0;
+  }
+
 /*
   @Override
   public JobResponseFormat createJob() {

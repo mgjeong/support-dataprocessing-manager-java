@@ -17,9 +17,9 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 
 import java.util.ArrayList;
 
@@ -40,5 +40,9 @@ public interface Engine {
   Job delete(Job job) throws Exception;
 
   ArrayList<JobState> getMetrics() throws Exception;
+
+  String getHost();
+
+  int getPort();
 }
 
