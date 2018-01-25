@@ -1,5 +1,5 @@
 FROM armhf/golang:1.8-alpine AS buildenv 
-COPY qemu-arm-static /usr/bin
+COPY docker_files/resources/qemu-arm-static /usr/bin
 
 # Starting to build docker image
 RUN apk add --no-cache bash
@@ -10,10 +10,9 @@ RUN apk add gcc pkgconfig zeromq-dev
 RUN apk add git musl-dev
 RUN go get github.com/pebbe/zmq4
 RUN go get -u github.com/golang/protobuf/protoc-gen-go
-#COPY docker_files/resources/src/go.uber.org ${GOPATH}/src/go.uber.org
-#RUN go build go.uber.org/zap
-#RUN go install go.uber.org/zap
-RUN go get go.uber.org/zap
+COPY docker_files/resources/src/go.uber.org ${GOPATH}/src/go.uber.org
+RUN go build go.uber.org/zap
+RUN go install go.uber.org/zap
 
 RUN go get github.com/mgjeong/protocol-ezmq-go/ezmq
 ENV UDF_PATH /runtime/ha/go
@@ -36,7 +35,7 @@ RUN ./setldd.sh inject /dependencies/
 RUN ./setldd.sh deliver /dependencies/
 
 FROM armhf/alpine
-COPY qemu-arm-static /usr/bin
+COPY docker_files/resources/qemu-arm-static /usr/bin
 
 RUN apk add --no-cache bash
 
