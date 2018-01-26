@@ -28,8 +28,10 @@ import org.junit.Test;
 
 public class FileInputSourceTest {
 
-  String csvStr = " \"a\":10, \"b\":20, \"c\":30 ";
-  String tsvStr = " \"a\":10\t\"b\":20\t\"c\":30 ";
+  String keyCsvStr = "a,b,c";
+  String csvStr = " 10, 20, 30 ";
+  String keyTsvStr = "a\tb\tc";
+  String tsvStr = " 10\t20\t30 ";
   String errStr = "a b c d e f";
 
   @Test
@@ -77,7 +79,57 @@ public class FileInputSourceTest {
       tempFile.deleteOnExit();
     }
   }
+  @Test
+  public void testCSVWithKeyRun() throws Exception {
+    String type = "csv";
+    File tempFile = makeTempFile(type);
+    PrintWriter writer = new PrintWriter(tempFile);
 
+    writer.println(keyCsvStr.toString());
+    for(int iter = 0 ; iter < 10 ; iter++) {
+      writer.println(csvStr.toString());
+    }
+    writer.flush();
+    writer.close();
+
+    SourceFunction.SourceContext sourceContext = mock(SourceFunction.SourceContext.class);
+    FileInputSource source = new FileInputSource(tempFile.getPath(), type);
+    source.readFirstLineAsKeyValues(true);
+    try {
+      source.open(new Configuration());
+      source.run(sourceContext);
+    } finally {
+      source.cancel();
+      source.close();
+      tempFile.deleteOnExit();
+    }
+  }
+
+  @Test
+  public void testTSVWithKeyRun() throws Exception {
+    String type = "tsv";
+    File tempFile = makeTempFile(type);
+    PrintWriter writer = new PrintWriter(tempFile);
+
+    writer.println(keyTsvStr.toString());
+    for(int iter = 0 ; iter < 10 ; iter++) {
+      writer.println(tsvStr.toString());
+    }
+    writer.flush();
+    writer.close();
+
+    SourceFunction.SourceContext sourceContext = mock(SourceFunction.SourceContext.class);
+    FileInputSource source = new FileInputSource(tempFile.getPath(), type);
+    source.readFirstLineAsKeyValues(true);
+    try {
+      source.open(new Configuration());
+      source.run(sourceContext);
+    } finally {
+      source.cancel();
+      source.close();
+      tempFile.deleteOnExit();
+    }
+  }
   @Test
   public void testCSVERRVRun() throws Exception {
     String type = "csv";

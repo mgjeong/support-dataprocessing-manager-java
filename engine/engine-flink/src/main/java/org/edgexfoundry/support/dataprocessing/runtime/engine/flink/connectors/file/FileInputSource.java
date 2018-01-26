@@ -18,10 +18,10 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
   private String mType = null;
   private String mDelimiter = null;
   private long mInterval = 100L; // 100 msec
+  private boolean mFirstLineIsKeys = false;
 
   private BufferedReader mBR = null;
   private transient volatile boolean running;
-
 
   public FileInputSource(String path, String type) {
     this.mPath = path;
@@ -37,6 +37,9 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
     LOGGER.debug("Path {}, Type {}", path, type);
   }
 
+  public void readFirstLineAsKeyValues(boolean option) {
+    this.mFirstLineIsKeys = option;
+  }
   @Override
   public void open(Configuration parameters) throws Exception {
 
@@ -83,25 +86,34 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
       if (this.mType.equals("csv") || this.mType.equals("tsv")) {
         String line = mBR.readLine();
         // first line is array of keys
-        String[] Keys = line.split(this.mDelimiter);
+        String[] Keys = null;
+        if(this.mFirstLineIsKeys) {
+          Keys = line.split(this.mDelimiter);
+          if (Keys.length < 1) {
+            // Parsing json formatted string line
+            LOGGER.error("Error During Extracting Keys from first line {}", line);
+            this.running = false;
+          }
+        }
         // other lines are for values
-        if (Keys.length > 0) {
-          while (this.running && ((line = mBR.readLine()) != null)) {
-            LOGGER.info("Line : {}", line);
+        while (this.running && ((line = mBR.readLine()) != null)) {
+          LOGGER.info("Line : {}", line);
+          String[] values = line.split(this.mDelimiter);
 
-            String[] values = line.split(this.mDelimiter);
+          if (values != null && values.length > 0) {
 
-            if (values != null && values.length > 0) {
-
+            if (this.mFirstLineIsKeys) {
               if (Keys.length != values.length) {
-                LOGGER.error("Length Not Match - keys {} , values {}", Keys.length, values.length);
+                LOGGER
+                    .error("Length Not Match - keys {} , values {}", Keys.length, values.length);
                 this.running = false;
                 break;
               }
+            }
 
-              DataSet streamData = DataSet.create();
-              for (int index = 0; index < values.length; index++) {
-
+            DataSet streamData = DataSet.create();
+            for (int index = 0; index < values.length; index++) {
+              if (this.mFirstLineIsKeys) {
                 LOGGER.info("Value  Key {} : Value {}", Keys[index], values[index]);
                 if (isNumber(values[index])) {
                   streamData.setValue("/" + Keys[index],
@@ -110,22 +122,28 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
                   streamData.setValue("/" + Keys[index],
                       values[index].replace("\"", ""));
                 }
+              } else {
+                LOGGER.info("Value  Key {} : Value {}", index, values[index]);
+
+                if (isNumber(values[index])) {
+                  streamData.setValue("/" + index,
+                      Double.valueOf(values[index]));
+                } else {
+                  streamData.setValue("/" + index,
+                      values[index].replace("\"", ""));
+                }
               }
-              ctx.collect(streamData);
             }
-            Thread.sleep(this.mInterval);
+            ctx.collect(streamData);
           }
-          LOGGER.info("File Reading Done");
-          this.running = false;
-        } else {
-          LOGGER.error("Error During Extracting Keys from 1st line : {}", line);
-          this.running = false;
-          break;
+          Thread.sleep(this.mInterval);
         }
-      } else {
-        // Parsing json formatted string line
-        LOGGER.error("Json file is not supported yet");
+        LOGGER.info("File Reading Done");
         this.running = false;
+      } else {
+        LOGGER.error(this.mType+" file type is not supported");
+        this.running = false;
+        break;
       }
     }
   }
