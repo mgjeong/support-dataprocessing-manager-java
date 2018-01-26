@@ -3,9 +3,9 @@ package org.edgexfoundry.support.dataprocessing.runtime;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -100,7 +100,7 @@ public class Bootstrap {
     runtimeHost.setUserInput(true);
     runtimeHost.setTooltip("Enter hostname of runtime edge.");
     runtimeHost.setOptional(false);
-    runtimeHost.setType(UIFieldType.STRING);
+    runtimeHost.setType(UiFieldType.STRING);
     runtimeHost.setDefaultValue("localhost:8082");
     componentUISpecification.addUIField(runtimeHost);
     UIField targetHost = new UIField();
@@ -109,7 +109,7 @@ public class Bootstrap {
     targetHost.setUserInput(true);
     targetHost.setTooltip("Enter hostname of target edge.");
     targetHost.setOptional(false);
-    targetHost.setType(UIFieldType.STRING);
+    targetHost.setType(UiFieldType.STRING);
     targetHost.setDefaultValue("localhost:9092");
     componentUISpecification.addUIField(targetHost);
     runtimeWorkflow.setWorkflowComponentUISpecification(componentUISpecification);
@@ -139,7 +139,7 @@ public class Bootstrap {
     field.setUserInput(true);
     field.setTooltip(tooltip);
     field.setOptional(false);
-    field.setType(UIFieldType.STRING);
+    field.setType(UiFieldType.STRING);
     componentUISpecification.addUIField(field);
   }
 

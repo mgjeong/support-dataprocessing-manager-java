@@ -3,8 +3,8 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 import java.util.ArrayList;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,11 +48,11 @@ public class WorkflowComponentBundleTest {
 
   @Test
   public void testUIField() {
-    Assert.assertEquals("string", UIFieldType.STRING.getUiFieldTypeText());
+    Assert.assertEquals("string", UiFieldType.STRING.getUiFieldTypeText());
 
     UIField fieldName = makeSampleUIField();
 
-    Assert.assertEquals(UIFieldType.STRING, fieldName.getType());
+    Assert.assertEquals(UiFieldType.STRING, fieldName.getType());
     Assert.assertEquals("name", fieldName.getFieldName());
     Assert.assertEquals(false, fieldName.getOptional());
     Assert.assertEquals("Enter name", fieldName.getTooltip());
@@ -98,7 +98,7 @@ public class WorkflowComponentBundleTest {
 
   private UIField makeSampleUIField() {
     UIField fieldName = new UIField();
-    fieldName.setType(UIFieldType.STRING);
+    fieldName.setType(UiFieldType.STRING);
     fieldName.setFieldName("name");
     fieldName.setOptional(false);
     fieldName.setTooltip("Enter name");

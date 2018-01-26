@@ -20,17 +20,16 @@ import java.io.Serializable;
 import java.util.List;
 
 public interface TaskModel extends Serializable {
-    TaskType getType();
 
-    String getName();
+  TaskType getType();
 
-    TaskModelParam getDefaultParam();
+  String getName();
 
-    void setParam(TaskModelParam param);
+  void setParam(TaskModelParam param);
 
-    void setInRecordKeys(List<String> inRecordKeys);
+  void setInRecordKeys(List<String> inRecordKeys);
 
-    void setOutRecordKeys(List<String> outRecordKeys);
+  void setOutRecordKeys(List<String> outRecordKeys);
 
-    DataSet calculate(DataSet in);
+  DataSet calculate(DataSet in);
 }

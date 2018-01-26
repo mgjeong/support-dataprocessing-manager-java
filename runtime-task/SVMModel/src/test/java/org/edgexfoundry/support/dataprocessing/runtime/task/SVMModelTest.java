@@ -92,14 +92,6 @@ public class SVMModelTest {
     }
 
     @Test
-    public void testGetDefaultParam() {
-
-        TaskModel model1 = new SVMModel();
-
-        Assert.assertNotNull( model1.getDefaultParam());
-    }
-
-    @Test
     public void testLinearPrediction() {
 
         double[][] arrSupportVectors = {
