@@ -258,7 +258,7 @@ public class WorkflowController extends AbstractController {
   public ResponseEntity addOrUpdateWorkflowEditorToolbar(
       @RequestBody WorkflowEditorToolbar toolbar) {
     toolbar = this.workflowTableManager.addOrUpdateWorkflowEditorToolbar(toolbar);
-    return respondEntity(toolbar, HttpStatus.OK);
+    return respond(toolbar, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Add workflow source", notes = "Adds a source to a workflow.")
