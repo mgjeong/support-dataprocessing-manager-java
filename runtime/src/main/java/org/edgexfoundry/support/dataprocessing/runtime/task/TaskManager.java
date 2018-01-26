@@ -16,373 +16,290 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
-import org.edgexfoundry.support.dataprocessing.runtime.Settings;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TaskTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidParameterException;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class TaskManager implements DirectoryChangeEventListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
-    private static TaskManager instance = null;
 
-    private static DirectoryWatcher directoryWatcher = null;
-    private static TaskTableManager taskTable = null;
+  private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
+  private static TaskManager instance = null;
 
-    private static final int DEFAULTTASK = 0;
-    private static final int USERTASK = 1;
+  private static DirectoryWatcher directoryWatcher = null;
 
-    private TaskManager() {
+  private static final int DEFAULTTASK = 0;
+  private static final int USERTASK = 1;
+
+  private final WorkflowTableManager workflowTableManager;
+
+  private TaskManager() {
+    this.workflowTableManager = WorkflowTableManager.getInstance();
+  }
+
+  public static TaskManager getInstance() {
+
+    if (null == instance) {
+      instance = new TaskManager();
+      instance.initialize();
+    }
+    return instance;
+  }
+
+  private void startDirectoryWatcher(String absPath) throws InvalidParameterException {
+    if (null == absPath) {
+      throw new InvalidParameterException("Path is null.");
     }
 
-    public static TaskManager getInstance() {
-
-        if (null == instance) {
-            instance = new TaskManager();
-            instance.initialize();
-        }
-        return instance;
+    if (null != this.directoryWatcher) {
+      stopDirectoryWatcher();
     }
 
-    private void startDirectoryWatcher(String absPath) throws InvalidParameterException {
-        if (null == absPath) {
-            throw new InvalidParameterException("Path is null.");
-        }
+    this.directoryWatcher = new DirectoryWatcher(absPath, this);
+  }
 
-        if (null != this.directoryWatcher) {
-            stopDirectoryWatcher();
-        }
+  public void initialize() {
+    try {
+      startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+  }
 
-        this.directoryWatcher = new DirectoryWatcher(absPath, this);
+  private void stopDirectoryWatcher() {
+    this.directoryWatcher.stopWatcher();
+    try {
+      this.directoryWatcher.join(3000L);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+    this.directoryWatcher = null;
+  }
+
+  public void terminate() {
+    if (this.directoryWatcher != null) {
+      LOGGER.info("Shutting down directory watcher.");
+      stopDirectoryWatcher();
     }
 
-    public void initialize() {
-        try {
-            taskTable = TaskTableManager.getInstance();
-            startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+    LOGGER.info("TaskManager terminated.");
+  }
+
+  private List<String> getTaskModelNames(String fileName) {
+    // Validate file name
+    if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
+      LOGGER.debug("Invalid file name received.");
+      return Collections.emptyList();
     }
 
-    private void stopDirectoryWatcher() {
-        this.directoryWatcher.stopWatcher();
-        try {
-            this.directoryWatcher.join(3000L);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        this.directoryWatcher = null;
+    // Validate file
+    File f = new File(fileName);
+    if (f == null || !f.exists() || !f.isFile()) {
+      LOGGER.debug("{} does not exist or is invalid.", fileName);
+      return Collections.emptyList();
     }
 
-    public void terminate() {
-        if (this.directoryWatcher != null) {
-            LOGGER.info("Shutting down directory watcher.");
-            stopDirectoryWatcher();
+    LOGGER.info("Reading {}", fileName);
+    // Collect all class names available inside jar
+    List<String> classNames = new ArrayList<>();
+    try (ZipInputStream zip = new ZipInputStream(new FileInputStream(f))) {
+      for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
+        // Extract class files
+        if (!entry.isDirectory()
+            && entry.getName().endsWith(".class")
+            && !entry.getName().contains("$")) {
+          String className = entry.getName().replace('/', '.');
+          classNames.add(className.substring(0, className.length() - ".class".length()));
         }
-
-        LOGGER.info("TaskManager terminated.");
+      }
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
     }
 
-    public TaskFormat getTaskModel(String name, TaskType type) {
-        List<TaskFormat> tasks = getTaskModelList();
-        TaskFormat ret = null;
-        for (TaskFormat task : tasks) {
-            if (task.getName().equalsIgnoreCase(name) && task.getType() == type) {
-                ret = new TaskFormat(task);
-                break;
-            }
-        }
-        return ret;
+    return classNames;
+  }
+
+  private boolean updateTaskModel(TaskModel model, String jarPath, String className,
+      int removable) {
+    try {
+      // Check if bundle already exists
+      WorkflowComponentBundle bundle = workflowTableManager
+          .getWorkflowComponentBundle(model.getName(), WorkflowComponentBundleType.PROCESSOR,
+              "DPFW");
+      if (bundle == null) {
+        // make new bundle
+        bundle = new WorkflowComponentBundle();
+        bundle.setName(model.getName());
+        bundle.setType(WorkflowComponentBundleType.PROCESSOR);
+        //bundle.setSubType(model.getType().name());
+        bundle.setSubType("DPFW");
+      }
+      bundle = updateWorkflowComponentBundle(bundle, model);
+      bundle.setBundleJar(jarPath);
+      bundle.setTransformationClass(className);
+      bundle.setBuiltin(removable == DEFAULTTASK);
+
+      if (bundle.getId() == null) {
+        workflowTableManager.addWorkflowComponentBundle(bundle);
+      } else {
+        workflowTableManager.addOrUpdateWorkflowComponentBundle(bundle);
+      }
+
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return false;
+    }
+    return true;
+  }
+
+  private WorkflowComponentBundle updateWorkflowComponentBundle(WorkflowComponentBundle bundle,
+      TaskModel model) {
+    if (model.getName().equalsIgnoreCase("QUERY")) {
+      bundle.setStreamingEngine("KAPACITOR");
+    } else {
+      bundle.setStreamingEngine("FLINK");
     }
 
-    public List<TaskFormat> getTaskModel(String name) {
-        List<TaskFormat> tasks = getTaskModelList();
-        List<TaskFormat> ret = new ArrayList<>();
-        for (TaskFormat task : tasks) {
-            if (task.getName().equalsIgnoreCase(name)) {
-                ret.add(new TaskFormat(task));
-            }
-        }
-        return ret;
+    // UI component
+    ComponentUISpecification uiSpecification = new ComponentUISpecification();
+    TaskModelParam params = model.getDefaultParam();
+    for (Map.Entry<String, Object> param : params.entrySet()) {
+      // recursively add ui field
+      addTaskUIField(param.getKey(), param.getValue(), uiSpecification);
     }
 
-    public List<TaskFormat> getTaskModel(TaskType type) {
-        List<TaskFormat> tasks = getTaskModelList();
-        List<TaskFormat> ret = new ArrayList<>();
-        for (TaskFormat task : tasks) {
-            if (task.getType() == type) {
-                ret.add(new TaskFormat(task));
-            }
-        }
-        return ret;
+    // Add inrecord, outrecord
+    UIField inrecord = new UIField();
+    inrecord.setUiName("inrecord");
+    inrecord.setFieldName("inrecord");
+    inrecord.setTooltip("Enter inrecord");
+    inrecord.setOptional(false);
+    inrecord.setType(UIFieldType.ARRAYSTRING);
+    uiSpecification.addUIField(inrecord);
+
+    UIField outrecord = new UIField();
+    outrecord.setUiName("outrecord");
+    outrecord.setFieldName("outrecord");
+    outrecord.setTooltip("Enter outrecord");
+    outrecord.setOptional(false);
+    outrecord.setType(UIFieldType.ARRAYSTRING);
+    uiSpecification.addUIField(outrecord);
+
+    bundle.setWorkflowComponentUISpecification(uiSpecification);
+    return bundle;
+  }
+
+  private void addTaskUIField(String key, Object value, ComponentUISpecification uiSpecification) {
+    if (value instanceof TaskModelParam) {
+      for (Map.Entry<String, Object> child : ((TaskModelParam) value).entrySet()) {
+        addTaskUIField(key + "/" + child.getKey(), child.getValue(), uiSpecification);
+      }
+    } else {
+      UIField uiField = new UIField();
+      uiField.setUiName(key);
+      uiField.setFieldName(key);
+      uiField.setTooltip("Enter " + key);
+      uiField.setOptional(false);
+      if (value instanceof Number) {
+        uiField.setType(UIFieldType.NUMBER);
+      } else {
+        uiField.setType(UIFieldType.STRING);
+      }
+      uiSpecification.addUIField(uiField);
+    }
+  }
+
+  private void updateTasksFromJar(String absJarPath, List<String> classNames, int removable) {
+    TaskModelLoader loader = null;
+    try {
+      loader = new TaskModelLoader(absJarPath, this.getClass().getClassLoader());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
 
-    public List<TaskFormat> getTaskModelList() {
-        List<TaskFormat> tasks = new ArrayList<>();
-        List<Map<String, String>> taskList = null;
-        try {
-            taskList = taskTable.getAllTaskProperty();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+    for (String s : classNames) {
+      try {
+        // Add to database if task model
+        TaskModel tm = loader.newInstance(s);
+        if (tm == null || !(tm instanceof TaskModel)) {
+          LOGGER.error("Failed to instantiate " + s + ". Possibly an abstract class.");
+          continue;
         }
+        updateTaskModel(tm, absJarPath, tm.getClass().getCanonicalName(), removable);
+        LOGGER.info("TaskModel {}/{}/{} updated.",
+            new Object[]{tm.getType(), tm.getName(), absJarPath});
+      } catch (Exception e) {
+        LOGGER.error("Failed to instantiate " + s + ". Possibly an abstract class.");
+        LOGGER.error(e.getMessage());
+      }
+    }
+  }
 
-        for (Map<String, String> result : taskList) {
-            String type = result.get(TaskTableManager.Entry.type.name());
-            String name = result.get(TaskTableManager.Entry.name.name());
-            String params = result.get(TaskTableManager.Entry.param.name());
-
-            TaskFormat task = new TaskFormat(TaskType.getType(type), name, params);
-            tasks.add(task);
-        }
-
-        return tasks;
+  public boolean scanTaskModel(String absPath) {
+    if (absPath == null) {
+      LOGGER.error("invalid path.");
+      return false;
     }
 
+    ArrayList<String> fileNames = this.directoryWatcher.scanFile(absPath);
+    for (String fileName : fileNames) {
+      List<String> classNames = getTaskModelNames(fileName);
+      if (classNames != null && !classNames.isEmpty()) {
+        updateTasksFromJar(fileName, classNames, DEFAULTTASK);
+      }
+    }
+    return true;
+  }
 
-    private List<String> getTaskModelNames(String fileName) {
-        // Validate file name
-        if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
-            LOGGER.error("Invalid file name received.");
-            return null;
-        }
-
-        // Validate file
-        File f = new File(fileName);
-        if (f == null || !f.exists() || !f.isFile()) {
-            LOGGER.error("{} does not exist or is invalid.", fileName);
-            return null;
-        }
-
-        LOGGER.info("Reading {}", fileName);
-
-        // Collect all class names available inside jar
-        List<String> classNames = new ArrayList<>();
-        ZipInputStream zip = null;
-        try {
-            zip = new ZipInputStream(new FileInputStream(f));
-            for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
-                if (!entry.isDirectory() && entry.getName().endsWith(".class") && !entry.getName().contains("$")) {
-                    String className = entry.getName().replace('/', '.');
-                    classNames.add(className.substring(0, className.length() - ".class".length()));
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        } finally {
-            if (zip != null) {
-                try {
-                    zip.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }
-        }
-
-        return classNames;
+  @Override
+  public ErrorFormat fileCreatedEventReceiver(String fileName) {
+    if (null == fileName) {
+      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS);
     }
 
-    private boolean updateTaskModel(TaskModel model, String jarPath, String className, int removable) {
-        try {
-            taskTable.insertTask(model.getType().toString(),
-                    model.getName(),
-                    model.getDefaultParam().toString(),
-                    jarPath,
-                    className,
-                    removable);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            return false;
-        }
-        return true;
+    List<String> classNames = getTaskModelNames(fileName);
+    if (null == classNames || classNames.isEmpty()) {
+      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "This file does not have class.");
     }
 
-    private void updateTasksFromJar(String absJarPath, List<String> classNames, int removable) {
-        TaskModelLoader loader = null;
-        try {
-            loader = new TaskModelLoader(absJarPath, this.getClass().getClassLoader());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    if (null != classNames) {
+      updateTasksFromJar(fileName, classNames, USERTASK);
+    }
+    return new ErrorFormat();
+  }
 
-        for (String s : classNames) {
-            try {
-                // Add to database if task model
-                TaskModel tm = loader.newInstance(s);
-                if (tm == null || !(tm instanceof TaskModel)) {
-                    LOGGER.error("Failed to instantiate " + s + ". Possibly an abstract class.");
-                    continue;
-                }
-                updateTaskModel(tm, absJarPath, tm.getClass().getCanonicalName(), removable);
-                LOGGER.info("TaskModel {}/{}/{} updated.", new Object[] {tm.getType(), tm.getName(), absJarPath});
-            } catch (Exception e) {
-                LOGGER.error("Failed to instantiate " + s + ". Possibly an abstract class.");
-                LOGGER.error(e.getMessage());
-            }
-        }
+  @Override
+  public ErrorFormat fileRemovedEventReceiver(String fileName) {
+    // Validate file name
+    if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
+      LOGGER.error("Invalid file name received.");
+      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Invalid file name received.");
     }
 
-    public boolean scanTaskModel(String absPath) {
-        if (absPath == null) {
-            LOGGER.error("invalid path.");
-            return false;
-        }
-
-        ArrayList<String> fileNames = this.directoryWatcher.scanFile(absPath);
-        for (String fileName : fileNames) {
-            List<String> classNames = getTaskModelNames(fileName);
-            if (null != classNames) {
-                updateTasksFromJar(fileName, classNames, DEFAULTTASK);
-            }
-        }
-        return true;
+    // Delete from database
+    try {
+      // TODO:
+      //taskTable.deleteTaskByPath(fileName);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
     }
-
-    public ErrorFormat fileCreatedEventReceiver(String fileName) {
-        if (null == fileName) {
-            return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS);
-        }
-
-        List<String> classNames = getTaskModelNames(fileName);
-        if (null == classNames || classNames.isEmpty()) {
-            return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "This file does not have class.");
-        }
-
-        if (null != classNames) {
-            updateTasksFromJar(fileName, classNames, USERTASK);
-        }
-        return new ErrorFormat();
-    }
-
-    public ErrorFormat fileRemovedEventReceiver(String fileName) {
-        // Validate file name
-        if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
-            LOGGER.error("Invalid file name received.");
-            return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Invalid file name received.");
-        }
-
-        // Delete from database
-        try {
-            taskTable.deleteTaskByPath(fileName);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return new ErrorFormat();
-    }
-
-    public ErrorFormat addTask(String name, byte[] data) {
-        String absPath = Settings.CUSTOM_JAR_PATH + name;
-        ErrorFormat response;
-        try {
-            Path path = Paths.get(absPath);
-            Files.write(path, data);
-
-            // Insert Information of jar file to DB
-            response = fileCreatedEventReceiver(absPath);
-            if (response.isError()) {
-                try {
-                    Files.delete(path);
-                    LOGGER.info(path + " was deleted.");
-                } catch (Exception e) {
-                    return new ErrorFormat(ErrorType.DPFW_ERROR_PERMISSION, e.getMessage());
-                }
-            }
-        } catch (Exception e) {
-            return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage());
-        }
-        return response;
-    }
-
-    public List<TaskFormat> getTaskByTypeAndName(TaskType type, String name) {
-        try {
-
-            List<TaskFormat> ret = new ArrayList<TaskFormat>();
-//            List<Map<String, String>> taskList = taskTable.getTaskByTypeAndName(type.toString(), name);
-            List<Map<String, String>> taskList = taskTable.getTaskByName(name);
-
-            for(Map<String, String> task : taskList) {
-                TaskFormat taskFormat = new TaskFormat();
-                taskFormat.setJar(new File(task.get(TaskTableManager.Entry.path.name())).getName());
-                taskFormat.setName(task.get(TaskTableManager.Entry.name.name()));
-                taskFormat.setType(TaskType.valueOf(task.get(TaskTableManager.Entry.type.name())));
-                taskFormat.setClassName(task.get(TaskTableManager.Entry.classname.name()));
-
-                ret.add(taskFormat);
-            }
-
-            return ret;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public ErrorFormat deleteTask(TaskType type, String name) {
-        Map<String, String> res;
-        List<Map<String, String>> resList = null;
-        String jarPath = null;
-        int size = 0;
-
-        try {
-            resList = taskTable.getTaskByTypeAndName(type.toString(), name);
-        } catch (Exception e) {
-            return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage());
-        }
-
-        if (null == resList || 0 >= resList.size()) {
-            LOGGER.info("No Tasks.");
-            return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "No Tasks.");
-        } else {
-            res = resList.get(0);
-            String removable = res.get(TaskTableManager.Entry.removable.name()).toString();
-            if (DEFAULTTASK == Integer.parseInt(removable)) {
-                LOGGER.info("Can't delete default tasks.");
-                return new ErrorFormat(ErrorType.DPFW_ERROR_PERMISSION, "Can't delete default tasks.");
-            }
-        }
-
-        try {
-            jarPath = res.get(TaskTableManager.Entry.path.name()).toString();
-            size = taskTable.getJarReferenceCount(jarPath);
-            // remove from DB
-            if (size > 1) {
-                taskTable.deleteTaskByTypeAndName(type.toString(), name);
-
-                LOGGER.info(type.toString() + "/" + name + " was deleted.");
-            } else if (size == 1) {
-                // And Remove file if not exist another task in same jar file.
-                taskTable.deleteTaskByTypeAndName(type.toString(), name);
-
-                if (null != jarPath) {
-                    Path path = Paths.get(jarPath);
-                    try {
-                        Files.delete(path);
-                        LOGGER.info(jarPath + " was deleted.");
-                    } catch (Exception e) {
-                        return new ErrorFormat(ErrorType.DPFW_ERROR_PERMISSION, e.getMessage());
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            return new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage());
-        }
-        return new ErrorFormat();
-    }
+    return new ErrorFormat();
+  }
 }

@@ -1,126 +1,87 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.DataFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobGroupResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.TaskResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TaskFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.powermock.reflect.Whitebox;
 
 public class FormatTest {
-    @Test
-    public void testJobGroupResponseFormat() {
-        JobGroupResponseFormat jobGroupResponse = new JobGroupResponseFormat();
-        JobGroupFormat jobGroup = new JobGroupFormat();
-        jobGroup.setGroupId("af91c5b3-b5bb-4e8b-8145-e271ac16cefe");
-        Assert.assertFalse(jobGroup.getJobs().size() != 0);
-        Assert.assertFalse(jobGroupResponse.getJobGroups().size() != 0);
 
-        JobInfoFormat job = new JobInfoFormat();
-        DataFormat input = new DataFormat("ZMQ", "127.0.0.1:5555:topic");
-        DataFormat output = new DataFormat("ZMQ", "127.0.0.1:5555:topic");
-        TaskFormat task = new TaskFormat(TaskType.PREPROCESSING, "CSVPARSER",
-                "{\"delimiter\":\"\\t\",\"index\":\"0\"}}");
+  @Test
+  public void testSimpleFormat() throws Exception {
+    Person p = new Person("Joey", 3);
+    Assert.assertNotNull(p.toString());
 
-        job.addInput(input);
-        job.addOutput(output);
-        job.addTask(task);
-        job.setJobId("ef91c5b3-b5bb-4e8b-8145-e271ac16cefc");
-        jobGroup.addJob(job);
-        Assert.assertFalse(jobGroup.getJobs().size() != 1);
+    String json = p.toString();
 
-        JobInfoFormat job2 = new JobInfoFormat(job.getInput(), job.getOutput(), job.getTask());
-        job2.setJobId("ef91c5b3-b5bb-4e8b-8145-e271ac16cefd");
-        jobGroup.addJob(job2);
-        Assert.assertFalse(jobGroup.getJobs().size() != 2);
+    Person pCopied = Format.create(json, Person.class);
+    Assert.assertEquals(p, pCopied);
+  }
 
-        JobInfoFormat job3 = new JobInfoFormat();
-        job3.setPayload(job);
-        job3.setJobId("ef91c5b3-b5bb-4e8b-8145-e271ac16cefe");
-        jobGroup.addJob(job3);
-        Assert.assertFalse(jobGroup.getJobs().size() != 3);
-
-        jobGroupResponse.addJobGroup(jobGroup);
-        Assert.assertFalse(jobGroupResponse.getJobGroups().size() != 1);
-
-        jobGroupResponse.addJobGroup((JobGroupFormat) jobGroup.clone());
-        Assert.assertFalse(jobGroupResponse.getJobGroups().size() != 2);
-
-        jobGroupResponse.addJobGroup(JobGroupFormat.create(jobGroup.toString(), JobGroupFormat.class));
-        Assert.assertFalse(jobGroupResponse.getJobGroups().size() != 3);
-
-        jobGroupResponse.addJobGroup(JobGroupFormat.create("error test", JobGroupFormat.class));
-        Assert.assertFalse(jobGroupResponse.getJobGroups().size() != 3);
+  @Test
+  public void testInvalidObjectMapper() throws Exception {
+    try {
+      Format.create("invalid data", Person.class);
+      Assert.fail("Should not reach here");
+    } catch (Exception e) {
+      // success
     }
 
-    @Test
-    public void testTaskResponseFormat() {
-        TaskResponseFormat response = new TaskResponseFormat();
+    Person p = new Person("Joey", 3);
+    // Mock mapper
+    ObjectMapper objectMapper = Mockito.spy(new ObjectMapper());
+    Mockito.when(objectMapper.writeValueAsString(Mockito.any()))
+        .thenThrow(new JsonProcessingException("JsonProcessingException mocked!") {
+        });
+    Whitebox.setInternalState(p, "mapper", objectMapper);
+    try {
+      p.toString();
+      Assert.fail("Should not reach here.");
+    } catch (RuntimeException e) {
+      // Success
+    }
+  }
 
-        Assert.assertNotNull(response.getTask());
-        Assert.assertFalse(response.getTask().size() != 0);
+  private static class Person extends Format {
 
-        TaskFormat task = new TaskFormat(TaskType.PREPROCESSING, "CSVPARSER",
-                "{\"delimiter\":\"\\t\",\"index\":\"0\"}}");
-        response.addAlgorithmFormat(task);
-        Assert.assertFalse(response.getTask().size() != 1);
+    String name;
+    int age;
 
-        response.addAlgorithmFormat(new TaskFormat(task));
-        Assert.assertFalse(response.getTask().size() != 2);
+    public Person() {
+
     }
 
-    @Test
-    public void testResponseFormat() {
-        ResponseFormat response = new ResponseFormat();
-        Assert.assertFalse(response.getError().isError());
+    public Person(String name, int age) {
+      this.name = name;
+      this.age = age;
     }
 
-    @Test
-    public void testJobResponseFormat() {
-        JobResponseFormat response = new JobResponseFormat();
-        Assert.assertTrue(response.getError().isNoError());
-        Assert.assertFalse(response.getJobId() != null);
-
-        response.setJobId("ef91c5b3-b5bb-4e8b-8145-e271ac16cefc");
-        Assert.assertFalse(response.getJobId() != "ef91c5b3-b5bb-4e8b-8145-e271ac16cefc");
+    public String getName() {
+      return name;
     }
 
-    @Test
-    public void testErrorType() {
-        ErrorType error = ErrorType.DPFW_ERROR_NONE;
-        Assert.assertFalse(error != ErrorType.DPFW_ERROR_NONE);
-        Assert.assertFalse(error.toString().compareTo("DPFW_ERROR_NONE") != 0);
-
-        ErrorType newError = ErrorType.getErrorType(error.toString());
-        Assert.assertFalse(newError.toString().compareTo("DPFW_ERROR_NONE") != 0);
+    public void setName(String name) {
+      this.name = name;
     }
 
-    @Test
-    public void testJobState() {
-        JobState state = JobState.CREATE;
-        Assert.assertFalse(state.toString() != "CREATE");
-
-        JobState newState = JobState.getState(state.toString());
-        Assert.assertFalse(newState.toString() != "CREATE");
+    public int getAge() {
+      return age;
     }
 
-     @Test
-    public void testTaskFormat() {
-        String json = "{\"type\":\"REGRESSION\",\"name\":\"LinearRegression\","
-                + "\"params\":{\"error\":\"1.235593\",\"weights\":\"0.228758 -0.156367\"},"
-                + "\"inrecord\":[\"/records/x\"],\"outrecord\":[\"/records/score\"]}";
-        TaskFormat taskFormat = TaskFormat.create(json, TaskFormat.class);
-        Assert.assertNotNull(taskFormat);
-        Assert.assertTrue(taskFormat.getInrecord().size() == 1);
-        Assert.assertTrue(taskFormat.getOutrecord().size() == 1);
-
-        System.out.println(taskFormat.toString());
+    public void setAge(int age) {
+      this.age = age;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (!(obj instanceof Person)) {
+        return false;
+      }
+      Person other = (Person) obj;
+      return this.name.equalsIgnoreCase(other.name)
+          && this.age == other.age;
+    }
+  }
 }

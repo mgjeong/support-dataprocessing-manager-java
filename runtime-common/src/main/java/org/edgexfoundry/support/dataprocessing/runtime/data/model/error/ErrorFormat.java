@@ -17,53 +17,49 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.error;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @ApiModel(value = "Result", description = "Result")
 public class ErrorFormat extends Format {
-    @ApiModelProperty(required = true)
-    private ErrorType errorCode;
-    @ApiModelProperty(required = true)
-    private String errorMessage;
 
-    public ErrorFormat() {
-        this(ErrorType.DPFW_ERROR_NONE, "Success.");
-    }
+  @ApiModelProperty(required = true)
+  private ErrorType errorCode;
+  @ApiModelProperty(required = true)
+  private String responseMessage;
 
-    public ErrorFormat(ErrorType errorCode) {
-        this(errorCode, "Success.");
-    }
+  public ErrorFormat() {
+    this(ErrorType.DPFW_ERROR_NONE, "Success.");
+  }
 
-    public ErrorFormat(ErrorType errorCode, String errorMessage) {
-        setErrorCode(errorCode);
-        setErrorMessage(errorMessage);
-    }
+  public ErrorFormat(ErrorType errorCode) {
+    this(errorCode, "Success.");
+  }
 
-    public ErrorType getErrorCode() {
-        return errorCode;
-    }
+  public ErrorFormat(ErrorType errorCode, String responseMessage) {
+    setErrorCode(errorCode);
+    setResponseMessage(responseMessage);
+  }
 
-    public void setErrorCode(ErrorType errorCode) {
-        this.errorCode = errorCode;
-    }
+  public ErrorType getErrorCode() {
+    return errorCode;
+  }
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
+  public void setErrorCode(ErrorType errorCode) {
+    this.errorCode = errorCode;
+  }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+  public String getResponseMessage() {
+    return responseMessage;
+  }
 
-    @JsonIgnore
-    public Boolean isError() {
-        return (this.errorCode != ErrorType.DPFW_ERROR_NONE);
-    }
+  public void setResponseMessage(String responseMessage) {
+    this.responseMessage = responseMessage;
+  }
 
-    @JsonIgnore
-    public Boolean isNoError() {
-        return (this.errorCode == ErrorType.DPFW_ERROR_NONE);
-    }
+  @JsonIgnore
+  public Boolean isError() {
+    return (this.errorCode != ErrorType.DPFW_ERROR_NONE);
+  }
 }

@@ -1,183 +1,135 @@
-/*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *******************************************************************************/
-
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobGroupFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobInfoFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobGroupResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.ResponseFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineType;
-import org.edgexfoundry.support.dataprocessing.runtime.job.JobManager;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import java.util.Locale;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
+import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "*")
 @RestController
-@Api(tags = "Job Manager", description = "API List for Job Managing")
-@RequestMapping(value = "/v1/job")
-public class JobController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobController.class);
-    private JobManager jobManager = null;
+@Api(tags = "Job APIs", description = "API List for jobs")
+@RequestMapping("/api/v1/catalog")
+public class JobController extends AbstractController {
 
-    public JobController() {
-        try {
-            jobManager = JobManager.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+  private WorkflowTableManager workflowTableManager = null;
+  private JobTableManager jobTableManager = null;
+
+  public JobController() {
+    this.workflowTableManager = WorkflowTableManager.getInstance();
+    this.jobTableManager = JobTableManager.getInstance();
+  }
+
+  @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")
+  @RequestMapping(value = "/workflows/{workflowId}/actions/validate", method = RequestMethod.POST)
+  public ResponseEntity validateWorkflow(@PathVariable("workflowId") Long workflowId) {
+    Workflow result = this.workflowTableManager.getWorkflow(workflowId);
+
+    return respond(result, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Deploy workflow", notes = "Deploys a workflow")
+  @RequestMapping(value = "/workflows/{workflowId}/actions/deploy", method = RequestMethod.POST)
+  public ResponseEntity deployWorkflow(@PathVariable("workflowId") Long workflowId) {
+    Workflow result = this.workflowTableManager.getWorkflow(workflowId);
+
+    // flink result
+    WorkflowData workflowData = this.workflowTableManager.doExportWorkflow(result);
+
+    LOGGER.info("WorkflowData: " + workflowData.getConfigStr());
+
+    // Create
+    String targetHost = (String) workflowData.getConfig().get("targetHost");
+    Engine engine = createEngine(targetHost, workflowData.getEngineType());
+
+    Job job;
+    try {
+      job = engine.create(workflowData);
+      if (job == null) {
+        throw new Exception("Failed to create job.");
+      }
+      job = jobTableManager.addOrUpdateWorkflowJob(job); // add to database
+
+      // Run job
+      job = engine.run(job);
+      jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
+
+      return respond(job, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
+          HttpStatus.OK);
     }
+  }
 
-    @ApiOperation(value = "Find Job Instances", notes = "Find Job Instances")
-    @RequestMapping(value = "", method = RequestMethod.GET)
-    @ResponseBody
-    public JobGroupResponseFormat getJob(Locale locale, Model model) {
-        JobGroupResponseFormat response = jobManager.getAllJobs();
-
-        LOGGER.debug(response.toString());
-        return response;
+  protected Engine createEngine(String targetHost, EngineType engineType) {
+    String[] splits = targetHost.split(":");
+    if (engineType == EngineType.FLINK) {
+      return new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    } else if (engineType == EngineType.KAPACITOR) {
+      return new KapacitorEngine(splits[0], Integer.parseInt(splits[1]));
+    } else {
+      throw new RuntimeException("Unsupported operation.");
     }
+  }
 
-    @ApiOperation(value = "Find Job Instance by ID", notes = "Find Job Instance by ID")
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public JobGroupResponseFormat getJobById(Locale locale, Model model, @PathVariable("id") String id) {
-        LOGGER.debug("Data : " + id);
-
-        JobGroupResponseFormat response = jobManager.getJob(id);
-
-        LOGGER.debug(response.toString());
-        return response;
+  /**
+   * TEMPORARY
+   **/
+  @ApiOperation(value = "Get workflow jobs", notes = "Get workflow jos")
+  @RequestMapping(value = "/workflows/{workflowId}/jobs", method = RequestMethod.GET)
+  public ResponseEntity getWorkflowJobs(@PathVariable("workflowId") Long workflowId) {
+    try {
+      Collection<Job> jobs = jobTableManager.listWorkflowJobs(workflowId);
+      jobs = jobs.stream().filter(
+          workflowJob -> workflowJob.getState().getState() == State.RUNNING)
+          .collect(Collectors.toSet());
+      return respondEntity(jobs, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }
+  }
 
-    @ApiOperation(value = "Find Job description by jobId", notes = "Find Job description by jobId")
-    @RequestMapping(value = "/info/{jobid}", method = RequestMethod.GET)
-    @ResponseBody
-    public JobInfoFormat getJobInfoByJobId(Locale locale, Model model, @PathVariable("jobid") String jid) {
-        LOGGER.debug("Data : " + jid);
+  /**
+   * TEMPORARY
+   **/
+  @ApiOperation(value = "Stop job", notes = "Stop job")
+  @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
+  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
+      @PathVariable("jobId") String jobId) {
+    try {
+      Job job = jobTableManager.getWorkflowJob(jobId);
+      String targetHost = job.getConfig("targetHost");
+      Engine engine = createEngine(targetHost, EngineType.FLINK);
 
-        JobInfoFormat response = jobManager.getJobInfoByJobId(jid);
-
-        LOGGER.debug(response.toString());
-        return response;
+      try {
+        job = engine.stop(job);
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+        job.getState().setState(State.STOPPED); // Set to stop, anyhow
+      }
+      jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
+      return respond(job, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }
+  }
 
-    @ApiOperation(value = "Create Job Instance", notes = "Create Job Instance")
-    @RequestMapping(value = "", method = RequestMethod.POST)
-    @ResponseBody
-    public JobResponseFormat createJob(Locale locale, Model model,
-                                       @ApiParam(value = "json String",
-                                            name = "json")
-                                       @RequestBody(required = true)
-                                            JobGroupFormat request) {
-        LOGGER.debug(request.toString());
-
-        JobResponseFormat response = jobManager.createGroupJob(EngineType.Flink, request);
-
-        LOGGER.debug(response.toString());
-        return response;
-    }
-
-    @ApiOperation(value = "Delete All Job Instance", notes = "Delete All Job Instance")
-    @RequestMapping(value = "", method = RequestMethod.DELETE)
-    @ResponseBody
-    public ResponseFormat deleteAllJob(Locale locale, Model model) {
-        ErrorFormat response = jobManager.deleteAllJob();
-
-        LOGGER.debug(response.toString());
-
-        return new ResponseFormat(response);
-    }
-
-//    @ApiOperation(value = "Create Group Job Instance", notes = "Create Group Job Instance")
-//    @RequestMapping(value = "/group", method = RequestMethod.POST)
-//    @ResponseBody
-//    public JobResponseFormat createGroupJob(Locale locale, Model model,
-//                                         @ApiParam(value = "ex)\t\n" + CREATEGROUPJOB_DEFAULT_VALUE,
-//                                                 name = "json")
-//                                         @RequestBody(required = true)
-//                                                 JobGroupFormat request) {
-//        LOGGER.debug(request.toString());
-//
-//        JobResponseFormat response = jobManager.createGroupJob(request);
-//
-//        LOGGER.debug(response.toString());
-//        return response;
-//    }
-
-    @ApiOperation(value = "Update Job Instance", notes = "Update Job Instance")
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    @ResponseBody
-    public JobResponseFormat updateJob(Locale locale, Model model,
-                                       @PathVariable("id") String id,
-                                       @ApiParam(value = "json String",
-                                            name = "json")
-                                       @RequestBody(required = true)
-                                            JobGroupFormat request) {
-        LOGGER.debug("Id : " + id);
-        LOGGER.debug(request.toString());
-
-        JobResponseFormat response = jobManager.updateJob(EngineType.Flink, id, request);
-
-        LOGGER.debug(response.toString());
-        return response;
-    }
-
-    @ApiOperation(value = "Delete Job Instance", notes = "Delete Job Instance")
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    @ResponseBody
-    public JobResponseFormat deleteJob(Locale locale, Model model, @PathVariable("id") String id) {
-        LOGGER.debug("Id : " + id);
-
-        JobResponseFormat response = jobManager.deleteJob(id);
-
-        LOGGER.debug(response.toString());
-        return response;
-    }
-
-    @ApiOperation(value = "Execute Job Instance", notes = "Execute Job Instance")
-    @RequestMapping(value = "/{id}/execute", method = RequestMethod.POST)
-    @ResponseBody
-    public JobResponseFormat executeJob(Locale locale, Model model, @PathVariable("id") String id) {
-        LOGGER.debug("Id : " + id);
-
-        JobResponseFormat response = jobManager.executeJob(id);
-
-        LOGGER.debug(response.toString());
-        return response;
-    }
-
-    @ApiOperation(value = "Stop Job Instance", notes = "Stop Job Instance")
-    @RequestMapping(value = "/{id}/stop", method = RequestMethod.POST)
-    @ResponseBody
-    public JobResponseFormat stopJob(Locale locale, Model model, @PathVariable("id") String id) {
-        LOGGER.debug("Id : " + id);
-
-        JobResponseFormat response = jobManager.stopJob(id);
-
-        LOGGER.debug(response.toString());
-        return response;
-    }
 }

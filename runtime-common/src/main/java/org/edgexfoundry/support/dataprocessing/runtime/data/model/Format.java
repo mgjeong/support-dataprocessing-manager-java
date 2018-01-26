@@ -16,47 +16,27 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class Format implements Serializable, Cloneable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Format.class);
 
-    public static <T> T create(String data, Class<T> classType) {
-        T object = null;
-        try {
-            object = new ObjectMapper().readValue(data, classType);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return object;
-    }
+  @JsonIgnore
+  protected transient final ObjectMapper mapper = new ObjectMapper();
 
-    @Override
-    public Object clone() {
-        Object obj = null;
-        try {
-            obj = super.clone();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return obj;
-    }
+  public static <T> T create(String data, Class<T> classType) throws Exception {
+    return new ObjectMapper().readValue(data, classType);
+  }
 
-    @Override
-    public String toString() {
-        ObjectMapper mapper = new ObjectMapper();
-        String string = null;
-        try {
-            string = mapper.writeValueAsString(this);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return string;
+  @Override
+  public String toString() {
+    try {
+      return mapper.writeValueAsString(this);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 }
