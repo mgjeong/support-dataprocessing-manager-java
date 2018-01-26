@@ -1,9 +1,13 @@
 Data Processing Manager
 ================================
 
-Data Processing Manager manages the data processing engines(s) for IoT.
-  - Register/Execute/Stop/Update/Delete data processing job(s) into engines
-  - Monitor the status of engines and their jobs
+Data Processing Manager makes it easy to manage, deploy and monitor data workflow(s) to multiple data processing engines of your choice.
+A data workflow can be designed using [Data Processing Designer](https://github.sec.samsung.net/RS7-EdgeComputing/support-dataprocessing-designer).
+
+### Features
+  - Deploy data workflow to data processing engines as one or more workflow jobs
+  - Execute/Stop/Update/Delete workflow jobs
+  - Monitor workflow job status
  
 ## Prerequisites ##
 - Remember, you must configure proxies if necessary.
@@ -99,8 +103,14 @@ $ run.sh
 $ sudo docker run -it -p 8082:8082 support-dataprocessing-manager
 ```
 
-#### Test ####
-- Now you should be able to make RESTful requests to http://localhost:8082/analytics
+#### APIs ####
+Data Processing Manager provides RESTful APIs to manage and monitor workflow jobs.
+A list of available APIs can be found at http://localhost:8082/swagger-ui.html.
+- Example Scenario: Deploying a regression data workflow.
+  - _TBA_
+
+<!-- DEPRECATED
+- Now you should be able to make RESTful requests to http://localhost:8082/
 - Swagger UI interface is available at: http://localhost:8082/analytics/swagger-ui.html
   - Usecase : Data Processing with Algorithm (ex: regression)
     - Data Processing Job Registration
@@ -132,7 +142,8 @@ $ sudo docker run -it -p 8082:8082 support-dataprocessing-manager
     - You will need to create a sample app which listens the stream thru one of the protocol
       which engine-flink supports (Flink : ezMQ/file/webSocket, Kapacitor : ezMQ)
     - Sample App will be provided later
+-->
 - Ports Information
-  - Manager : 8082 (It is required for the "runtimeHost" value in request message)
-  - Flink : 8081 (or User defined port #, it is required for the "targetHost" value in request message)
-  - Kapacitor : 9092 (or User defined port #, it is required for the "targetHost" value in request message)
+  - Data Processing Manager : 8082 (default)
+  - Flink : 8081 (default)
+  - Kapacitor : 9092 (default)
