@@ -74,6 +74,8 @@ public class JobController extends AbstractController {
       job = engine.run(job);
       jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
 
+      MonitoringManager.getInstance().addJob(job);
+
       return respond(job, HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()), HttpStatus.OK);

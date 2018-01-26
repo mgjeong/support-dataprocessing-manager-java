@@ -50,6 +50,11 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
+  public boolean updateMetrics(JobState jobState) throws Exception {
+    return false;
+  }
+
+  @Override
   public String getHost() {
     return null;
   }

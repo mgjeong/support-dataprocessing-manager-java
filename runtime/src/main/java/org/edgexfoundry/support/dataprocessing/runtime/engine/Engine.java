@@ -41,6 +41,8 @@ public interface Engine {
 
   ArrayList<JobState> getMetrics() throws Exception;
 
+  boolean updateMetrics(JobState jobState) throws Exception;
+
   String getHost();
 
   int getPort();

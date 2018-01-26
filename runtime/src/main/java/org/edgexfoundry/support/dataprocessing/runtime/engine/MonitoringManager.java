@@ -1,6 +1,8 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowGroupState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
@@ -27,8 +29,8 @@ public class MonitoringManager implements Runnable {
     setInterval(interval);
     createThread();
 
-    workflowStates = JobTableManager.getInstance().getWorkflowState();
-
+    workflowStates = new HashMap<>();
+//    workflowStates = JobTableManager.getInstance().getWorkflowState();
   }
 
   public static WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
@@ -103,9 +105,9 @@ public class MonitoringManager implements Runnable {
   }
 
   private void createThread() {
-    enabled();
-
     thread = new Thread(this);
+
+    enabled();
   }
 
   public MonitoringManager stop() throws InterruptedException {
@@ -126,9 +128,9 @@ public class MonitoringManager implements Runnable {
 
       semaphore.acquire();
       isRun = true;
-
     } catch (InterruptedException e) {
       e.printStackTrace();
+      isRun = false;
     } finally {
       semaphore.release();
     }
@@ -140,7 +142,7 @@ public class MonitoringManager implements Runnable {
 
       semaphore.acquire();
       isRun = false;
-
+      thread.join(100);
     } catch (InterruptedException e) {
       e.printStackTrace();
     } finally {
@@ -159,31 +161,21 @@ public class MonitoringManager implements Runnable {
 
         semaphore.acquire();
 
-        engines = EngineManager.getEngineList();
+        if(null == workflowStates) {
+          continue;
+        }
 
-        for (Map.Entry<String, Engine> entry : engines.entrySet()) {
-          Engine engine = entry.getValue();
-          ArrayList<JobState> jobStates = engine.getMetrics();
+        for (Map.Entry<Long, HashMap<String, JobState>> workflowStatesEntry : workflowStates.entrySet()) {
 
-          for (JobState state : jobStates) {
-            try {
-              JobTableManager.getInstance().updateWorkflowJobState(state);
-//              JobTableManager jobTableManager = new JobTableManager(
-//                      "jdbc:sqlite:" + Settings.DOCKER_PATH + Settings.DB_PATH);
-//              jobTableManager.updateWorkflowJobState(state);
+          HashMap<String, JobState> jobStateHashMap = workflowStatesEntry.getValue();
+          for (Map.Entry<String, JobState> jobStateEntry : jobStateHashMap.entrySet()) {
+            JobState jobState = jobStateEntry.getValue();
+            Engine engine = EngineManager.getEngine(jobState.getHost() + ":" + jobState.getPort(),
+                                              WorkflowData.EngineType.valueOf(jobState.getEngineType()));
 
-              // It should be updated // TEMPORARY CODE for supporting test.
-              for (HashMap.Entry<Long, HashMap<String, JobState>> groupEntry : workflowStates.entrySet()) {
-                HashMap<String, JobState> jobStateHashMap = groupEntry.getValue();
-                for (HashMap.Entry<String, JobState> jobStateEntry : jobStateHashMap.entrySet()) {
-                  if (jobStateEntry.getValue().getEngineId().compareTo(state.getEngineId()) == 0) {
-                    jobStateEntry.getValue().setHost(engine.getHost()).setPort(engine.getPort());
-                  }
-                }
-              }
-              //
-            } catch (Exception e) {
-              e.printStackTrace();
+            if(engine.updateMetrics(jobState)) {
+              // It has been updated.
+              JobTableManager.getInstance().updateWorkflowJobState(jobState);
             }
           }
         }
@@ -196,6 +188,21 @@ public class MonitoringManager implements Runnable {
       } finally {
         semaphore.release();
       }
+    }
+  }
+
+  public void addJob(Job job) {
+
+    HashMap<String, JobState> jobStateHashMap;
+    long workflowId = job.getWorkflowId();
+
+    if (workflowStates.containsKey(workflowId)) {
+      workflowStates.get(workflowId).put(job.getId(), job.getState());
+    } else {
+      jobStateHashMap = new HashMap<>();
+      jobStateHashMap.put(job.getId(), job.getState());
+
+      workflowStates.put(workflowId, jobStateHashMap);
     }
   }
 

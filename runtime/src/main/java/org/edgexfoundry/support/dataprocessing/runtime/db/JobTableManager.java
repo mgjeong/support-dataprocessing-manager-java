@@ -114,8 +114,12 @@ public class JobTableManager extends AbstractStorageManager {
       throw new RuntimeException("Job id or job state is null.");
     }
 
-    String sql = "INSERT OR REPLACE INTO job_state (jobId, state, startTime, engineId, engineType) " + "VALUES (?, ?, ?, ?, ?)";
-    try (Connection connection = getConnection(); PreparedStatement ps = createPreparedStatement(connection, sql, jobId, jobState.getState().name(), jobState.getStartTime(), jobState.getEngineId(), jobState.getEngineType())) {
+    String sql = "INSERT OR REPLACE INTO job_state (jobId, state, startTime, engineId, engineType, engineHost," +
+      "enginePort) " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    try (Connection connection = getConnection(); PreparedStatement ps
+      = createPreparedStatement(connection, sql, jobId, jobState.getState().name(),
+      jobState.getStartTime(), jobState.getEngineId(), jobState.getEngineType(),
+      jobState.getHost(), jobState.getPort())) {
       boolean oldState = connection.getAutoCommit();
       connection.setAutoCommit(false);
       try {

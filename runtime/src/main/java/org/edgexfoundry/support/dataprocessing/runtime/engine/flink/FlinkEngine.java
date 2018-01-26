@@ -223,10 +223,14 @@ public class FlinkEngine extends AbstractEngine {
       job.getState().setState(State.ERROR);
       job.getState().setStartTime(System.currentTimeMillis());
       job.getState().setErrorMessage(flinkResponse.get("error").getAsString());
+      job.getState().setHost(getHost());
+      job.getState().setPort(getPort());
     } else {
       job.getState().setState(State.RUNNING);
       job.getState().setStartTime(System.currentTimeMillis());
       job.getState().setEngineId(flinkResponse.get("jobid").getAsString());
+      job.getState().setHost(getHost());
+      job.getState().setPort(getPort());
     }
 
     return job;
@@ -295,6 +299,31 @@ public class FlinkEngine extends AbstractEngine {
     }
 
     return jobStates;
+  }
+
+  @Override
+  public boolean updateMetrics(JobState jobState) throws Exception {
+
+    boolean isUpdated = false;
+
+    JsonElement element = this.httpClient.get("/jobs/" + jobState.getEngineId());
+    FlinkJob flinkJob = new Gson().fromJson(element.toString(), FlinkJob.class);
+
+    jobState.setFinishTime(flinkJob.getEndtime());
+    if (0 == flinkJob.getState().compareTo("FAILED")) {
+      if(jobState.getState().name().compareTo(State.ERROR.name()) != 0) {
+        jobState.setState(State.ERROR.name());
+        isUpdated = true;
+      }
+
+      JsonElement jsonElement = this.httpClient.get("/jobs/" + flinkJob.getJid() + "/exceptions");
+      FlinkException flinkException = new Gson().fromJson(jsonElement.toString(), FlinkException.class);
+      jobState.setErrorMessage(flinkException.getRootException());
+    } else {
+      jobState.setState(State.STOPPED.name());
+    }
+
+    return isUpdated;
   }
 
   private String uploadLauncherJar(String path) {

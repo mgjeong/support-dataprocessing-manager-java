@@ -15,6 +15,7 @@ public class FlinkJob {
   private long endTime;
   private long duration;
   private long last_modification;
+
   private FlinkTask tasks;
 
   public String getJid() {
