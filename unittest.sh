@@ -18,6 +18,7 @@ function test_x86() {
 arch=$(uname -m)
 if [[ "$arch" == *"arm"* ]] || [[ "$arch" == *"ARM"* ]]; then
 	echo "Test starts for ARM architecture"
+	exit 0
 else
 	echo "Test starts for x86 architecture"
 	test_x86
