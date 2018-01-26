@@ -6,7 +6,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEdge;
@@ -18,6 +17,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.Field;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream.SchemaType;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -478,7 +478,7 @@ public class WorkflowTableManagerTest extends DatabaseTest {
     field.setUserInput(true);
     field.setTooltip(tooltip);
     field.setOptional(false);
-    field.setType(UIFieldType.STRING);
+    field.setType(UiFieldType.STRING);
     componentUISpecification.addUIField(field);
   }
 

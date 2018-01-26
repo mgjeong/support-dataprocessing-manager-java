@@ -39,7 +39,7 @@ public class FileInputSourceTest {
     String type = "csv";
     File tempFile = makeTempFile(type);
     PrintWriter writer = new PrintWriter(tempFile);
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(csvStr.toString());
     }
     writer.flush();
@@ -62,7 +62,7 @@ public class FileInputSourceTest {
     String type = "tsv";
     File tempFile = makeTempFile(type);
     PrintWriter writer = new PrintWriter(tempFile);
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(tsvStr.toString());
     }
     writer.flush();
@@ -79,6 +79,7 @@ public class FileInputSourceTest {
       tempFile.deleteOnExit();
     }
   }
+
   @Test
   public void testCSVWithKeyRun() throws Exception {
     String type = "csv";
@@ -86,7 +87,7 @@ public class FileInputSourceTest {
     PrintWriter writer = new PrintWriter(tempFile);
 
     writer.println(keyCsvStr.toString());
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(csvStr.toString());
     }
     writer.flush();
@@ -112,7 +113,7 @@ public class FileInputSourceTest {
     PrintWriter writer = new PrintWriter(tempFile);
 
     writer.println(keyTsvStr.toString());
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(tsvStr.toString());
     }
     writer.flush();
@@ -130,12 +131,13 @@ public class FileInputSourceTest {
       tempFile.deleteOnExit();
     }
   }
+
   @Test
   public void testCSVERRVRun() throws Exception {
     String type = "csv";
     File tempFile = makeTempFile(type);
     PrintWriter writer = new PrintWriter(tempFile);
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(errStr.toString());
     }
     writer.flush();
@@ -152,12 +154,13 @@ public class FileInputSourceTest {
       tempFile.deleteOnExit();
     }
   }
+
   @Test
   public void testTSVERRVRun() throws Exception {
     String type = "tsv";
     File tempFile = makeTempFile(type);
     PrintWriter writer = new PrintWriter(tempFile);
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(errStr.toString());
     }
     writer.flush();
@@ -174,12 +177,13 @@ public class FileInputSourceTest {
       tempFile.deleteOnExit();
     }
   }
+
   @Test
   public void testERRVRun() throws Exception {
     String type = "aaa";
     File tempFile = makeTempFile(type);
     PrintWriter writer = new PrintWriter(tempFile);
-    for(int iter = 0 ; iter < 10 ; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
       writer.println(errStr.toString());
     }
     writer.flush();
@@ -196,11 +200,12 @@ public class FileInputSourceTest {
       tempFile.deleteOnExit();
     }
   }
+
   private File makeTempFile(String type) {
     String property = "java.io.tmpdir";
     String tempDir = System.getProperty(property);
     File temp = new File(tempDir,
-        UUID.randomUUID().toString()+"."+type);
+        UUID.randomUUID().toString() + "." + type);
     System.out.println("Temp File: " + temp.getPath());
     return temp;
   }

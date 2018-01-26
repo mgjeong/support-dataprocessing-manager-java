@@ -40,6 +40,7 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
   public void readFirstLineAsKeyValues(boolean option) {
     this.mFirstLineIsKeys = option;
   }
+
   @Override
   public void open(Configuration parameters) throws Exception {
 
@@ -87,7 +88,7 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
         String line = mBR.readLine();
         // first line is array of keys
         String[] Keys = null;
-        if(this.mFirstLineIsKeys) {
+        if (this.mFirstLineIsKeys) {
           Keys = line.split(this.mDelimiter);
           if (Keys.length < 1) {
             // Parsing json formatted string line
@@ -141,7 +142,7 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
         LOGGER.info("File Reading Done");
         this.running = false;
       } else {
-        LOGGER.error(this.mType+" file type is not supported");
+        LOGGER.error(this.mType + " file type is not supported");
         this.running = false;
         break;
       }
