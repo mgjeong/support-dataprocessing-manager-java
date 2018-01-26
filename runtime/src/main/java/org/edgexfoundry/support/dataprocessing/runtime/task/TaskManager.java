@@ -43,22 +43,19 @@ public final class TaskManager implements DirectoryChangeEventListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
   private static TaskManager instance = null;
 
-  private static DirectoryWatcher directoryWatcher = null;
-
   private static final int DEFAULTTASK = 0;
   private static final int USERTASK = 1;
 
-  private final WorkflowTableManager workflowTableManager;
+  private WorkflowTableManager workflowTableManager = null;
+  private DirectoryWatcher directoryWatcher = null;
 
   private TaskManager() {
-    this.workflowTableManager = WorkflowTableManager.getInstance();
   }
 
   public static TaskManager getInstance() {
 
     if (null == instance) {
       instance = new TaskManager();
-      instance.initialize();
     }
     return instance;
   }
@@ -73,14 +70,13 @@ public final class TaskManager implements DirectoryChangeEventListener {
     }
 
     this.directoryWatcher = new DirectoryWatcher(absPath, this);
+    this.directoryWatcher.start();
   }
 
   public void initialize() {
-    try {
-      startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-    }
+    this.workflowTableManager = WorkflowTableManager.getInstance();
+
+    startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
   }
 
   private void stopDirectoryWatcher() {

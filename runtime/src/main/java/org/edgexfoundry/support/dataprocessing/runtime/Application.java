@@ -38,6 +38,7 @@ public class Application extends SpringBootServletInitializer {
     makeDatabaseIfNecessary();
 
     // 3. Run task manager to scan for tasks
+    TaskManager.getInstance().initialize();
     TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
   }
 
@@ -45,7 +46,7 @@ public class Application extends SpringBootServletInitializer {
     // Check database
     File db = new File(Settings.DOCKER_PATH + Settings.DB_PATH);
     if (!db.exists()) {
-      LOGGER.info("Executing bootstrap on {}", Settings.DOCKER_PATH + Settings.DB_PATH);
+      LOGGER.info("Executing bootstrap on {}", db.getAbsolutePath());
       Bootstrap bootstrap = new Bootstrap();
       bootstrap.execute();
     }

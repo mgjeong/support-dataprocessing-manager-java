@@ -16,141 +16,128 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
-import org.junit.Test;
-
-/*
-import Settings;
-import ErrorFormat;
-import org.junit.AfterClass;
-import org.junit.Assert;
-
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-*/
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Test;
+
 public class DirectoryWatcherTest {
-  @Test
-  public void test(){
-    System.out.println("Pass");
+
+  private static boolean isCalled = false;
+
+  private CountDownLatch lock = new CountDownLatch(1);
+
+  private static DirectoryWatcher watcher = null;
+
+  private static DirectoryChangeEventListener listener = new DirectoryChangeEventListener() {
+    @Override
+    public ErrorFormat fileRemovedEventReceiver(String fileName) {
+      System.out.println("REMOVED : " + fileName);
+      isCalled = true;
+      return new ErrorFormat();
+    }
+
+    @Override
+    public ErrorFormat fileCreatedEventReceiver(String fileName) {
+      System.out.println("CREATED : " + fileName);
+      isCalled = true;
+      return new ErrorFormat();
+    }
+  };
+
+  @AfterClass
+  public static void dDestroyWatcher() {
+    try {
+      watcher.stopWatcher();
+      watcher.join(2000);
+      watcher = null;
+    } catch (InterruptedException e) {
+      System.out.println("InterruptedException occured during unit test");
+    }
+
+    Assert.assertNull(watcher);
   }
 
-    //FIXLATER:
-    /*
-    private static boolean isCalled = false;
+  @Test
+  public void bFileCreateEventReceive() {
+    watcher = new DirectoryWatcher(".");
+    watcher.setDirectoryChangeEventListener(listener);
+    watcher.start();
+    Assert.assertNotNull(watcher);
 
-    private CountDownLatch lock = new CountDownLatch(1);
+    isCalled = false;
 
-    private static DirectoryWatcher watcher = null;
+    File file = new File("./TEST.TXT");
+    try {
+      file.createNewFile();
+      lock.await(2000, TimeUnit.MILLISECONDS);
+    } catch (IOException e) {
+      System.out.println("IOException on opening file " + file.toString());
+      Assert.fail();
+    } catch (InterruptedException e) {
+      System.out.println("InterruptedException on opening file " + file.toString());
+      Assert.fail();
 
-    private static DirectoryChangeEventListener listener = new DirectoryChangeEventListener() {
-        @Override
-        public ErrorFormat fileRemovedEventReceiver(String fileName) {
-            System.out.println("REMOVED : " + fileName);
-            isCalled = true;
-            return new ErrorFormat();
-        }
-
-        @Override
-        public ErrorFormat fileCreatedEventReceiver(String fileName) {
-            System.out.println("CREATED : " + fileName);
-            isCalled = true;
-            return new ErrorFormat();
-        }
-    };
-
-    @AfterClass
-    public static void dDestroyWatcher() {
-        try {
-            watcher.stopWatcher();
-            watcher.join(2000);
-            watcher = null;
-        } catch (InterruptedException e) {
-            System.out.println("InterruptedException occured during unit test");
-        }
-
-        Assert.assertNull(watcher);
+    } finally {
+      file.delete();
     }
 
-    @Test
-    public void bFileCreateEventReceive() {
-        watcher = new DirectoryWatcher();
-        watcher.setDirectoryChangeEventListener(listener);
-        watcher.start();
-        Assert.assertNotNull(watcher);
+    Assert.assertTrue(isCalled);
+  }
 
-        isCalled = false;
+  @Test
+  public void cFileRemoveEventReceive() {
+    // Force to generate IOException by setting the wrong path.
+    watcher = new DirectoryWatcher(".");
+    watcher.setDirectoryChangeEventListener(listener);
+    watcher.start();
+    Assert.assertNotNull(watcher);
 
-        File file = new File(Settings.DOCKER_PATH + "TEST.TXT");
-        try {
-            file.createNewFile();
-            lock.await(2000, TimeUnit.MILLISECONDS);
-        } catch (IOException e) {
-            System.out.println("IOException on opening file " + file.toString());
-            Assert.fail();
-        } catch (InterruptedException e) {
-            System.out.println("InterruptedException on opening file " + file.toString());
-            Assert.fail();
+    isCalled = false;
 
-        } finally {
-            file.delete();
-        }
+    File file = new File("./TEST2.TXT");
+    try {
+      file.createNewFile();
+    } catch (IOException e) {
+      e.printStackTrace();
+      Assert.fail();
+    } finally {
+      file.delete();
 
-        Assert.assertTrue(isCalled);
     }
 
-    @Test
-    public void cFileRemoveEventReceive() {
-        // Force to generate IOException by setting the wrong path.
-        watcher = new DirectoryWatcher("WRONGPATH\n");
-
-        watcher = new DirectoryWatcher(Settings.DOCKER_PATH);
-        watcher.start();
-        Assert.assertNotNull(watcher);
-
-        isCalled = false;
-
-        File file = new File(Settings.DOCKER_PATH + "TEST2.TXT");
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Assert.fail();
-        } finally {
-            file.delete();
-
-        }
-
-        try {
-            lock.await(2000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Assert.assertTrue(isCalled);
-
-        // Exception test
-        watcher.stopWatcher();
+    try {
+      lock.await(2000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
 
-    @Test
-    public void scanFileOnDefaultDirectory() {
-        watcher = new DirectoryWatcher(listener);
-        watcher.start();
-        watcher.interrupt();
+    Assert.assertTrue(isCalled);
 
-        Assert.assertNotNull(watcher);
+    // Exception test
+    watcher.stopWatcher();
+  }
 
-        ArrayList<String> list = watcher.scanFile(".");
+  @Test
+  public void scanFileOnDefaultDirectory() {
+    watcher = new DirectoryWatcher(listener);
+    watcher.start();
+    watcher.interrupt();
 
-        for (String fname : list) {
-            System.out.println(fname);
-        }
+    Assert.assertNotNull(watcher);
 
-        Assert.assertTrue(0 < list.size());
+    ArrayList<String> list = watcher.scanFile(".");
+
+    for (String fname : list) {
+      System.out.println(fname);
     }
-    */
+
+    Assert.assertTrue(0 < list.size());
+  }
 }

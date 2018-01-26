@@ -480,7 +480,6 @@ public class WorkflowController extends AbstractController {
     } else {
       engineList = getEdgeInfo().getEngineList(groupId, engineType);
     }
-
     JsonArray response = new JsonArray();
 
     for (String engine : engineList) {

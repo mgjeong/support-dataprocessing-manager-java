@@ -2,13 +2,13 @@
 
 # Features
 + Calculate the regression score with given data
-+ 2 types of algorithm supported 
++ 2 types of algorithm supported
   + Linear regression
-  + Logistic regression  
+  + Logistic regression
 
-# How to Use 
+# How to Use
 ## Algorithm Parameters Setting
-+ Describe "Input Parameters" in Json string 
++ Describe "Input Parameters" in Json string
   + "type"  <-- Type of error calculation (mse, rmse, mae, me)
   + "observation"  <-- Target value for which error should calculated with data with key name in the "inrecord"
   + "interval"  <-- windows size for error calculation

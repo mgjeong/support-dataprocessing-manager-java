@@ -30,10 +30,11 @@ is_extracted ${output_path}/kapacitor/usr/bin/kapacitord
 
 echo -ne "Setting necessary configurations..."
 export GOPATH=${output_path}
-go get -u go.uber.org/zap
-go get -u gopkg.in/mgo.v2
+go get -v -u go.uber.org/zap
+go get -v -u gopkg.in/mgo.v2
 cp ${rsc_path}/kapacitor.conf ${output_path}/
 is_extracted ${output_path}/kapacitor.conf
+is_extracted ${output_path}/src/go.uber.org/zap/Makefile
 
 echo -ne "Setting neccessary files..."
 cp ${rsc_path}/setldd.sh ${output_path}/
