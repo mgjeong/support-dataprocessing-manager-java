@@ -1,9 +1,11 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.ComponentUISpecification.UIField.UIFieldType;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologyComponentBundle;
-import org.edgexfoundry.support.dataprocessing.runtime.db.TopologyTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField.UIFieldType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
+import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -14,23 +16,22 @@ public class Bootstrap {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Bootstrap.class);
 
-  private final TopologyTableManager storageManager = TopologyTableManager.getInstance();
+  private final WorkflowTableManager workflowTableManager;
 
   public Bootstrap() {
-
+    workflowTableManager = WorkflowTableManager.getInstance();
   }
 
-  private void addBuiltinTopologyComponentBundles() {
-    addBuiltinTopologyTopologyComponentBundles();
-    addBuiltinTopologySourceComponentBundles();
-    addBuiltinTopologySinkComponentBundles();
+  private void addBuiltinWorkflowComponentBundles() {
+    addBuiltinWorkflowWorkflowComponentBundles();
+    addBuiltinWorkflowSourceComponentBundles();
+    addBuiltinWorkflowSinkComponentBundles();
   }
 
-  private void addBuiltinTopologySinkComponentBundles() {
-    TopologyComponentBundle dpfwSink = new TopologyComponentBundle();
+  private void addBuiltinWorkflowSinkComponentBundles() {
+    WorkflowComponentBundle dpfwSink = new WorkflowComponentBundle();
     dpfwSink.setName("DPFW-SINK");
-    dpfwSink.setType(TopologyComponentBundle.TopologyComponentType.SINK);
-    dpfwSink.setTimestamp(System.currentTimeMillis());
+    dpfwSink.setType(WorkflowComponentBundleType.SINK);
     dpfwSink.setStreamingEngine("FLINK");
     dpfwSink.setSubType("DPFW");
     dpfwSink.setBundleJar("");
@@ -38,30 +39,27 @@ public class Bootstrap {
     ComponentUISpecification componentUISpecification = new ComponentUISpecification();
     addUIField(componentUISpecification, "Data Type", "dataType", "Enter data type");
     addUIField(componentUISpecification, "Data Sink", "dataSink", "Enter data sink");
-    dpfwSink.setTopologyComponentUISpecification(componentUISpecification);
+    dpfwSink.setWorkflowComponentUISpecification(componentUISpecification);
 
-    dpfwSink.setFieldHintProviderClass("");
     dpfwSink.setTransformationClass("");
     dpfwSink.setBuiltin(true);
-    dpfwSink.setMavenDeps("");
 
-    TopologyComponentBundle existingBundle =
-        storageManager.getTopologyComponentBundle(dpfwSink.getName(), dpfwSink.getType(),
+    WorkflowComponentBundle existingBundle =
+        workflowTableManager.getWorkflowComponentBundle(dpfwSink.getName(), dpfwSink.getType(),
             dpfwSink.getSubType());
     if (existingBundle == null) {
-      dpfwSink = storageManager.addTopologyComponentBundle(dpfwSink);
+      dpfwSink = workflowTableManager.addWorkflowComponentBundle(dpfwSink);
     } else {
       dpfwSink.setId(existingBundle.getId());
-      dpfwSink = storageManager.addOrUpdateTopologyComponentBundle(dpfwSink);
+      dpfwSink = workflowTableManager.addOrUpdateWorkflowComponentBundle(dpfwSink);
     }
     LOGGER.info("Sink id={}/name={} added.", dpfwSink.getId(), dpfwSink.getName());
   }
 
-  private void addBuiltinTopologySourceComponentBundles() {
-    TopologyComponentBundle dpfwSource = new TopologyComponentBundle();
+  private void addBuiltinWorkflowSourceComponentBundles() {
+    WorkflowComponentBundle dpfwSource = new WorkflowComponentBundle();
     dpfwSource.setName("DPFW-SOURCE");
-    dpfwSource.setType(TopologyComponentBundle.TopologyComponentType.SOURCE);
-    dpfwSource.setTimestamp(System.currentTimeMillis());
+    dpfwSource.setType(WorkflowComponentBundleType.SOURCE);
     dpfwSource.setStreamingEngine("FLINK");
     dpfwSource.setSubType("DPFW");
     dpfwSource.setBundleJar("");
@@ -70,36 +68,33 @@ public class Bootstrap {
     ComponentUISpecification componentUISpecification = new ComponentUISpecification();
     addUIField(componentUISpecification, "Data Type", "dataType", "Enter data type");
     addUIField(componentUISpecification, "Data Source", "dataSource", "Enter data source");
-    dpfwSource.setTopologyComponentUISpecification(componentUISpecification);
+    dpfwSource.setWorkflowComponentUISpecification(componentUISpecification);
 
-    dpfwSource.setFieldHintProviderClass("");
     dpfwSource.setTransformationClass("");
     dpfwSource.setBuiltin(true);
-    dpfwSource.setMavenDeps("");
 
-    TopologyComponentBundle existingBundle =
-        storageManager.getTopologyComponentBundle(dpfwSource.getName(), dpfwSource.getType(),
+    WorkflowComponentBundle existingBundle =
+        workflowTableManager.getWorkflowComponentBundle(dpfwSource.getName(), dpfwSource.getType(),
             dpfwSource.getSubType());
     if (existingBundle == null) {
-      dpfwSource = storageManager.addTopologyComponentBundle(dpfwSource);
+      dpfwSource = workflowTableManager.addWorkflowComponentBundle(dpfwSource);
     } else {
       dpfwSource.setId(existingBundle.getId());
-      dpfwSource = storageManager.addOrUpdateTopologyComponentBundle(dpfwSource);
+      dpfwSource = workflowTableManager.addOrUpdateWorkflowComponentBundle(dpfwSource);
     }
     LOGGER.info("Source id={}/name={} added.", dpfwSource.getId(), dpfwSource.getName());
   }
 
-  private void addBuiltinTopologyTopologyComponentBundles() {
-    TopologyComponentBundle runtimeTopology = new TopologyComponentBundle();
-    runtimeTopology.setName("Runtime topology");
-    runtimeTopology.setType(TopologyComponentBundle.TopologyComponentType.TOPOLOGY);
-    runtimeTopology.setTimestamp(System.currentTimeMillis());
-    runtimeTopology.setStreamingEngine("FLINK");
-    runtimeTopology.setSubType("TOPOLOGY");
-    runtimeTopology.setBundleJar("");
+  private void addBuiltinWorkflowWorkflowComponentBundles() {
+    WorkflowComponentBundle runtimeWorkflow = new WorkflowComponentBundle();
+    runtimeWorkflow.setName("Runtime workflow");
+    runtimeWorkflow.setType(WorkflowComponentBundleType.WORKFLOW);
+    runtimeWorkflow.setStreamingEngine("FLINK");
+    runtimeWorkflow.setSubType("WORKFLOW");
+    runtimeWorkflow.setBundleJar("");
 
     ComponentUISpecification componentUISpecification = new ComponentUISpecification();
-    ComponentUISpecification.UIField runtimeHost = new ComponentUISpecification.UIField();
+    UIField runtimeHost = new UIField();
     runtimeHost.setUiName("Runtime host");
     runtimeHost.setFieldName("runtimeHost");
     runtimeHost.setUserInput(true);
@@ -108,7 +103,7 @@ public class Bootstrap {
     runtimeHost.setType(UIFieldType.STRING);
     runtimeHost.setDefaultValue("localhost:8082");
     componentUISpecification.addUIField(runtimeHost);
-    ComponentUISpecification.UIField targetHost = new ComponentUISpecification.UIField();
+    UIField targetHost = new UIField();
     targetHost.setUiName("Target host");
     targetHost.setFieldName("targetHost");
     targetHost.setUserInput(true);
@@ -117,30 +112,28 @@ public class Bootstrap {
     targetHost.setType(UIFieldType.STRING);
     targetHost.setDefaultValue("localhost:9092");
     componentUISpecification.addUIField(targetHost);
-    runtimeTopology.setTopologyComponentUISpecification(componentUISpecification);
+    runtimeWorkflow.setWorkflowComponentUISpecification(componentUISpecification);
 
-    runtimeTopology.setFieldHintProviderClass("");
-    runtimeTopology.setTransformationClass("dummy");
-    runtimeTopology.setBuiltin(true);
-    runtimeTopology.setMavenDeps("");
+    runtimeWorkflow.setTransformationClass("dummy");
+    runtimeWorkflow.setBuiltin(true);
 
-    TopologyComponentBundle existingBundle =
-        storageManager
-            .getTopologyComponentBundle(runtimeTopology.getName(), runtimeTopology.getType(),
-                runtimeTopology.getSubType());
+    WorkflowComponentBundle existingBundle =
+        workflowTableManager
+            .getWorkflowComponentBundle(runtimeWorkflow.getName(), runtimeWorkflow.getType(),
+                runtimeWorkflow.getSubType());
     if (existingBundle == null) {
-      runtimeTopology = storageManager.addTopologyComponentBundle(runtimeTopology);
+      runtimeWorkflow = workflowTableManager.addWorkflowComponentBundle(runtimeWorkflow);
     } else {
-      runtimeTopology.setId(existingBundle.getId());
-      runtimeTopology = storageManager.addOrUpdateTopologyComponentBundle(runtimeTopology);
+      runtimeWorkflow.setId(existingBundle.getId());
+      runtimeWorkflow = workflowTableManager.addOrUpdateWorkflowComponentBundle(runtimeWorkflow);
     }
-    LOGGER.info("Topology id={}/name={} added.",
-        runtimeTopology.getId(), runtimeTopology.getName());
+    LOGGER.info("Workflow id={}/name={} added.",
+        runtimeWorkflow.getId(), runtimeWorkflow.getName());
   }
 
   private void addUIField(ComponentUISpecification componentUISpecification, String uiName,
       String fieldName, String tooltip) {
-    ComponentUISpecification.UIField field = new ComponentUISpecification.UIField();
+    UIField field = new UIField();
     field.setUiName(uiName);
     field.setFieldName(fieldName);
     field.setUserInput(true);
@@ -153,27 +146,12 @@ public class Bootstrap {
   public void execute() throws Exception {
     createTablesIfNotExist();
 
-    addBuiltinTopologyComponentBundles();
+    addBuiltinWorkflowComponentBundles();
   }
 
   private void createTablesIfNotExist() {
     ResourceLoader resourceLoader = new DefaultResourceLoader(getClass().getClassLoader());
     Resource resource = resourceLoader.getResource("db/sqlite/create_tables.sql");
-    storageManager.executeSqlScript(resource);
-  }
-
-  public void terminate() {
-    storageManager.terminate();
-  }
-
-  public static void main(String[] args) throws Exception {
-    LOGGER.info("Starting bootstrap...");
-
-    final Bootstrap bootstrap = new Bootstrap();
-
-    // Shutdown hook
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> bootstrap.terminate()));
-
-    bootstrap.execute();
+    workflowTableManager.executeSqlScript(resource);
   }
 }

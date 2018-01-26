@@ -283,7 +283,7 @@ public class HTTPTest {
 
         try {
             http.delete(anyString());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
         }

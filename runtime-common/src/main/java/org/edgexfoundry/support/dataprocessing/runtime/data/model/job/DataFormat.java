@@ -16,53 +16,59 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import io.swagger.annotations.ApiModelProperty;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
+@Deprecated
 public class DataFormat extends Format {
-    @ApiModelProperty(required = true)
-    private String dataType = null;
-    @ApiModelProperty(required = true)
-    private String dataSource = null;
-    @ApiModelProperty(required = false)
-    private String name = null;
 
-    private Long id;
+  @ApiModelProperty(required = true)
+  private String dataType = null;
+  @ApiModelProperty(required = true)
+  private String dataSource = null;
+  @ApiModelProperty(required = false)
+  private String name = null;
 
-    public DataFormat() {
-        this(null, null);
-    }
+  private Long id;
 
-    public DataFormat(String dataType, String dataSource) {
-        setDataType(dataType);
-        setDataSource(dataSource);
-    }
+  public DataFormat() {
+    this(null, null);
+  }
 
-    public String getDataType() {
-        return dataType;
-    }
+  public DataFormat(String dataType, String dataSource) {
+    setDataType(dataType);
+    setDataSource(dataSource);
+  }
 
-    public void setDataType(String dataType) {
-        this.dataType = dataType;
-    }
+  public String getDataType() {
+    return dataType;
+  }
 
-    public String getDataSource() {
-        return dataSource;
-    }
+  public void setDataType(String dataType) {
+    this.dataType = dataType;
+  }
 
-    public void setDataSource(String dataSource) {
-        this.dataSource = dataSource;
-    }
+  public String getDataSource() {
+    return dataSource;
+  }
 
-    public void setName(String name) {this.name = name;}
+  public void setDataSource(String dataSource) {
+    this.dataSource = dataSource;
+  }
 
-    public String getName() {return this.name;}
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public String getName() {
+    return this.name;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
 }

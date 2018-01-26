@@ -16,19 +16,11 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 @Configuration
 public class ApplicationTest {
-
+/* TODO: Is it a good idea to test Application.main ?
   @Rule
   public OutputCapture outputCapture = new OutputCapture();
 
@@ -54,5 +46,5 @@ public class ApplicationTest {
   private String getOutput() {
     return this.outputCapture.toString();
   }
-
+*/
 }

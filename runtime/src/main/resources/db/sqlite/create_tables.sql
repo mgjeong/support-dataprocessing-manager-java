@@ -1,16 +1,16 @@
 -- -----------------------------------------------------
--- Table `topology`
+-- Table `workflow`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `topology` (
+CREATE TABLE IF NOT EXISTS `workflow` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
   `config` TEXT NOT NULL
 );
 
 -- -----------------------------------------------------
--- Table `topology_component_bundle`
+-- Table `workflow_component_bundle`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `topology_component_bundle` (
+CREATE TABLE IF NOT EXISTS `workflow_component_bundle` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
   `type` TEXT NOT NULL,
@@ -19,56 +19,45 @@ CREATE TABLE IF NOT EXISTS `topology_component_bundle` (
   `path` TEXT NOT NULL,
   `classname` TEXT NOT NULL,
   `param` TEXT NOT NULL,
-  `componentUISpecification` TEXT NOT NULL,
   `removable` CHAR(1) NOT NULL DEFAULT '0'
 );
 
 -- -----------------------------------------------------
--- Table `topology_component`
+-- Table `workflow_component`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `topology_component` (
+CREATE TABLE IF NOT EXISTS `workflow_component` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-  `topologyId` INTEGER NOT NULL,
+  `workflowId` INTEGER NOT NULL,
   `componentBundleId` INTEGER NOT NULL,
   `name` TEXT NOT NULL,
   `config` TEXT NOT NULL,
-  UNIQUE (`id`, `topologyId`),
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`),
-  FOREIGN KEY (`componentBundleId`) REFERENCES `topology_component_bundle` (`id`)
+  UNIQUE (`id`, `workflowId`),
+  FOREIGN KEY (`workflowId`) REFERENCES `workflow` (`id`),
+  FOREIGN KEY (`componentBundleId`) REFERENCES `workflow_component_bundle` (`id`)
 );
 
 -- -----------------------------------------------------
--- Table `topology_editor_metadata`
+-- Table `workflow_editor_metadata`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `topology_editor_metadata` (
-  `topologyId` INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS `workflow_editor_metadata` (
+  `workflowId` INTEGER NOT NULL,
   `data` TEXT NOT NULL,
-  PRIMARY KEY (`topologyId`),
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`)
+  PRIMARY KEY (`workflowId`),
+  FOREIGN KEY (`workflowId`) REFERENCES `workflow` (`id`)
 );
 
 -- -----------------------------------------------------
--- Table `topology_edge`
+-- Table `workflow_edge`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `topology_edge` (
+CREATE TABLE IF NOT EXISTS `workflow_edge` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-  `topologyId` INTEGER NOT NULL,
+  `workflowId` INTEGER NOT NULL,
   `fromId` INTEGER NOT NULL,
   `toId` INTEGER NOT NULL,
   `streamGroupings` TEXT NOT NULL,
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`),
-  FOREIGN KEY (`fromId`) REFERENCES `topology_component` (`id`),
-  FOREIGN KEY (`toId`) REFERENCES `topology_component` (`id`)
-);
-
--- -----------------------------------------------------
--- Table `job_group`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `job_group` (
-  `id` TEXT NOT NULL,
-  `topologyId` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`)
+  FOREIGN KEY (`workflowId`) REFERENCES `workflow` (`id`),
+  FOREIGN KEY (`fromId`) REFERENCES `workflow_component` (`id`),
+  FOREIGN KEY (`toId`) REFERENCES `workflow_component` (`id`)
 );
 
 -- -----------------------------------------------------
@@ -76,43 +65,35 @@ CREATE TABLE IF NOT EXISTS `job_group` (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `job` (
   `id` TEXT NOT NULL,
-  `groupId` TEXT NOT NULL,
-  `engineId` TEXT,
+  `workflowId` INTEGER NOT NULL,
   `config` TEXT,
-  `input` TEXT,
-  `output` TEXT,
-  `taskinfo` TEXT,
-  `state` TEXT,
-  `targetHost` TEXT,
-  `runtimeHost` TEXT,
-  `engineType` TEXT,
-  PRIMARY KEY (`id`, `groupId`),
-  FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`)
+  PRIMARY KEY (`id`, `workflowId`),
+  FOREIGN KEY (`workflowId`) REFERENCES `workflow` (`id`)
 );
 
 -- -----------------------------------------------------
 -- Table `job_state`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `job_state` (
-  `groupId` TEXT NOT NULL,
   `jobId` TEXT NOT NULL,
   `state` TEXT,
   `startTime` LONG,
-  PRIMARY KEY (`groupId`, `jobId`),
-  FOREIGN KEY (`groupId`) REFERENCES `job_group` (`id`),
+  `engineId` TEXT,
+  `engineType` TEXT,
+  PRIMARY KEY (`jobId`),
   FOREIGN KEY (`jobId`) REFERENCES `job` (`id`)
 );
 
 -- -----------------------------------------------------
--- Table `topology_stream`
+-- Table `workflow_stream`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `topology_stream` (
+CREATE TABLE IF NOT EXISTS `workflow_stream` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-  `topologyId` INTEGER NOT NULL,
+  `workflowId` INTEGER NOT NULL,
   `componentId` INTEGER NOT NULL,
   `streamName` TEXT NOT NULL,
   `fields` TEXT NOT NULL,
-  FOREIGN KEY (`topologyId`) REFERENCES `topology` (`id`),
-  FOREIGN KEY (`componentId`) REFERENCES `topology_component` (`id`)
+  FOREIGN KEY (`workflowId`) REFERENCES `workflow` (`id`),
+  FOREIGN KEY (`componentId`) REFERENCES `workflow_component` (`id`)
 );
 

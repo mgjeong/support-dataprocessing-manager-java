@@ -24,6 +24,10 @@ public class WorkflowData {
   private List<WorkflowEdge> edges = new ArrayList<>();
   private WorkflowEditorMetadata workflowEditorMetadata;
 
+  // Make it transient so that gson does not parse this
+  @JsonIgnore
+  private transient final ObjectMapper mapper = new ObjectMapper();
+
   public enum EngineType {
     MULTI, FLINK, KAPACITOR, UNKNOWN
   }
@@ -44,7 +48,6 @@ public class WorkflowData {
   public String getConfigStr() {
     try {
       if (!this.config.isEmpty()) {
-        ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this.config);
       } else {
         return "{}";
@@ -62,12 +65,12 @@ public class WorkflowData {
   @JsonProperty("config")
   public void setConfig(String configStr) {
     try {
-      if (!StringUtils.isEmpty(configStr)) {
-        ObjectMapper mapper = new ObjectMapper();
-        this.config = mapper
-            .readValue(configStr, new TypeReference<Map<String, Object>>() {
-            });
+      if (StringUtils.isEmpty(configStr)) {
+        throw new RuntimeException("Invalid config");
       }
+      this.config = mapper
+          .readValue(configStr, new TypeReference<Map<String, Object>>() {
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -79,6 +82,9 @@ public class WorkflowData {
 
   public void setSources(
       List<WorkflowSource> sources) {
+    if (sources == null) {
+      throw new RuntimeException("Invalid sources");
+    }
     this.sources = sources;
   }
 
@@ -88,6 +94,9 @@ public class WorkflowData {
 
   public void setSinks(
       List<WorkflowSink> sinks) {
+    if (sinks == null) {
+      throw new RuntimeException("Invalid sinks");
+    }
     this.sinks = sinks;
   }
 
@@ -97,6 +106,9 @@ public class WorkflowData {
 
   public void setProcessors(
       List<WorkflowProcessor> processors) {
+    if (processors == null) {
+      throw new RuntimeException("Invalid processors");
+    }
     this.processors = processors;
   }
 
@@ -106,6 +118,9 @@ public class WorkflowData {
 
   public void setEdges(
       List<WorkflowEdge> edges) {
+    if (edges == null) {
+      throw new RuntimeException("Invalid edges");
+    }
     this.edges = edges;
   }
 
@@ -115,6 +130,9 @@ public class WorkflowData {
 
   public void setWorkflowEditorMetadata(
       WorkflowEditorMetadata workflowEditorMetadata) {
+    if (workflowEditorMetadata == null) {
+      throw new RuntimeException("Invalid workflow editor metadata");
+    }
     this.workflowEditorMetadata = workflowEditorMetadata;
   }
 
@@ -123,6 +141,9 @@ public class WorkflowData {
   }
 
   public void setWorkflowId(Long workflowId) {
+    if (workflowId == null) {
+      throw new RuntimeException("Invalid workflow id");
+    }
     this.workflowId = workflowId;
   }
 

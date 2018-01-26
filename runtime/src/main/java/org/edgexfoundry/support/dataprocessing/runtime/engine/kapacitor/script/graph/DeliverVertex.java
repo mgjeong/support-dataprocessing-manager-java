@@ -1,12 +1,12 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph;
 
 import java.util.Map;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.topology.TopologySink;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 
 public class DeliverVertex implements ScriptVertex {
-  TopologySink config;
+  WorkflowSink config;
 
-  public DeliverVertex(TopologySink config) {
+  public DeliverVertex(WorkflowSink config) {
     this.config = config;
   }
 
