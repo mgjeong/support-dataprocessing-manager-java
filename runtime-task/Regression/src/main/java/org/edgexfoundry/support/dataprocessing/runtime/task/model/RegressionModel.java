@@ -145,15 +145,4 @@ public abstract class RegressionModel extends AbstractTaskModel {
     return in;
   }
 
-  public TaskModelParam getDefaultParam() {
-    TaskModelParam params = new TaskModelParam();
-    List<Double> trainedWeights = new ArrayList<>();
-    trainedWeights.add(0.2);
-    trainedWeights.add(-0.7);
-    params.put("weights", trainedWeights);
-    params.put("error", -1.7);
-    params.put("type", RegressionType.Logistic.name());
-
-    return params;
-  }
 }
