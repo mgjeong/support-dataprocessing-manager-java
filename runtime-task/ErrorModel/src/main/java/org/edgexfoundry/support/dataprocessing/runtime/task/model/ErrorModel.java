@@ -45,9 +45,9 @@ public class ErrorModel extends AbstractTaskModel {
   private String algorithmType = null;
   @TaskParam(key = "observation", uiName = "Observation", uiType = UiFieldType.STRING, tooltip = "Enter observation")
   private String observation = null;
-  @TaskParam(key = "windowBy", uiName = "Window by", uiType = UiFieldType.ENUMSTRING, tooltip = "Select window strategy", isOptional = true)
+  @TaskParam(key = "windowBy", uiName = "Window by", uiType = UiFieldType.ENUMSTRING, tooltip = "Select window strategy")
   private WindowBy windowBy = WindowBy.Count;
-  @TaskParam(key = "windowSize", uiName = "Window size", uiType = UiFieldType.NUMBER, tooltip = "Enter window size", isOptional = true)
+  @TaskParam(key = "windowSize", uiName = "Window size", uiType = UiFieldType.NUMBER, tooltip = "Enter window size")
   private int windowSize = 2;
 
   private HashMap<String, LinkedList<Number>> targetList = null;
