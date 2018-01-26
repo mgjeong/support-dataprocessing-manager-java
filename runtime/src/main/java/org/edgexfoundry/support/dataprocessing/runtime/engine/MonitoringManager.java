@@ -29,8 +29,8 @@ public class MonitoringManager implements Runnable {
     setInterval(interval);
     createThread();
 
-    workflowStates = new HashMap<>();
-//    workflowStates = JobTableManager.getInstance().getWorkflowState();
+//    workflowStates = new HashMap<>();
+    workflowStates = JobTableManager.getInstance().getWorkflowState();
   }
 
   public static WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
@@ -161,32 +161,45 @@ public class MonitoringManager implements Runnable {
 
         semaphore.acquire();
 
-        if(null == workflowStates) {
+        if (null == workflowStates) {
           continue;
         }
 
         for (Map.Entry<Long, HashMap<String, JobState>> workflowStatesEntry : workflowStates.entrySet()) {
-
+          ArrayList<String> removingKeys = new ArrayList<>();
           HashMap<String, JobState> jobStateHashMap = workflowStatesEntry.getValue();
           for (Map.Entry<String, JobState> jobStateEntry : jobStateHashMap.entrySet()) {
             JobState jobState = jobStateEntry.getValue();
-            Engine engine = EngineManager.getEngine(jobState.getHost() + ":" + jobState.getPort(),
-                                              WorkflowData.EngineType.valueOf(jobState.getEngineType()));
+            if (null != jobState.getHost()) {
+              Engine engine = EngineManager.getEngine(jobState.getHost() + ":" + jobState.getPort(),
+                WorkflowData.EngineType.valueOf(jobState.getEngineType()));
 
-            if(engine.updateMetrics(jobState)) {
-              // It has been updated.
-              JobTableManager.getInstance().updateWorkflowJobState(jobState);
+              if (engine.updateMetrics(jobState)) {
+                // It has been updated.
+                JobTableManager.getInstance().updateWorkflowJobState(jobState);
+              }
+            } else {
+              removingKeys.add(jobStateEntry.getKey());
             }
           }
-        }
 
-        Thread.sleep(interval * 1000);  // Seconds.
+          for (String s : removingKeys) {
+            jobStateHashMap.remove(s);
+            // TBD :: also will be removed on db.
+          }
+          removingKeys = null;
+        }
       } catch (InterruptedException e) {
         e.printStackTrace();
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
         semaphore.release();
+        try {
+          Thread.sleep(interval * 1000);  // Seconds.
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
@@ -209,7 +222,7 @@ public class MonitoringManager implements Runnable {
   public WorkflowMetric getWorkflowsState() {
 
     // WILL BE REMOVED when USING CACHING : START
-    workflowStates = JobTableManager.getInstance().getWorkflowState();
+//    workflowStates = JobTableManager.getInstance().getWorkflowState();
     // WILL BE REMOVED when USING CACHING : END
 
     return MonitoringManager.convertWorkflowMetrics(workflowStates);
@@ -217,7 +230,7 @@ public class MonitoringManager implements Runnable {
 
   public WorkflowGroupState getGroupState(String groupId) {
     // WILL BE REMOVED when USING CACHING : START
-    workflowStates = JobTableManager.getInstance().getWorkflowState();
+//    workflowStates = JobTableManager.getInstance().getWorkflowState();
     // WILL BE REMOVED when USING CACHING : END
 
     return MonitoringManager.convertGroupMetrics(groupId, workflowStates);

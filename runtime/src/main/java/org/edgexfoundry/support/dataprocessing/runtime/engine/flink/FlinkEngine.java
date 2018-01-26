@@ -320,7 +320,11 @@ public class FlinkEngine extends AbstractEngine {
       FlinkException flinkException = new Gson().fromJson(jsonElement.toString(), FlinkException.class);
       jobState.setErrorMessage(flinkException.getRootException());
     } else {
-      jobState.setState(State.STOPPED.name());
+      if(0 == flinkJob.getState().compareTo("CANCELED")) {
+        jobState.setState(State.STOPPED);
+      } else {
+        jobState.setState(flinkJob.getState());
+      }
     }
 
     return isUpdated;
