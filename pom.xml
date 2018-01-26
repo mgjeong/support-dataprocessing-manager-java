@@ -134,7 +134,7 @@
                         </goals>
                         <configuration>
                             <groupId>org.edgexfoundry</groupId>
-                            <artifactId>support-logging</artifactId>
+                            <artifactId>support-logging-client</artifactId>
                             <version>0.5.0-SNAPSHOT</version>
                             <file>${edgex.libdir}/support-logging-client-0.5.0-SNAPSHOT.jar</file>
                             <packaging>jar</packaging>
