@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.function.ErrorFunction;
 import org.slf4j.Logger;
@@ -35,7 +37,9 @@ import java.util.List;
 public class ErrorModel extends AbstractTaskModel {
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorModel.class);
 
+  @TaskParam(key="param", uiName = "Algorithm type", uiType = UiFieldType.STRING, tooltip = "Enter algorithm type")
   private String algorithmType = null;
+  @TaskParam(key="observation", uiName = "Observation", uiType = UiFieldType.STRING, tooltip = "Enter observation")
   private String observation = null;
   private HashMap<String, LinkedList<Number>> targetList = null;
   private LinkedList<Number> observationList = null;

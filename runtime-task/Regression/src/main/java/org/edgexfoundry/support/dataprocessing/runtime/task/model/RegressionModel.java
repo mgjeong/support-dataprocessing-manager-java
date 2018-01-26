@@ -45,7 +45,7 @@ public abstract class RegressionModel extends AbstractTaskModel {
   @TaskParam(key = "error", uiName = "Error", uiType = UiFieldType.NUMBER, tooltip = "Enter error term")
   protected Double error;
 
-  @TaskParam(key = "type", uiName = "Regression Type", uiType = UiFieldType.STRING, tooltip = "Select regression type")
+  @TaskParam(key = "type", uiName = "Regression Type", uiType = UiFieldType.ENUMSTRING, tooltip = "Select regression type")
   protected RegressionType regressionType;
 
   public enum RegressionType {

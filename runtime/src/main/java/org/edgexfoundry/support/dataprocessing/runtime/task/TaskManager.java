@@ -212,8 +212,8 @@ public final class TaskManager implements DirectoryChangeEventListener {
     uiField.setOptional(taskParam.isOptional());
     uiField.setDefaultValue(taskParam.defaultValue());
     uiField.setTooltip(taskParam.tooltip());
-    uiField.setUserInput(true);
     uiField.setFieldName(taskParam.key());
+    uiField.setUserInput(!taskField.getType().isEnum());
 
     if (taskField.getType().isEnum()) {
       Object[] options = taskField.getType().getEnumConstants();
