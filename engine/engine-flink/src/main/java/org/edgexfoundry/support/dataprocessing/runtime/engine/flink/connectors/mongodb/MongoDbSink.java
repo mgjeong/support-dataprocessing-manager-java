@@ -42,18 +42,12 @@ public class MongoDbSink extends RichSinkFunction<DataSet> {
   private MongoDatabase db = null;
   private MongoCollection<Document> table = null;
 
-  public MongoDbSink(String source, String name) {
-
-    String[] dataSource = source.split(":");
-    String[] names = name.split(":");
-    this.ip = new String(dataSource[0]);
-    this.port = Integer.parseInt(dataSource[1]);
-    this.dbName = new String(names[0]);
-    this.tableName = new String(names[1]);
-
-    LOGGER.info("NAME : {}", name);
+  public MongoDbSink(String ip, int port, String dbName, String tableName) {
+    this.ip = ip;
+    this.port = port;
+    this.dbName = dbName;
+    this.tableName = tableName;
   }
-
 
   @Override
   public void invoke(DataSet dataSet) throws Exception {
@@ -61,7 +55,7 @@ public class MongoDbSink extends RichSinkFunction<DataSet> {
     // You could loop through records like this:
     List<Document> list = new ArrayList<>();
     for (DataSet.Record record : dataSet.getRecords()) {
-      LOGGER.info("Writing to {}:{}. DataSet: {}", this.ip, this.port, record.toString());
+      LOGGER.info("Writing to {}:{}. DataSet: {}", ip, port, record.toString());
 
       list.add(Document.parse(record.toString()));
     }
@@ -74,21 +68,19 @@ public class MongoDbSink extends RichSinkFunction<DataSet> {
   public void open(Configuration parameters) throws Exception {
     super.open(parameters);
 
-    client = new MongoClient(ip, this.port);
-    db = client.getDatabase(this.dbName);
-    table = db.getCollection(this.tableName);
+    client = new MongoClient(ip, port);
+    db = client.getDatabase(dbName);
+    table = db.getCollection(tableName);
 
-    LOGGER.info("Initiate MongoDB Connection Intialization : " + this.ip + " : " + this.port);
-    LOGGER.info("DB Name {}, Table Name {} : ", this.dbName, this.tableName);
+    LOGGER.info("Initiate MongoDB Connection Intialization : " + ip + " : " + port);
+    LOGGER.info("DB Name {}, Table Name {} : ", dbName, tableName);
 
   }
 
   @Override
   public void close() throws Exception {
-
     LOGGER.info("Close MongoDB Connection");
-
+    client.close();
     super.close();
   }
-
 }

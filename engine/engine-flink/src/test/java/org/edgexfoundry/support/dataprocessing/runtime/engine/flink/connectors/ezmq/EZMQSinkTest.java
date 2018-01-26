@@ -16,48 +16,40 @@
  *******************************************************************************/
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.ezmq;
-/*
-import DataSet;
+
+import org.edgexfoundry.ezmq.EZMQAPI;
 import org.edgexfoundry.ezmq.EZMQErrorCode;
-import org.junit.Before;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.junit.Test;
-import org.mockito.MockitoAnnotations;
-*/
+
 public class EZMQSinkTest {
-    private static final String EZMQ_HOST = "localhost";
-    private static final int EZMQ_PORT = 5599;
 
-    //FIXLATER:
-    /*
-    @Before
-    public void initialize() {
-        MockitoAnnotations.initMocks(this);
+  private static final String EZMQ_HOST = "localhost";
+  private static final int EZMQ_PORT = 5599;
+
+  @Test
+  public void testInvoke() throws Exception {
+    EZMQAPI instance = EZMQAPI.getInstance();
+    EzmqSink sink = new EzmqSink(EZMQ_PORT);
+    sink.open(null);
+
+    sink.onStartCB(EZMQErrorCode.EZMQ_OK);
+    sink.onStopCB(EZMQErrorCode.EZMQ_OK);
+    sink.onErrorCB(EZMQErrorCode.EZMQ_OK);
+
+    sink.invoke(DataSet.create("{}"));
+    sink.close();
+  }
+
+  @Test
+  public void testOpenClose() throws Exception {
+    EzmqSink sink = new EzmqSink(EZMQ_PORT);
+    try {
+      sink.open(null);
+      Thread.sleep(50L);
+    } finally {
+      sink.close();
     }
+  }
 
-    @Test(timeout = 3000L)
-    public void testInvoke() throws Exception {
-        EzmqSink sink = new EzmqSink(EZMQ_PORT);
-        try {
-            sink.open(null);
-            sink.onStartCB(EZMQErrorCode.EZMQ_OK);
-            sink.onStopCB(EZMQErrorCode.EZMQ_OK);
-            sink.onErrorCB(EZMQErrorCode.EZMQ_OK);
-
-            sink.invoke(DataSet.create("{}"));
-        } finally {
-            sink.close();
-        }
-    }
-
-    @Test(timeout = 3000L)
-    public void testOpenClose() throws Exception {
-        EzmqSink sink = new EzmqSink(EZMQ_PORT);
-        try {
-            sink.open(null);
-            Thread.sleep(50L);
-        } finally {
-            sink.close();
-        }
-    }
-    */
 }

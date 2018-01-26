@@ -48,7 +48,7 @@ public class JobGraph {
   private List<Vertex> dfs(Vertex current, Map<Vertex, State> state) {
     List<Vertex> res = new ArrayList<>();
     if (state.get(current) == State.UNVISITED) {
-      throw new IllegalStateException("Cycle");
+      throw new IllegalStateException("Cannot implement DAG with cycle");
     }
     state.put(current, State.UNVISITED);
     List<Vertex> adjVertices = adjacent(current);
