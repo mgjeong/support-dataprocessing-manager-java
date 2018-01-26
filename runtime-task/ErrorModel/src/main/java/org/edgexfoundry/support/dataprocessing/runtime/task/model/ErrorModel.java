@@ -97,18 +97,6 @@ public class ErrorModel extends AbstractTaskModel {
     }
   }
 
-  /**
-   * @desc Get default parameters for the reference
-   * @return TaskModelParam
-   */
-  @Override
-  public TaskModelParam getDefaultParam() {
-    TaskModelParam params = new TaskModelParam();
-    params.put("type", new String("mse"));
-    params.put("observation", new String("/x1"));
-    return params;
-  }
-
   private double getAverageError(Double[] targets, Double[] observe) {
     double error = 0.0;
     LOGGER.info("Target Size {} : Observe Size {}", targets.length, observe.length);

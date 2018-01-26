@@ -78,13 +78,8 @@ public class ErrorModelTest {
 
   @Test
   public void testGetName() {
-
     ErrorModel model = new ErrorModel();
-
     Assert.assertEquals("error", model.getName());
-
-    Assert.assertNotNull(model.getDefaultParam());
-
   }
 
   @Test
