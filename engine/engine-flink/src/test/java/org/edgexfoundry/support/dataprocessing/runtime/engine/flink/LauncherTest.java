@@ -19,21 +19,22 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.io.File;
-import java.nio.file.FileSystemException;
-import java.util.jar.JarFile;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.apache.commons.io.FileUtils;
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -41,25 +42,18 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Launcher.class, StreamExecutionEnvironment.class, JobGraphBuilder.class})
+@PrepareForTest({Launcher.class, StreamExecutionEnvironment.class,
+    JobGraphBuilder.class, JobGraph.class})
 public class LauncherTest {
-  final static String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
-  final static String TEST_JAR = TEST_DIR + "/launcher_test_job.jar";
-  final static String TEST_JSON = TEST_DIR + "/launcher_test_job.json";
-  final static String JSON_CONTENT = "{\"topologyName\":\"launcher_test\"}";
-  final static String[] ARGS_INVALID = {"--internal", TEST_JSON};
-  final static String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON};
-  final static String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON};
 
-  @Test(expected = NullPointerException.class)
-  public void testWhenImpossibleExecution() throws Exception {
-    mockStatic(StreamExecutionEnvironment.class);
-    PowerMockito.when(StreamExecutionEnvironment.class, "getExecutionEnvironment")
-        .thenReturn(null);
-
-    Launcher.main(ARGS_FOR_INTERNAL_CONFIG);
-    Assert.fail("Failed: Illegal state; Null execution environment");
-  }
+  private static final String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
+  private static final String TEST_JSON_ID = "launcher_test_job";
+  private static final String TEST_JSON_PATH = TEST_DIR + "/" + TEST_JSON_ID + ".json";
+  private static final String JSON_CONTENT = "{}";
+  private static final String[] ARGS_NO_JSON = {"--internal", TEST_JSON_PATH};
+  private static final String[] ARGS_INVALID = {"--internal", "--json", "unreachableFile"};
+  private static final String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON_PATH};
+  private static final String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON_ID};
 
   @Test(expected = RuntimeException.class)
   public void testWithoutAnyCommandLineArguments() throws Exception {
@@ -69,70 +63,82 @@ public class LauncherTest {
 
   @Test(expected = RuntimeException.class)
   public void testWithImproperArgs() throws Exception {
-    Launcher.main(ARGS_INVALID);
+    Launcher.main(ARGS_NO_JSON);
     Assert.fail("Failed: Not any exception on a job with invalid specifications");
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testWithInputUnavailable() throws Exception {
+    Launcher.main(ARGS_INVALID);
+    Assert.fail("Failed: Not any exception on an invalid job configuration file");
+  }
+
   @BeforeClass
-  public void createTestFiles() throws Exception {
-    File f = new File(TEST_JSON);
-    if (f.exists()) {
-      if (!f.delete()) {
-        throw new RuntimeException("Cannot prepare test files");
-      }
-    } else {
-      f.mkdirs();
-      f.createNewFile();
+  public static void createTestFiles() throws Exception {
+    File jsonFile = new File(TEST_JSON_PATH);
+    if (!jsonFile.exists()) {
+      jsonFile.getParentFile().mkdirs();
+      jsonFile.createNewFile();
     }
-
-    JarFile testJar = new JarFile(f);
+    FileUtils.writeStringToFile(jsonFile, JSON_CONTENT);
   }
 
-  @After
-  public void deleteTestFiles() {
 
+  @AfterClass
+  public static void deleteTestFiles() {
+    File testJsonFile = new File(TEST_JSON_PATH);
+
+    if (testJsonFile.exists()) {
+      testJsonFile.getParentFile().deleteOnExit();
+      testJsonFile.delete();
+    }
   }
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
-  public void testWithExternalJsonFileNullInput() throws Exception {
+  public void testWithInternalJsonFile() throws Exception {
+    JobGraph mockGraph = Mockito.mock(JobGraph.class);
+    Mockito.doNothing().when(mockGraph).initialize();
+    Mockito.when(mockGraph.getJobId()).thenReturn("testId");
 
-  }
+    JobGraphBuilder builder = Mockito.mock(JobGraphBuilder.class);
+    Mockito.when(builder.getInstance(any(), any())).thenReturn(mockGraph);
+    PowerMockito.mockStatic(JobGraphBuilder.class);
+    PowerMockito.whenNew(JobGraphBuilder.class).withNoArguments().thenReturn(builder);
 
-  @Test
-  public void testWithExternalJsonFileInput() throws Exception {
+    StreamExecutionEnvironment env = Mockito.mock(StreamExecutionEnvironment.class);
+    Mockito.when(env.execute(any())).thenReturn(null);
 
-  }
+    ExecutionConfig config = Mockito.mock(ExecutionConfig.class);
+    Mockito.doNothing().when(config).setGlobalJobParameters(any());
+    Mockito.when(env.getConfig()).thenReturn(config);
+    PowerMockito.mockStatic(StreamExecutionEnvironment.class);
+    PowerMockito.when(StreamExecutionEnvironment.getExecutionEnvironment()).thenReturn(env);
 
-  @Test
-  public void testWithInternalJsonFileNullInput() throws Exception {
-
-  }
-
-  @Test
-  public void testWithInternalJsonFileInput() throws Exception {
-
-  }
-
-  @Test(expected = Exception.class)
-  public void testWithInternalInput() throws Exception {
     Launcher.main(ARGS_FOR_INTERNAL_CONFIG);
   }
 
+  @Test
+  public void testWithExternalJsonFile() throws Exception {
+    JobGraph mockGraph = Mockito.mock(JobGraph.class);
+    Mockito.doNothing().when(mockGraph).initialize();
+    Mockito.when(mockGraph.getJobId()).thenReturn("testId");
 
-  @Test(expected = IllegalStateException.class)
-  public void testExecute() throws Exception {
-    mockStatic(JobGraphBuilder.class);
-    JobGraphBuilder builder = PowerMockito.mock(JobGraphBuilder.class);
-    whenNew(JobGraphBuilder.class).withAnyArguments().thenReturn(builder);
+    JobGraphBuilder builder = Mockito.mock(JobGraphBuilder.class);
+    Mockito.when(builder.getInstance(any(), any())).thenReturn(mockGraph);
+    PowerMockito.mockStatic(JobGraphBuilder.class);
+    PowerMockito.whenNew(JobGraphBuilder.class).withNoArguments().thenReturn(builder);
 
-    JobGraph jobGraph = Mockito.mock(JobGraph.class);
-    when(builder.getInstance(any(), any())).thenReturn(jobGraph);
+    StreamExecutionEnvironment env = Mockito.mock(StreamExecutionEnvironment.class);
+    Mockito.when(env.execute(any())).thenReturn(null);
 
-    Mockito.doNothing().when(jobGraph).initialize();
-
-    Launcher launcher = new Launcher();
-    // Running with an empty job occurs IllegalStateException
-    launcher.main(ARGS_FOR_EXTERNAL_CONFIG);
+    ExecutionConfig config = Mockito.mock(ExecutionConfig.class);
+    Mockito.doNothing().when(config).setGlobalJobParameters(any());
+    Mockito.when(env.getConfig()).thenReturn(config);
+    PowerMockito.mockStatic(StreamExecutionEnvironment.class);
+    PowerMockito.when(StreamExecutionEnvironment.getExecutionEnvironment()).thenReturn(env);
+    Launcher.main(ARGS_FOR_EXTERNAL_CONFIG);
   }
-
 }
