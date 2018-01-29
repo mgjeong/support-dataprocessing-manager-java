@@ -17,29 +17,41 @@
 package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.function.ErrorFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * Computes Error <p> Flink requires this class to be serializable.
  */
 public class ErrorModel extends AbstractTaskModel {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorModel.class);
 
+  public enum WindowBy {
+    Time, Count
+  }
+
+  @TaskParam(key = "param", uiName = "Algorithm type", uiType = UiFieldType.STRING, tooltip = "Enter algorithm type")
   private String algorithmType = null;
+  @TaskParam(key = "observation", uiName = "Observation", uiType = UiFieldType.STRING, tooltip = "Enter observation")
   private String observation = null;
+  @TaskParam(key = "windowBy", uiName = "Window by", uiType = UiFieldType.ENUMSTRING, tooltip = "Select window strategy")
+  private WindowBy windowBy = WindowBy.Count;
+  @TaskParam(key = "windowSize", uiName = "Window size", uiType = UiFieldType.NUMBER, tooltip = "Enter window size")
+  private int windowSize = 2;
+
   private HashMap<String, LinkedList<Number>> targetList = null;
   private LinkedList<Number> observationList = null;
-  private int mWindowSize = 2;
 
   /**
    * @desc Construtor of thismodel
@@ -50,8 +62,8 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Get type of this model
    * @return TaskType.ERROR
+   * @desc Get type of this model
    */
   @Override
   public TaskType getType() {
@@ -59,8 +71,8 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Get name of this model
    * @return "error"
+   * @desc Get name of this model
    */
   @Override
   public String getName() {
@@ -69,7 +81,6 @@ public class ErrorModel extends AbstractTaskModel {
 
   /**
    * @desc Set parameters for this model
-   * @param params
    */
   @Override
   public void setParam(TaskModelParam params) {
@@ -80,28 +91,16 @@ public class ErrorModel extends AbstractTaskModel {
     if (params.containsKey("observation")) {
       this.observation = params.get("observation").toString();
     }
-    if (params.containsKey("interval")) {
-      HashMap<String, Object> tInterval = (HashMap<String, Object>) params.get("interval");
-      if (tInterval.containsKey("data")) {
-        Integer dataSize = ((Number) tInterval.get("data")).intValue();
-        if (dataSize != null) {
-          this.mWindowSize = (dataSize.intValue());
-        }
-      }
-      if (tInterval.containsKey("time")) {
-        Integer timeSize = ((Number) tInterval.get("time")).intValue();
-        if (timeSize != null) {
-          this.mWindowSize = (timeSize.intValue());
-        }
-      }
+    if (params.containsKey("windowBy") && params.containsKey("windowSize")) {
+      this.windowBy = WindowBy.valueOf(params.get("windowBy").toString());
+      this.windowSize = (Integer) params.get("windowSize");
     }
   }
 
   /**
-   * @desc Get default parameters for the reference
    * @return TaskModelParam
+   * @desc Get default parameters for the reference
    */
-  @Override
   public TaskModelParam getDefaultParam() {
     TaskModelParam params = new TaskModelParam();
     params.put("type", new String("mse"));
@@ -139,20 +138,20 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Calculate error value
    * @param in : Data in json format to be processed
    * @param inRecordKeys : Target data key name
    * @param outRecordKeys : Data key name for processing result
+   * @desc Calculate error value
    */
   @Override
   public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
     LOGGER.info("[Error] Entering calculation");
 
-    if(in.getRecords().size() < 1) {
+    if (in.getRecords().size() < 1) {
       LinkedList<Number> value = null;
       Double observe = in.getValue(this.observation, Double.class);
       if (observe != null) {
-        if (observationList.size() >= this.mWindowSize) {
+        if (observationList.size() >= this.windowSize) {
           observationList.removeFirst();
         }
         observationList.addLast(observe.doubleValue());
@@ -171,7 +170,7 @@ public class ErrorModel extends AbstractTaskModel {
           }
 
           if (value != null) {
-            if (value.size() >= this.mWindowSize) {
+            if (value.size() >= this.windowSize) {
               value.removeFirst();
             }
             value.addLast(predict);
@@ -188,17 +187,18 @@ public class ErrorModel extends AbstractTaskModel {
       }
     } else {
       ArrayList<Number> observe = in.getValue(this.observation, ArrayList.class);
-      if(observe != null) {
+      if (observe != null) {
         for (int index = 0; index < inRecordKeys.size(); index++) {
           ArrayList<Number> predict = in.getValue(inRecordKeys.get(index), ArrayList.class);
 
-          if(observe.size() == predict.size()) {
+          if (observe.size() == predict.size()) {
             Double[] tArr = observe.toArray(new Double[0]);
             Double[] tObs = predict.toArray(new Double[0]);
 
             in.setValue(outRecordKeys.get(index), getAverageError(tArr, tObs));
           } else {
-            LOGGER.error("Size of List not match Observe {} : Predict {}", observe.size(), predict.size());
+            LOGGER.error("Size of List not match Observe {} : Predict {}", observe.size(),
+                predict.size());
           }
         }
       }

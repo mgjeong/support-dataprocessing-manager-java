@@ -141,9 +141,10 @@ public class DirectoryWatcher extends Thread {
 
               }
             }
+
+            watchKey.reset();
           }
 
-          watchKey.reset();
         } catch (Exception e) {
           LOGGER.error(e.getMessage(), e);
         }
