@@ -21,11 +21,6 @@ public final class TestModel implements TaskModel {
   }
 
   @Override
-  public TaskModelParam getDefaultParam() {
-    return new TaskModelParam();
-  }
-
-  @Override
   public void setParam(TaskModelParam param) {
   }
 
