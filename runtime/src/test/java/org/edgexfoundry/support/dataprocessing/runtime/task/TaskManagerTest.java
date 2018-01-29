@@ -16,21 +16,22 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
+import static org.powermock.api.mockito.PowerMockito.mock;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.io.IOUtils;
+import java.lang.reflect.Field;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import org.apache.commons.io.FileUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -38,87 +39,88 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({TaskManager.class, WorkflowTableManager.class})
 public class TaskManagerTest {
 
-  @InjectMocks
-  private static TaskManager taskManager;
-
-  private static List<Map<String, String>> mockDB;
+  private static final File testDir = new File("./testDir/");
+  private static final TaskManager taskManager = TaskManager.getInstance();
 
   @BeforeClass
-  public static void setupEnvironment() throws Exception {
-    taskManager = TaskManager.getInstance();
-    taskManager.initialize();
+  public static void generateTestJar() throws Exception {
+    if (testDir.exists()) {
+      FileUtils.deleteDirectory(testDir);
+    }
+    if (!testDir.mkdirs()) {
+      throw new Exception("Failed to create test directory: " + testDir.getAbsolutePath());
+    }
+
+    // Initialize task manager
+    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+    Field wtmField = taskManager.getClass().getDeclaredField("workflowTableManager");
+    wtmField.setAccessible(true);
+    wtmField.set(taskManager, workflowTableManager);
+
+    // Make sample task model
+    File testTaskModelJar = new File(testDir, "test.jar");
+    makeSampleTaskModel(testTaskModelJar);
   }
 
-  public static List<Map<String, String>> makeMockPayload() {
-    List<Map<String, String>> payload = new ArrayList<>();
+  private static void makeSampleTaskModel(File testTaskModelJar)
+      throws IOException, ClassNotFoundException {
+    File tmp = new File(testTaskModelJar.getAbsolutePath() + ".tmp");
+    tmp.deleteOnExit();
+    try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(tmp),
+        new Manifest())) {
+      String entry = SimpleTaskModelTest.class.getName().replace('.', '/') + ".class";
+      jos.putNextEntry(new JarEntry(entry));
 
-    Map<String, String> regression0 = new HashMap<String, String>();
-    regression0.put("type", "REGRESSION");
-    regression0.put("name", "reg");
+      Class<?> testClass = Class.forName(SimpleTaskModelTest.class.getName());
+      final byte[] buf = new byte[128];
+      try (InputStream classInputStream = testClass
+          .getResourceAsStream(testClass.getSimpleName() + ".class")) {
+        int readLength = classInputStream.read(buf);
+        while (readLength != -1) {
+          jos.write(buf, 0, readLength);
+          readLength = classInputStream.read(buf);
+        }
+        classInputStream.close();
+      }
 
-    Map<String, String> regression1 = new HashMap<String, String>();
-    regression1.put("type", "REGRESSION");
-    regression1.put("name", "REG");
-
-    Map<String, String> classification = new HashMap<String, String>();
-    classification.put("type", "CLASSIFICATION");
-    classification.put("name", "cla");
-
-    payload.add(regression0);
-    payload.add(regression1);
-    payload.add(classification);
-
-    return payload;
+      jos.closeEntry();
+      jos.close();
+    }
+    tmp.renameTo(testTaskModelJar);
+    testTaskModelJar.deleteOnExit();
+    tmp.delete();
   }
 
-  public static List<Map<String, String>> makeEmptyMockPayload() {
-    List<Map<String, String>> payload = new ArrayList<>();
-    return payload;
+  @Test
+  public void testScanDir() throws Exception {
+    taskManager.scanTaskModel(testDir.getAbsolutePath());
   }
 
-  @AfterClass
-  public static void finishTaskManager() {
+  @Test
+  public void testFileCreatedThenRemoved() throws Exception {
+    taskManager.initialize(testDir.getAbsolutePath());
+
+    File created = new File(testDir, "created.jar");
+    makeSampleTaskModel(created);
+
+    Thread.sleep(1500);
+
+    created.delete();
+    Thread.sleep(1500);
+
     taskManager.terminate();
   }
 
   @Test
-  public void testbFileCreatedEventReceiver() {
-    taskManager.fileCreatedEventReceiver(null);
-    taskManager.fileRemovedEventReceiver(null);
-
-    File testFile = new File("./TaskManagerTest_testFileCreatedEventReceiver.jar");
-    try {
-      if (!testFile.exists()) {
-        testFile.createNewFile();
-      }
-    } catch (IOException e) {
-      System.out.println("Error: Failed to create test input file.");
-      testFile.delete();
-      Assert.fail();
-    }
-    taskManager.fileCreatedEventReceiver(testFile.toString());
-
-    testFile.delete();
-    taskManager.fileRemovedEventReceiver(testFile.toString());
+  public void testDirectoryChanged() throws Exception {
+    taskManager.onDirectoryCreate(null);
+    taskManager.onDirectoryChange(null);
+    taskManager.onDirectoryDelete(null);
+    taskManager.onFileChange(null);
   }
 
-  @Test
-  public void testcScanTaskModel() {
-    taskManager.scanTaskModel(null);
-    //taskManager.scanTaskModel(Settings.FW_JAR_PATH);
-  }
-
-  private byte[] getBytesFromFile(String path) {
-    InputStream is = this.getClass().getClassLoader().getResourceAsStream(path);
-    if (is == null) {
-      return null;
-    }
-
-    try {
-      return IOUtils.toByteArray(is);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
+  @AfterClass
+  public static void cleanUp() throws IOException {
+    FileUtils.deleteDirectory(testDir);
   }
 }
