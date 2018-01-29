@@ -33,7 +33,7 @@ public class MonitoringManager implements Runnable {
     workflowStates = JobTableManager.getInstance().getWorkflowState();
   }
 
-  public static WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
+  public static synchronized WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
     ArrayList<WorkflowMetric.GroupInfo> groups = new ArrayList<>();
     WorkflowMetric metrics = new WorkflowMetric();
 
@@ -72,7 +72,7 @@ public class MonitoringManager implements Runnable {
     return metrics;
   }
 
-  public static WorkflowGroupState convertGroupMetrics(String groupId, HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
+  public static synchronized WorkflowGroupState convertGroupMetrics(String groupId, HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
 
     if (healthOfworkflows.containsKey(Long.parseLong(groupId))) {
 
@@ -204,7 +204,7 @@ public class MonitoringManager implements Runnable {
     }
   }
 
-  public void addJob(Job job) {
+  public synchronized void addJob(Job job) {
 
     HashMap<String, JobState> jobStateHashMap;
     long workflowId = job.getWorkflowId();
@@ -219,20 +219,11 @@ public class MonitoringManager implements Runnable {
     }
   }
 
-  public WorkflowMetric getWorkflowsState() {
-
-    // WILL BE REMOVED when USING CACHING : START
-//    workflowStates = JobTableManager.getInstance().getWorkflowState();
-    // WILL BE REMOVED when USING CACHING : END
-
+  public synchronized WorkflowMetric getWorkflowsState() {
     return MonitoringManager.convertWorkflowMetrics(workflowStates);
   }
 
-  public WorkflowGroupState getGroupState(String groupId) {
-    // WILL BE REMOVED when USING CACHING : START
-//    workflowStates = JobTableManager.getInstance().getWorkflowState();
-    // WILL BE REMOVED when USING CACHING : END
-
+  public synchronized WorkflowGroupState getGroupState(String groupId) {
     return MonitoringManager.convertGroupMetrics(groupId, workflowStates);
   }
 }

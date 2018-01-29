@@ -63,7 +63,14 @@ public class JobController extends AbstractController {
     Engine engine = EngineManager.getEngine(targetHost, workflowData.getEngineType());
 
     Job job;
+
+    if(null == engine) {
+      // Todo : define what type error will response.
+      return respond(job, HttpStatus.NO_CONTENT);
+    }
+
     try {
+
       job = engine.create(workflowData);
       if (job == null) {
         throw new Exception("Failed to create job.");
@@ -74,7 +81,7 @@ public class JobController extends AbstractController {
       job = engine.run(job);
       jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
 
-      // Todo : How to handle exception when failed to run for monitoring.
+      // Todo : define how to handle exception when failed to run for monitoring.
       MonitoringManager.getInstance()sssss.addJob(job);
 
       // Failed to run job
