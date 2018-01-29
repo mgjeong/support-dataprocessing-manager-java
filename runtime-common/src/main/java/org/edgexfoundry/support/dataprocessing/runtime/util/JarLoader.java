@@ -23,8 +23,12 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class JarLoader {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
   public static <T> T newInstance(File jarFile, String className, ClassLoader classLoader,
       Class<T> clazz)
@@ -43,14 +47,15 @@ public final class JarLoader {
 
       Class classToInstantiate = Class.forName(className, true, urlClassLoader);
       if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
-        throw new RuntimeException(className + " is an abstract class.");
+        LOGGER.error(className + " is an abstract class.");
+        return null;
       } else {
         Object o = classToInstantiate.newInstance();
         if (clazz.isInstance(o)) {
           return clazz.cast(o);
         } else {
-          throw new RuntimeException(
-              className + " is not an instance of " + clazz.getCanonicalName());
+          LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+          return null;
         }
       }
     }
