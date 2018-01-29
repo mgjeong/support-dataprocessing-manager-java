@@ -74,7 +74,13 @@ public class JobController extends AbstractController {
       job = engine.run(job);
       jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
 
-      MonitoringManager.getInstance().addJob(job);
+      // Todo : How to handle exception when failed to run for monitoring.
+      MonitoringManager.getInstance()sssss.addJob(job);
+
+      // Failed to run job
+      if (job.getState().getState() != State.RUNNING) {
+        throw new Exception(job.getState().getErrorMessage());
+      }
 
       return respond(job, HttpStatus.OK);
     } catch (Exception e) {
