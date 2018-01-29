@@ -1,17 +1,16 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import java.util.HashMap;
-import java.util.concurrent.Semaphore;
-
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.concurrent.Semaphore;
+
 public final class EngineManager {
 
-  private static Semaphore semaphore = new Semaphore(1);
-
   private static final Logger LOGGER = LoggerFactory.getLogger(EngineManager.class);
+  private static Semaphore semaphore = new Semaphore(1);
   //  HashMap<IP, Engine>
   private static HashMap<String, Engine> engines = new HashMap<String, Engine>();
 

@@ -14,8 +14,8 @@ public class WorkflowGroupState extends Format {
     return jobStates;
   }
 
-  public WorkflowGroupState setGroupId(String groupId) {
-    this.groupId = groupId;
+  public WorkflowGroupState setJobStates(ArrayList<JobState> jobStates) {
+    this.jobStates = jobStates;
     return this;
   }
 
@@ -23,8 +23,8 @@ public class WorkflowGroupState extends Format {
     return groupId;
   }
 
-  public WorkflowGroupState setJobStates(ArrayList<JobState> jobStates) {
-    this.jobStates = jobStates;
+  public WorkflowGroupState setGroupId(String groupId) {
+    this.groupId = groupId;
     return this;
   }
 }

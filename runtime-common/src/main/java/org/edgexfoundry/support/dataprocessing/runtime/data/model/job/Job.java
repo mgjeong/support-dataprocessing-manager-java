@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @JsonInclude(Include.NON_NULL)
 public class Job extends Format {
@@ -27,12 +27,20 @@ public class Job extends Format {
 
   }
 
+  public static Job create(Long workflowId) {
+    Job job = new Job();
+    job.setState(new JobState());
+    job.getState().setState(State.CREATED);
+    job.setWorkflowId(workflowId);
+    job.setId(UUID.randomUUID().toString());
+    return job;
+  }
+
   public JobState getState() {
     return state;
   }
 
-  public void setState(
-      JobState state) {
+  public void setState(JobState state) {
     this.state = state;
   }
 
@@ -95,20 +103,10 @@ public class Job extends Format {
       if (StringUtils.isEmpty(configStr)) {
         throw new RuntimeException("Invalid config");
       }
-      this.config = mapper
-          .readValue(configStr, new TypeReference<Map<String, Object>>() {
-          });
+      this.config = mapper.readValue(configStr, new TypeReference<Map<String, Object>>() {
+      });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public static Job create(Long workflowId) {
-    Job job = new Job();
-    job.setState(new JobState());
-    job.getState().setState(State.CREATED);
-    job.setWorkflowId(workflowId);
-    job.setId(UUID.randomUUID().toString());
-    return job;
   }
 }

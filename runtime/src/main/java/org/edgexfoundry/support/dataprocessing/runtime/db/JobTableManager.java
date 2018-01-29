@@ -56,10 +56,7 @@ public class JobTableManager extends AbstractStorageManager {
   }
 
   public synchronized HashMap<Long, HashMap<String, JobState>> getWorkflowState() {
-    String sql = "select workflowId, job_state.jobId, job_state.state, job_state.startTime, " +
-      "job_state.finishTime, job_state.errorMessage, job_state.engineId, job_state.engineType, " +
-      "job_state.engineHost, job_state.enginePort " +
-      "from job_state inner join job on job.id=job_state.jobId";
+    String sql = "select workflowId, job_state.jobId, job_state.state, job_state.startTime, " + "job_state.finishTime, job_state.errorMessage, job_state.engineId, job_state.engineType, " + "job_state.engineHost, job_state.enginePort " + "from job_state inner join job on job.id=job_state.jobId";
 
     try (Connection connection = getConnection(); PreparedStatement ps = createPreparedStatement(connection, sql)) {
 

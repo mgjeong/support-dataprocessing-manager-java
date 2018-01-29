@@ -42,7 +42,7 @@ public class WorkflowMetric extends Format {
     }
   }
 
-  public static class   GroupInfo extends Format {
+  public static class GroupInfo extends Format {
     private String groupId;
     private Work works;
 
