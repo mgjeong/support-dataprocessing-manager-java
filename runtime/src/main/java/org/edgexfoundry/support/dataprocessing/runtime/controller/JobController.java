@@ -66,7 +66,8 @@ public class JobController extends AbstractController {
 
     if(null == engine) {
       // Todo : define what type error will response.
-      return respond(job, HttpStatus.NO_CONTENT);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, ""),
+        HttpStatus.OK);
     }
 
     try {
@@ -82,7 +83,7 @@ public class JobController extends AbstractController {
       jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
 
       // Todo : define how to handle exception when failed to run for monitoring.
-      MonitoringManager.getInstance()sssss.addJob(job);
+      MonitoringManager.getInstance().addJob(job);
 
       // Failed to run job
       if (job.getState().getState() != State.RUNNING) {
