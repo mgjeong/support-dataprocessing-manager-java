@@ -21,9 +21,6 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.apache.commons.io.FileUtils;
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -46,13 +43,15 @@ import org.powermock.modules.junit4.PowerMockRunner;
     JobGraphBuilder.class, JobGraph.class})
 public class LauncherTest {
 
-  private static final String TEST_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
+  private static final String TEST_EXT_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
+  private static final String TEST_INT_DIR = Launcher.class.getResource("/").getPath();
   private static final String TEST_JSON_ID = "launcher_test_job";
-  private static final String TEST_JSON_PATH = TEST_DIR + "/" + TEST_JSON_ID + ".json";
+  private static final String TEST_JSON_EXT_PATH = TEST_EXT_DIR + "/" + TEST_JSON_ID + ".json";
+  private static final String TEST_JSON_INT_PATH = TEST_INT_DIR + TEST_JSON_ID + ".json";
   private static final String JSON_CONTENT = "{}";
-  private static final String[] ARGS_NO_JSON = {"--internal", TEST_JSON_PATH};
+  private static final String[] ARGS_NO_JSON = {"--internal", TEST_JSON_EXT_PATH};
   private static final String[] ARGS_INVALID = {"--internal", "--json", "unreachableFile"};
-  private static final String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON_PATH};
+  private static final String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON_EXT_PATH};
   private static final String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON_ID};
 
   @Test(expected = RuntimeException.class)
@@ -75,7 +74,14 @@ public class LauncherTest {
 
   @BeforeClass
   public static void createTestFiles() throws Exception {
-    File jsonFile = new File(TEST_JSON_PATH);
+    File jsonFile = new File(TEST_JSON_INT_PATH);
+    if (!jsonFile.exists()) {
+      jsonFile.getParentFile().mkdirs();
+      jsonFile.createNewFile();
+    }
+    FileUtils.writeStringToFile(jsonFile, JSON_CONTENT);
+
+    jsonFile = new File(TEST_JSON_EXT_PATH);
     if (!jsonFile.exists()) {
       jsonFile.getParentFile().mkdirs();
       jsonFile.createNewFile();
@@ -86,10 +92,16 @@ public class LauncherTest {
 
   @AfterClass
   public static void deleteTestFiles() {
-    File testJsonFile = new File(TEST_JSON_PATH);
+    File testJsonFile = new File(TEST_JSON_EXT_PATH);
 
     if (testJsonFile.exists()) {
       testJsonFile.getParentFile().deleteOnExit();
+      testJsonFile.delete();
+    }
+
+    testJsonFile = new File(TEST_JSON_INT_PATH);
+
+    if (testJsonFile.exists()) {
       testJsonFile.delete();
     }
   }
