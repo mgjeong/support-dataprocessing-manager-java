@@ -19,6 +19,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,7 @@ import java.util.jar.Manifest;
 import org.apache.commons.io.FileUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -117,6 +119,26 @@ public class TaskManagerTest {
     taskManager.onDirectoryChange(null);
     taskManager.onDirectoryDelete(null);
     taskManager.onFileChange(null);
+  }
+
+  @Test
+  public void testCustomTask() throws Exception {
+    taskManager.initialize(testDir.getAbsolutePath());
+    File custom = new File(testDir, "custom.jar");
+    makeSampleTaskModel(custom);
+    taskManager.uploadCustomTask("custom.jar", new FileInputStream(custom));
+    Thread.sleep(1500);
+
+    // invalid
+    File invalidFile = new File(testDir, "invalid.txt");
+    invalidFile.deleteOnExit();
+    invalidFile.createNewFile();
+    try {
+      taskManager.uploadCustomTask("invalid.txt", new FileInputStream(invalidFile));
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
   }
 
   @AfterClass

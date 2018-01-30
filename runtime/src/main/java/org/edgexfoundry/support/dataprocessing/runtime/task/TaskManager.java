@@ -18,13 +18,17 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
@@ -49,6 +53,7 @@ public final class TaskManager implements FileAlterationListener {
 
   private WorkflowTableManager workflowTableManager = null;
   private FileAlterationMonitor directoryWatcher = null;
+  private File customJarDirectory = null;
 
   private TaskManager() {
   }
@@ -70,12 +75,12 @@ public final class TaskManager implements FileAlterationListener {
     stopDirectoryWatcher();
 
     // start directory watcher
-    File directory = new File(absPath);
-    if (!directory.exists()) {
+    customJarDirectory = new File(absPath);
+    if (!customJarDirectory.exists()) {
       throw new InvalidParameterException("Directory not found: " + absPath);
     }
 
-    FileAlterationObserver observer = new FileAlterationObserver(directory,
+    FileAlterationObserver observer = new FileAlterationObserver(customJarDirectory,
         pathname -> pathname.getName().toLowerCase().endsWith(".jar"));
     observer.addListener(this);
 
@@ -246,6 +251,56 @@ public final class TaskManager implements FileAlterationListener {
         .listFiles(pathname -> pathname.getName().toLowerCase().endsWith(".jar"));
     for (File file : files) {
       updateTaskModels(file, DEFAULTTASK);
+    }
+  }
+
+  public void uploadCustomTask(String filename, InputStream inputStream) throws Exception {
+    if (StringUtils.isEmpty(filename)) {
+      throw new RuntimeException("Invalid filename");
+    } else if (inputStream == null) {
+      throw new RuntimeException("Invalid file input stream.");
+    }
+
+    File tmp = new File(customJarDirectory, filename + ".tmp");
+    try {
+      Files.copy(inputStream, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      IOUtils.closeQuietly(inputStream);
+
+      if (!validateCustomTask(tmp)) {
+        throw new RuntimeException("No custom tasks found in " + filename);
+      }
+
+      // otherwise, rename file so that directory watcher can detect it
+      File dest = new File(customJarDirectory, filename);
+      tmp.renameTo(dest);
+    } finally {
+      tmp.delete();
+    }
+  }
+
+  private boolean validateCustomTask(File file) {
+    if (file == null || !file.isFile()) {
+      return false;
+    }
+
+    try {
+      List<String> classNames = getTaskModels(file);
+      if (classNames == null || classNames.isEmpty()) {
+        return false;
+      }
+
+      for (String className : classNames) {
+        TaskModel tm = JarLoader
+            .newInstance(file, className, getClass().getClassLoader(), TaskModel.class);
+        if (tm == null) {
+          LOGGER.info(className + " is not an instance of " + TaskModel.class.getSimpleName());
+          return false;
+        }
+      }
+      return true;
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return false;
     }
   }
 
