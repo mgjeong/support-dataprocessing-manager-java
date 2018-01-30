@@ -56,7 +56,10 @@ public class JobTableManager extends AbstractStorageManager {
   }
 
   public synchronized HashMap<Long, HashMap<String, JobState>> getWorkflowState() {
-    String sql = "select workflowId, job_state.jobId, job_state.state, job_state.startTime, " + "job_state.finishTime, job_state.errorMessage, job_state.engineId, job_state.engineType, " + "job_state.engineHost, job_state.enginePort " + "from job_state inner join job on job.id=job_state.jobId";
+    String sql = "select workflowId, job_state.jobId, job_state.state, job_state.startTime, " +
+      "job_state.finishTime, job_state.errorMessage, job_state.engineId, job_state.engineType, " +
+      "job_state.engineHost, job_state.enginePort " +
+      "from job_state inner join job on job.id=job_state.jobId";
 
     try (Connection connection = getConnection(); PreparedStatement ps = createPreparedStatement(connection, sql)) {
 
@@ -226,7 +229,7 @@ public class JobTableManager extends AbstractStorageManager {
 
     while (rs.next()) {
       Long workflowId = rs.getLong("workflowId");
-      String groupId = rs.getString("jobId");
+      String jobId = rs.getString("jobId");
 
       if (metrics.containsKey(workflowId)) {
         group = metrics.get(workflowId);
@@ -234,12 +237,13 @@ public class JobTableManager extends AbstractStorageManager {
         group = new HashMap<>();
       }
 
-      if (group.containsKey(groupId)) {
+      if (group.containsKey(jobId)) {
         jobState = group.get("groupId");
       } else {
         jobState = new JobState();
       }
 
+      jobState.setJobId(jobId);
       jobState.setEngineId(rs.getString("engineId"));
       jobState.setState(rs.getString("state"));
       jobState.setStartTime(rs.getLong("startTime"));
@@ -249,7 +253,7 @@ public class JobTableManager extends AbstractStorageManager {
       jobState.setHost(rs.getString("engineHost"));
       jobState.setPort(rs.getInt("enginePort"));
 
-      group.put(groupId, jobState);
+      group.put(jobId, jobState);
       metrics.put(workflowId, group);
     }
 

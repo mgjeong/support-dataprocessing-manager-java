@@ -72,7 +72,8 @@ public class MonitoringManager implements Runnable {
     return metrics;
   }
 
-  public static synchronized WorkflowGroupState convertGroupMetrics(String groupId, HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
+  public static synchronized WorkflowGroupState convertGroupMetrics(String groupId, HashMap<Long,
+    HashMap<String, JobState>> healthOfworkflows) {
 
     if (healthOfworkflows.containsKey(Long.parseLong(groupId))) {
 
@@ -112,9 +113,6 @@ public class MonitoringManager implements Runnable {
 
   public MonitoringManager stop() throws InterruptedException {
     disabled();
-
-    thread.join();
-
     return this;
   }
 
