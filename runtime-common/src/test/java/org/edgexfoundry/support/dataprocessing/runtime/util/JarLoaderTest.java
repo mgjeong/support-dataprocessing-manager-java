@@ -78,27 +78,19 @@ public class JarLoaderTest {
 
   @Test
   public void testInvalidJarLoader() throws Exception {
-    try {
-      JarLoader.newInstance(testTaskModelJar,
-          JarLoaderTest.class.getCanonicalName() + "$" + SimpleClassTest.class.getSimpleName(),
-          getClass().getClassLoader(), String.class);
-      Assert.fail("Should not reach here");
-    } catch (Exception e) {
-      // success
-    }
+    String obj = JarLoader.newInstance(testTaskModelJar,
+        JarLoaderTest.class.getCanonicalName() + "$" + SimpleClassTest.class.getSimpleName(),
+        getClass().getClassLoader(), String.class);
+    Assert.assertNull(obj);
   }
 
   @Test
   public void testAbstractJarLoader() throws Exception {
-    try {
-      JarLoader.newInstance(testTaskModelJar,
-          JarLoaderTest.class.getCanonicalName() + "$" + AbstractSimpleClassTest.class
-              .getSimpleName(),
-          getClass().getClassLoader(), AbstractSimpleClassTest.class);
-      Assert.fail("Should not reach here");
-    } catch (Exception e) {
-      // success
-    }
+    AbstractSimpleClassTest obj = JarLoader.newInstance(testTaskModelJar,
+        JarLoaderTest.class.getCanonicalName() + "$" + AbstractSimpleClassTest.class
+            .getSimpleName(),
+        getClass().getClassLoader(), AbstractSimpleClassTest.class);
+    Assert.assertNull(obj);
   }
 
   @Test
