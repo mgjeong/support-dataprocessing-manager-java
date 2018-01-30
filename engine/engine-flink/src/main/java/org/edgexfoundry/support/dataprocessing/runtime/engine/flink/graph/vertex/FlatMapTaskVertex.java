@@ -30,7 +30,9 @@ public class FlatMapTaskVertex implements Vertex {
     if (this.influx == null) {
       this.influx = influx;
     } else {
-      this.influx = this.influx.union(influx);
+      if (this.influx != influx) {
+        this.influx = this.influx.union(influx);
+      }
     }
   }
 }

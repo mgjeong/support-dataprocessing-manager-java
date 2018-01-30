@@ -109,6 +109,7 @@ public class WebSocketServerSink extends RichSinkFunction<DataSet> {
   @Override
   public void close() throws Exception {
     // close web server
+
     if (this.serverChannel != null) {
       this.serverChannel.close();
     }

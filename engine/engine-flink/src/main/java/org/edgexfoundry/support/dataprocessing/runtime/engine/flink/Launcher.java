@@ -17,42 +17,54 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
+import com.google.gson.Gson;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Launcher {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
+  private StreamExecutionEnvironment env;
 
   private void execute(String[] args) throws Exception {
-    final ParameterTool params = ParameterTool.fromArgs(args);
+    ParameterTool params = ParameterTool.fromArgs(args);
 
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.getConfig().setGlobalJobParameters(params);
 
     if (!params.has("json")) {
-      throw new RuntimeException("No specified job-config file");
+      throw new RuntimeException("Not any specified job-config file");
     }
 
-    String jsonString = params.get("json");
-    Reader jsonReader;
-    if (params.has("internal")) {
-      String jsonFileName = "/" + jsonString + ".json";
-      jsonReader = new InputStreamReader(getClass().getResourceAsStream(jsonFileName));
-    } else {
-      jsonReader = new FileReader(jsonString);
+    String jsonId = params.get("json");
+    Reader jsonReader = null;
+    try {
+      if (params.has("internal")) {
+        String inJarPath = "/" + jsonId + ".json";
+        LOGGER.debug("{}", getClass().getResource(inJarPath));
+        jsonReader = new InputStreamReader(getClass().getResourceAsStream(inJarPath));
+
+      } else {
+        jsonReader = new FileReader(jsonId);
+      }
+    } catch (NullPointerException e) {
+      throw new RuntimeException("Invalid job configuration file", e);
     }
 
-    JobGraph jobGraph = new JobGraphBuilder().getInstance(env, jsonReader);
+    WorkflowData workflowData = new Gson().fromJson(jsonReader, WorkflowData.class);
     jsonReader.close();
 
+    JobGraph jobGraph = new JobGraphBuilder().getInstance(env, workflowData);
     jobGraph.initialize();
+
     env.execute(jobGraph.getJobId());
   }
 
