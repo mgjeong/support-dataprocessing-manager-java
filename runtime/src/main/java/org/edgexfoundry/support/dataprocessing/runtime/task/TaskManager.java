@@ -295,7 +295,7 @@ public final class TaskManager implements FileAlterationListener {
     }
   }
 
-  public void updateTaskModels(File createdFile, int removable) {
+  private void updateTaskModels(File createdFile, int removable) {
     List<String> classNames = getTaskModels(createdFile);
     if (classNames == null || classNames.isEmpty()) {
       LOGGER.info("No task models found in " + createdFile.getName());
