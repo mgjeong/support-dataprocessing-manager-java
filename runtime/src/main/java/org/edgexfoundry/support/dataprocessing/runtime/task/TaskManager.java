@@ -18,26 +18,32 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.monitor.FileAlterationListener;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.ComponentUISpecification;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.util.TaskModelLoader;
+import org.edgexfoundry.support.dataprocessing.runtime.util.JarLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class TaskManager implements DirectoryChangeEventListener {
+public final class TaskManager implements FileAlterationListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
   private static TaskManager instance = null;
@@ -46,7 +52,8 @@ public final class TaskManager implements DirectoryChangeEventListener {
   private static final int USERTASK = 1;
 
   private WorkflowTableManager workflowTableManager = null;
-  private DirectoryWatcher directoryWatcher = null;
+  private FileAlterationMonitor directoryWatcher = null;
+  private File customJarDirectory = null;
 
   private TaskManager() {
   }
@@ -59,33 +66,44 @@ public final class TaskManager implements DirectoryChangeEventListener {
     return instance;
   }
 
-  private void startDirectoryWatcher(String absPath) throws InvalidParameterException {
+  private void startDirectoryWatcher(String absPath) throws Exception {
     if (null == absPath) {
       throw new InvalidParameterException("Path is null.");
     }
 
-    if (null != this.directoryWatcher) {
-      stopDirectoryWatcher();
+    // stop directory watcher if running
+    stopDirectoryWatcher();
+
+    // start directory watcher
+    customJarDirectory = new File(absPath);
+    if (!customJarDirectory.exists()) {
+      throw new InvalidParameterException("Directory not found: " + absPath);
     }
 
-    this.directoryWatcher = new DirectoryWatcher(absPath, this);
-    this.directoryWatcher.start();
+    FileAlterationObserver observer = new FileAlterationObserver(customJarDirectory,
+        pathname -> pathname.getName().toLowerCase().endsWith(".jar"));
+    observer.addListener(this);
+
+    directoryWatcher = new FileAlterationMonitor(Settings.DIRECTORY_WATCHER_SCAN_INTERVAL);
+    directoryWatcher.addObserver(observer);
+    directoryWatcher.start();
   }
 
-  public void initialize() {
+  public void initialize(String customJarPath) throws Exception {
     this.workflowTableManager = WorkflowTableManager.getInstance();
 
-    startDirectoryWatcher(Settings.CUSTOM_JAR_PATH);
+    startDirectoryWatcher(customJarPath);
   }
 
   private void stopDirectoryWatcher() {
-    this.directoryWatcher.stopWatcher();
-    try {
-      this.directoryWatcher.join(3000L);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
+    if (directoryWatcher != null) {
+      try {
+        directoryWatcher.stop();
+        directoryWatcher = null;
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
     }
-    this.directoryWatcher = null;
   }
 
   public void terminate() {
@@ -97,24 +115,16 @@ public final class TaskManager implements DirectoryChangeEventListener {
     LOGGER.info("TaskManager terminated.");
   }
 
-  private List<String> getTaskModelNames(String fileName) {
-    // Validate file name
-    if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
-      LOGGER.debug("Invalid file name received.");
+  private List<String> getTaskModels(File taskModelFile) {
+    if (taskModelFile == null || !taskModelFile.isFile()) {
+      LOGGER.error("Invalid task model file received.");
       return Collections.emptyList();
     }
 
-    // Validate file
-    File f = new File(fileName);
-    if (f == null || !f.exists() || !f.isFile()) {
-      LOGGER.debug("{} does not exist or is invalid.", fileName);
-      return Collections.emptyList();
-    }
-
-    LOGGER.info("Reading {}", fileName);
+    LOGGER.info("Reading {}", taskModelFile);
     // Collect all class names available inside jar
     List<String> classNames = new ArrayList<>();
-    try (ZipInputStream zip = new ZipInputStream(new FileInputStream(f))) {
+    try (ZipInputStream zip = new ZipInputStream(new FileInputStream(taskModelFile))) {
       for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
         // Extract class files
         if (!entry.isDirectory()
@@ -226,80 +236,147 @@ public final class TaskManager implements DirectoryChangeEventListener {
     return uiField;
   }
 
-  private void updateTasksFromJar(String absJarPath, List<String> classNames, int removable) {
-    TaskModelLoader loader = null;
-    try {
-      loader = new TaskModelLoader(absJarPath, this.getClass().getClassLoader());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+  public void scanTaskModel(String absPath) {
+    if (StringUtils.isEmpty(absPath)) {
+      LOGGER.error("invalid path.");
+      return;
+    }
+    File taskDirectory = new File(absPath);
+    if (!taskDirectory.isDirectory()) {
+      LOGGER.error(absPath + " is not a directory.");
+      return;
     }
 
-    for (String s : classNames) {
-      try {
-        // Add to database if task model
-        TaskModel tm = loader.newInstance(s);
-        if (tm == null || !(tm instanceof TaskModel)) {
-          LOGGER.error("Failed to instantiate " + s + ". Possibly an abstract class.");
-          continue;
-        }
-        updateTaskModel(tm, absJarPath, tm.getClass().getCanonicalName(), removable);
-        LOGGER.info("TaskModel {}/{}/{} updated.",
-            new Object[]{tm.getType(), tm.getName(), absJarPath});
-      } catch (Exception e) {
-        LOGGER.error("Failed to instantiate " + s + ". Possibly an abstract class.");
-        LOGGER.error(e.getMessage());
-      }
+    File[] files = taskDirectory
+        .listFiles(pathname -> pathname.getName().toLowerCase().endsWith(".jar"));
+    for (File file : files) {
+      updateTaskModels(file, DEFAULTTASK);
     }
   }
 
-  public boolean scanTaskModel(String absPath) {
-    if (absPath == null) {
-      LOGGER.error("invalid path.");
+  public void uploadCustomTask(String filename, InputStream inputStream) throws Exception {
+    if (StringUtils.isEmpty(filename)) {
+      throw new RuntimeException("Invalid filename");
+    } else if (inputStream == null) {
+      throw new RuntimeException("Invalid file input stream.");
+    }
+
+    File tmp = new File(customJarDirectory, filename + ".tmp");
+    try {
+      Files.copy(inputStream, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      IOUtils.closeQuietly(inputStream);
+
+      if (!validateCustomTask(tmp)) {
+        throw new RuntimeException("No custom tasks found in " + filename);
+      }
+
+      // otherwise, rename file so that directory watcher can detect it
+      File dest = new File(customJarDirectory, filename);
+      tmp.renameTo(dest);
+    } finally {
+      tmp.delete();
+    }
+  }
+
+  private boolean validateCustomTask(File file) {
+    if (file == null || !file.isFile()) {
       return false;
     }
 
-    ArrayList<String> fileNames = this.directoryWatcher.scanFile(absPath);
-    for (String fileName : fileNames) {
-      List<String> classNames = getTaskModelNames(fileName);
-      if (classNames != null && !classNames.isEmpty()) {
-        updateTasksFromJar(fileName, classNames, DEFAULTTASK);
-      }
-    }
-    return true;
-  }
-
-  @Override
-  public ErrorFormat fileCreatedEventReceiver(String fileName) {
-    if (null == fileName) {
-      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS);
-    }
-
-    List<String> classNames = getTaskModelNames(fileName);
-    if (null == classNames || classNames.isEmpty()) {
-      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "This file does not have class.");
-    }
-
-    if (null != classNames) {
-      updateTasksFromJar(fileName, classNames, USERTASK);
-    }
-    return new ErrorFormat();
-  }
-
-  @Override
-  public ErrorFormat fileRemovedEventReceiver(String fileName) {
-    // Validate file name
-    if (fileName == null || fileName.isEmpty() || !fileName.endsWith(".jar")) {
-      LOGGER.error("Invalid file name received.");
-      return new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Invalid file name received.");
-    }
-
-    // Delete from database
     try {
-      // TODO:
-      //taskTable.deleteTaskByPath(fileName);
+      List<String> classNames = getTaskModels(file);
+      if (classNames == null || classNames.isEmpty()) {
+        return false;
+      }
+
+      for (String className : classNames) {
+        TaskModel tm = JarLoader
+            .newInstance(file, className, getClass().getClassLoader(), TaskModel.class);
+        if (tm == null) {
+          LOGGER.info(className + " is not an instance of " + TaskModel.class.getSimpleName());
+          return false;
+        }
+      }
+      return true;
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return false;
+    }
+  }
+
+  private void updateTaskModels(File createdFile, int removable) {
+    List<String> classNames = getTaskModels(createdFile);
+    if (classNames == null || classNames.isEmpty()) {
+      LOGGER.info("No task models found in " + createdFile.getName());
+      return;
+    }
+
+    try {
+      for (String className : classNames) {
+        TaskModel tm = JarLoader
+            .newInstance(createdFile, className, this.getClass().getClassLoader(), TaskModel.class);
+        if (tm == null || !(tm instanceof TaskModel)) {
+          LOGGER.error("Failed to instantiate " + className + ". Possibly an abstract class.");
+          continue;
+        }
+        updateTaskModel(tm, createdFile.getAbsolutePath(), tm.getClass().getCanonicalName(),
+            removable);
+        LOGGER.info("TaskModel {}/{}/{} updated.",
+            new Object[]{tm.getType(), tm.getName(), createdFile.getAbsolutePath()});
+      }
+
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
     }
-    return new ErrorFormat();
+  }
+
+  @Override
+  public void onStart(FileAlterationObserver fileAlterationObserver) {
+    // Nothing
+  }
+
+  @Override
+  public void onDirectoryCreate(File file) {
+    // ignored
+  }
+
+  @Override
+  public void onDirectoryChange(File file) {
+    // ignored
+  }
+
+  @Override
+  public void onDirectoryDelete(File file) {
+    // ignored
+  }
+
+  @Override
+  public void onFileCreate(File file) {
+    if (file == null || !file.isFile()) {
+      LOGGER.error("File is invalid.");
+      return;
+    }
+    LOGGER.info("File created: " + file.getAbsolutePath());
+    updateTaskModels(file, USERTASK);
+  }
+
+  @Override
+  public void onFileChange(File file) {
+    // Nothing
+  }
+
+  @Override
+  public void onFileDelete(File file) {
+    if (file == null) {
+      LOGGER.error("File is invalid.");
+      return;
+    }
+
+    LOGGER.info("File deleted: " + file.getAbsolutePath());
+  }
+
+  @Override
+  public void onStop(FileAlterationObserver fileAlterationObserver) {
+    // Nothing
   }
 }
