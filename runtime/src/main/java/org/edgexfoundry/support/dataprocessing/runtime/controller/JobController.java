@@ -165,4 +165,14 @@ public class JobController extends AbstractController {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }
   }
+
+  @ApiOperation(value = "Monitor Job", notes = "Monitor job")
+  @RequestMapping(value = "/workflows/monitor/{groupId}/details", method = RequestMethod.GET)
+  public ResponseEntity monitorJobDetails(@PathVariable("groupId") String groupId) {
+    try {
+      return respond(MonitoringManager.getInstance().getGroupDetails(groupId), HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
 }

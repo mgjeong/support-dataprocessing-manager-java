@@ -33,38 +33,41 @@ public class MonitoringManager implements Runnable {
     workflowStates = JobTableManager.getInstance().getWorkflowState();
   }
 
+  public static synchronized WorkflowMetric.Work getCountWorks(HashMap<String, JobState> group) {
+
+    long success, finished;
+
+    success = 0;
+    finished = 0;
+
+    for (HashMap.Entry<String, JobState> jobStateEntry : group.entrySet()) {
+      JobState jobState = jobStateEntry.getValue();
+      JobState.State state = jobState.getState();
+      switch (state) {
+        case CREATED:
+        case RUNNING:
+          success++;
+          break;
+        case STOPPED:
+        case ERROR:
+          finished++;
+          break;
+      }
+    }
+    return new WorkflowMetric.Work(success, finished);
+  }
+
   public static synchronized WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
     ArrayList<WorkflowMetric.GroupInfo> groups = new ArrayList<>();
     WorkflowMetric metrics = new WorkflowMetric();
 
-    long success, finished;
-
     for (HashMap.Entry<Long, HashMap<String, JobState>> groupEntry : healthOfworkflows.entrySet()) {
-
-      success = 0;
-      finished = 0;
-
       Long workflowId = groupEntry.getKey();
       HashMap<String, JobState> group = groupEntry.getValue();
 
-      for (HashMap.Entry<String, JobState> jobStateEntry : group.entrySet()) {
-        JobState jobState = jobStateEntry.getValue();
-        JobState.State state = jobState.getState();
-        switch (state) {
-          case CREATED:
-          case RUNNING:
-            success++;
-            break;
-          case STOPPED:
-          case ERROR:
-            finished++;
-            break;
-        }
-      }
-
       WorkflowMetric.GroupInfo gInfo = new WorkflowMetric.GroupInfo();
       gInfo.setGroupId(workflowId.toString());
-      gInfo.setWorks(new WorkflowMetric.Work(success, finished));
+      gInfo.setWorks(getCountWorks(group));
       groups.add(gInfo);
     }
 
@@ -221,7 +224,14 @@ public class MonitoringManager implements Runnable {
     return MonitoringManager.convertWorkflowMetrics(workflowStates);
   }
 
-  public synchronized WorkflowGroupState getGroupState(String groupId) {
+  public synchronized WorkflowMetric.GroupInfo getGroupState(String groupId) {
+    WorkflowMetric.GroupInfo groupInfo = new WorkflowMetric.GroupInfo();
+    groupInfo.setGroupId(groupId);
+    groupInfo.setWorks(MonitoringManager.getCountWorks(workflowStates.get(Long.parseLong(groupId))));
+    return groupInfo;
+  }
+
+  public synchronized WorkflowGroupState getGroupDetails(String groupId) {
     return MonitoringManager.convertGroupMetrics(groupId, workflowStates);
   }
 }
