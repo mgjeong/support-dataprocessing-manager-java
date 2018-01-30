@@ -21,7 +21,7 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
   private long mInterval = 100L; // 100 msec
   private boolean mFirstLineIsKeys = false;
 
-  private BufferedReader mBR = null;
+  //private BufferedReader mBR = null;
   private transient volatile boolean running;
 
   public FileInputSource(String path, String type) {
@@ -55,32 +55,20 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
   }
 
   static boolean isNumber(String s) {
-    final int len = s.length();
-    if (len == 0) {
+    try {
+      Double.parseDouble(s);
+      LOGGER.debug("It is a number~!! {}", s);
+      return true;
+    } catch (NumberFormatException e) {
+      LOGGER.error("It is not a number~!! {}", s);
       return false;
     }
-    int dotCount = 0;
-    for (int i = 0; i < len; i++) {
-      char c = s.charAt(i);
-      if (c < '0' || c > '9') {
-        if (i == len - 1) {//last character must be digit
-          return false;
-        } else if (c == '.') {
-          if (++dotCount > 1) {
-            return false;
-          }
-        } else if (i != 0 || c != '+' && c != '-') {//+ or - allowed at start
-          return false;
-        }
-
-      }
-    }
-    return true;
   }
 
   @Override
   public void run(SourceContext<DataSet> ctx) throws Exception {
 
+    BufferedReader mBR = null;
     try {
       mBR = new BufferedReader(new FileReader(this.mPath));
 
@@ -89,10 +77,10 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
         if (this.mType.equals("csv") || this.mType.equals("tsv")) {
           String line = mBR.readLine();
           // first line is array of keys
-          String[] Keys = null;
+          String[] keys = null;
           if (this.mFirstLineIsKeys) {
-            Keys = line.split(this.mDelimiter);
-            if (Keys.length < 1) {
+            keys = line.split(this.mDelimiter);
+            if (keys.length < 1) {
               // Parsing json formatted string line
               LOGGER.error("Error During Extracting Keys from first line {}", line);
               this.running = false;
@@ -106,9 +94,9 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
             if (values != null && values.length > 0) {
 
               if (this.mFirstLineIsKeys) {
-                if (Keys.length != values.length) {
+                if (keys.length != values.length) {
                   LOGGER
-                      .error("Length Not Match - keys {} , values {}", Keys.length, values.length);
+                      .error("Length Not Match - keys {} , values {}", keys.length, values.length);
                   this.running = false;
                   break;
                 }
@@ -117,12 +105,12 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
               DataSet streamData = DataSet.create();
               for (int index = 0; index < values.length; index++) {
                 if (this.mFirstLineIsKeys) {
-                  LOGGER.info("Value  Key {} : Value {}", Keys[index], values[index]);
+                  LOGGER.info("Value  Key {} : Value {}", keys[index], values[index]);
                   if (isNumber(values[index])) {
-                    streamData.setValue("/" + Keys[index],
+                    streamData.setValue("/" + keys[index],
                         Double.valueOf(values[index]));
                   } else {
-                    streamData.setValue("/" + Keys[index],
+                    streamData.setValue("/" + keys[index],
                         values[index].replace("\"", ""));
                   }
                 } else {
@@ -152,9 +140,8 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
     } catch (IOException e) {
       LOGGER.error("File Reading Error : {}", e.toString());
     } finally {
-      if (this.mBR != null) {
-        this.mBR.close();
-        this.mBR = null;
+      if (mBR != null) {
+        mBR.close();
       }
     }
   }
