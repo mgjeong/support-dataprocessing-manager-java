@@ -50,10 +50,12 @@ public class DataSetSchema implements SerializationSchema<DataSet>, Deserializat
       throw new IllegalStateException("DataSet is null.");
     }
     String str = dataSet.toString();
-    if (str == null || str.isEmpty()) {
-      throw new IllegalStateException("DataSet in string is null.");
-    } else {
-      return str.getBytes();
-    }
+    // Currently, there is no case when DataSet.toString returns null or emtpy string
+    // If there is a case, uncomment these out
+    //if (str == null || str.isEmpty()) {
+    //  throw new IllegalStateException("DataSet in string is null.");
+    //} else {
+    return str.getBytes();
+    //}
   }
 }

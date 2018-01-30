@@ -162,11 +162,4 @@ public class EzmqSource extends RichSourceFunction<DataSet> implements
       }
     }
   }
-
-  public static void main(String[] args) throws Exception {
-    EzmqSource source = new EzmqSource("localhost", 5562);
-    source.open(null);
-    source.run(null);
-  }
-
 }

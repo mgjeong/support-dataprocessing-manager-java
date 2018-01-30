@@ -1,5 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file;
 
+import java.io.IOException;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
@@ -45,14 +46,12 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
   public void open(Configuration parameters) throws Exception {
 
     File file = new File(this.mPath);
-    if (file.exists() && !file.isDirectory()) {
-      mBR = new BufferedReader(new FileReader(this.mPath));
-
-    } else {
+    if (!file.exists() || file.isDirectory()) {
       LOGGER.error("File not exist {}", this.mPath);
+      throw new Exception("File not exist " + this.mPath);
+    } else {
+      this.running = true;
     }
-
-    this.running = true;
   }
 
   static boolean isNumber(String s) {
@@ -82,69 +81,80 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
   @Override
   public void run(SourceContext<DataSet> ctx) throws Exception {
 
-    while (this.running) {
+    try {
+      mBR = new BufferedReader(new FileReader(this.mPath));
 
-      if (this.mType.equals("csv") || this.mType.equals("tsv")) {
-        String line = mBR.readLine();
-        // first line is array of keys
-        String[] Keys = null;
-        if (this.mFirstLineIsKeys) {
-          Keys = line.split(this.mDelimiter);
-          if (Keys.length < 1) {
-            // Parsing json formatted string line
-            LOGGER.error("Error During Extracting Keys from first line {}", line);
-            this.running = false;
-          }
-        }
-        // other lines are for values
-        while (this.running && ((line = mBR.readLine()) != null)) {
-          LOGGER.info("Line : {}", line);
-          String[] values = line.split(this.mDelimiter);
+      while (this.running) {
 
-          if (values != null && values.length > 0) {
-
-            if (this.mFirstLineIsKeys) {
-              if (Keys.length != values.length) {
-                LOGGER
-                    .error("Length Not Match - keys {} , values {}", Keys.length, values.length);
-                this.running = false;
-                break;
-              }
+        if (this.mType.equals("csv") || this.mType.equals("tsv")) {
+          String line = mBR.readLine();
+          // first line is array of keys
+          String[] Keys = null;
+          if (this.mFirstLineIsKeys) {
+            Keys = line.split(this.mDelimiter);
+            if (Keys.length < 1) {
+              // Parsing json formatted string line
+              LOGGER.error("Error During Extracting Keys from first line {}", line);
+              this.running = false;
             }
+          }
+          // other lines are for values
+          while (this.running && ((line = mBR.readLine()) != null)) {
+            LOGGER.info("Line : {}", line);
+            String[] values = line.split(this.mDelimiter);
 
-            DataSet streamData = DataSet.create();
-            for (int index = 0; index < values.length; index++) {
+            if (values != null && values.length > 0) {
+
               if (this.mFirstLineIsKeys) {
-                LOGGER.info("Value  Key {} : Value {}", Keys[index], values[index]);
-                if (isNumber(values[index])) {
-                  streamData.setValue("/" + Keys[index],
-                      Double.valueOf(values[index]));
-                } else {
-                  streamData.setValue("/" + Keys[index],
-                      values[index].replace("\"", ""));
-                }
-              } else {
-                LOGGER.info("Value  Key {} : Value {}", index, values[index]);
-
-                if (isNumber(values[index])) {
-                  streamData.setValue("/" + index,
-                      Double.valueOf(values[index]));
-                } else {
-                  streamData.setValue("/" + index,
-                      values[index].replace("\"", ""));
+                if (Keys.length != values.length) {
+                  LOGGER
+                      .error("Length Not Match - keys {} , values {}", Keys.length, values.length);
+                  this.running = false;
+                  break;
                 }
               }
+
+              DataSet streamData = DataSet.create();
+              for (int index = 0; index < values.length; index++) {
+                if (this.mFirstLineIsKeys) {
+                  LOGGER.info("Value  Key {} : Value {}", Keys[index], values[index]);
+                  if (isNumber(values[index])) {
+                    streamData.setValue("/" + Keys[index],
+                        Double.valueOf(values[index]));
+                  } else {
+                    streamData.setValue("/" + Keys[index],
+                        values[index].replace("\"", ""));
+                  }
+                } else {
+                  LOGGER.info("Value  Key {} : Value {}", index, values[index]);
+
+                  if (isNumber(values[index])) {
+                    streamData.setValue("/" + index,
+                        Double.valueOf(values[index]));
+                  } else {
+                    streamData.setValue("/" + index,
+                        values[index].replace("\"", ""));
+                  }
+                }
+              }
+              ctx.collect(streamData);
             }
-            ctx.collect(streamData);
+            Thread.sleep(this.mInterval);
           }
-          Thread.sleep(this.mInterval);
+          LOGGER.info("File Reading Done");
+          this.running = false;
+        } else {
+          LOGGER.error(this.mType + " file type is not supported");
+          this.running = false;
+          break;
         }
-        LOGGER.info("File Reading Done");
-        this.running = false;
-      } else {
-        LOGGER.error(this.mType + " file type is not supported");
-        this.running = false;
-        break;
+      }
+    } catch (IOException e) {
+      LOGGER.error("File Reading Error : {}", e.toString());
+    } finally {
+      if (this.mBR != null) {
+        this.mBR.close();
+        this.mBR = null;
       }
     }
   }

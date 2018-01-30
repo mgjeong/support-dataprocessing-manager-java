@@ -145,9 +145,10 @@ public class HTTP implements Serializable {
   public JsonElement get(String path, Map<String, String> args) {
     throwExceptionIfNotInitialized();
 
+    HttpGet request = null;
     try {
       URI uri = createUri(path, args);
-      HttpGet request = new HttpGet(uri);
+      request = new HttpGet(uri);
       HttpResponse response = executeRequest(request);
 
       int httpStatusCode = response.getStatusLine().getStatusCode();
@@ -162,15 +163,20 @@ public class HTTP implements Serializable {
 
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
 
     return null;
   }
 
   public boolean get(String path, Map<String, String> args, String dstPath, String fName) {
+    HttpGet request = null;
     try {
       URI uri = createUri(path, args);
-      HttpGet request = new HttpGet(uri);
+      request = new HttpGet(uri);
       HttpResponse response = executeRequest(request);
 
       int httpStatusCode = response.getStatusLine().getStatusCode();
@@ -188,6 +194,10 @@ public class HTTP implements Serializable {
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return false;   // Fail.
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
 
     return true;        // Success.
@@ -196,9 +206,10 @@ public class HTTP implements Serializable {
   public JsonElement delete(String path) throws Exception {
     throwExceptionIfNotInitialized();
 
+    HttpDelete request = null;
     try {
       URI uri = createUri(path, null);
-      HttpDelete request = new HttpDelete(uri);
+      request = new HttpDelete(uri);
       HttpResponse response = executeRequest(request);
 
       int httpStatusCode = response.getStatusLine().getStatusCode();
@@ -213,14 +224,19 @@ public class HTTP implements Serializable {
 
     } catch (Exception e) {
       throw e;
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
   }
 
   public JsonElement post(String path, File fileToUpload) {
     throwExceptionIfNotInitialized();
+    HttpPost request = null;
     try {
       URI uri = createUri(path, null);
-      HttpPost request = new HttpPost(uri);
+      request = new HttpPost(uri);
       //request.addHeader(HttpHeaders.CONTENT_TYPE, "application/x-java-archive");
 
       MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -243,6 +259,10 @@ public class HTTP implements Serializable {
 
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
 
     return null;
@@ -255,6 +275,7 @@ public class HTTP implements Serializable {
   public JsonElement post(String path, Map<String, String> args, boolean useArgAsParam) {
     throwExceptionIfNotInitialized();
 
+    HttpPost request = null;
     try {
       URI uri;
       if (useArgAsParam) {
@@ -263,7 +284,7 @@ public class HTTP implements Serializable {
         uri = createUri(path, null);
       }
 
-      HttpPost request = new HttpPost(uri);
+      request = new HttpPost(uri);
 
       if (!useArgAsParam) {
         List<NameValuePair> entity = new ArrayList<>();
@@ -289,6 +310,10 @@ public class HTTP implements Serializable {
 
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
 
     return null;
@@ -296,9 +321,10 @@ public class HTTP implements Serializable {
 
   public JsonElement post(String path, String dataString) {
     throwExceptionIfNotInitialized();
+    HttpPost request = null;
     try {
       URI uri = createUri(path, null);
-      HttpPost request = new HttpPost(uri);
+      request = new HttpPost(uri);
       StringEntity entity = new StringEntity(dataString, ContentType.APPLICATION_FORM_URLENCODED);
       request.setEntity(entity);
 
@@ -314,6 +340,10 @@ public class HTTP implements Serializable {
       return this.jsonParser.parse(rawJson);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
 
     return null;
@@ -321,9 +351,10 @@ public class HTTP implements Serializable {
 
   public JsonElement patch(String path, String dataString) {
     throwExceptionIfNotInitialized();
+    HttpPatch request = null;
     try {
       URI uri = createUri(path, null);
-      HttpPatch request = new HttpPatch(uri);
+      request = new HttpPatch(uri);
       StringEntity entity = new StringEntity(dataString, ContentType.APPLICATION_FORM_URLENCODED);
       request.setEntity(entity);
 
@@ -339,6 +370,10 @@ public class HTTP implements Serializable {
       return this.jsonParser.parse(rawJson);
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      if (request != null) {
+        request.releaseConnection();
+      }
     }
 
     return null;
