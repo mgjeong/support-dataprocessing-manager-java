@@ -13,7 +13,6 @@ Create a custom task model in following steps:
   4. Package the source code to jar file with all dependencies.
   ```bash
   $ mvn clean package
-  $ mvn assembly:assembly
   ```
   5. In the output directory, you should find a fat jar with all dependencies (ends with `jar-with-dependencies.jar`).
   6. Upload the fat jar to Workflow Manager from Workflow Designer or use an API that can be found at Workflow Manager's Swagger UI page.
