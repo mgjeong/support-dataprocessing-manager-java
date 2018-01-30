@@ -26,6 +26,8 @@ public final class Settings {
   public static final String DB_PATH = "DPFW.db";
   public static final String JDBC_PATH = "jdbc:sqlite:" + DOCKER_PATH + DB_PATH;
 
+  public static final long DIRECTORY_WATCHER_SCAN_INTERVAL = 1000L; // in milliseconds
+
   private Settings() {
 
   }

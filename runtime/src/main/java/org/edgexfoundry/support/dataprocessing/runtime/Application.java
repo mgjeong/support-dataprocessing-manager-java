@@ -38,7 +38,7 @@ public class Application extends SpringBootServletInitializer {
     makeDatabaseIfNecessary();
 
     // 3. Run task manager to scan for tasks
-    TaskManager.getInstance().initialize();
+    TaskManager.getInstance().initialize(Settings.CUSTOM_JAR_PATH);
     TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
   }
 
