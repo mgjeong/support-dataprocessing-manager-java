@@ -288,15 +288,6 @@ public final class TaskManager implements FileAlterationListener {
       if (classNames == null || classNames.isEmpty()) {
         return false;
       }
-
-      for (String className : classNames) {
-        TaskModel tm = JarLoader
-            .newInstance(file, className, getClass().getClassLoader(), TaskModel.class);
-        if (tm == null) {
-          LOGGER.info(className + " is not an instance of " + TaskModel.class.getSimpleName());
-          return false;
-        }
-      }
       return true;
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
@@ -304,7 +295,7 @@ public final class TaskManager implements FileAlterationListener {
     }
   }
 
-  private void updateTaskModels(File createdFile, int removable) {
+  public void updateTaskModels(File createdFile, int removable) {
     List<String> classNames = getTaskModels(createdFile);
     if (classNames == null || classNames.isEmpty()) {
       LOGGER.info("No task models found in " + createdFile.getName());
@@ -314,7 +305,7 @@ public final class TaskManager implements FileAlterationListener {
     try {
       for (String className : classNames) {
         TaskModel tm = JarLoader
-            .newInstance(createdFile, className, this.getClass().getClassLoader(), TaskModel.class);
+            .newInstance(createdFile, className, TaskModel.class);
         if (tm == null || !(tm instanceof TaskModel)) {
           LOGGER.error("Failed to instantiate " + className + ". Possibly an abstract class.");
           continue;

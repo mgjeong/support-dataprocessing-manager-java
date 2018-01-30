@@ -8,6 +8,7 @@ A data workflow can be designed using [Data Processing Designer](https://github.
   - Deploy data workflow to data processing engines as one or more workflow jobs
   - Execute/Stop/Update/Delete workflow jobs
   - Monitor workflow job status
+  - Create and upload custom task model [More...](./runtime-task/TaskModel/README.md)
  
 ## Prerequisites ##
 - Remember, you must configure proxies if necessary.
