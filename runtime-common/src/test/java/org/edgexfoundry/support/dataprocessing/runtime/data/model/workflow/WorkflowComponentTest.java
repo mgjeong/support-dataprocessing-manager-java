@@ -20,6 +20,8 @@ public class WorkflowComponentTest {
     component.setWorkflowComponentBundleId(1L);
     component.setName("sample");
     component.setDescription("sample component");
+    component.setBundleName("bundleName");
+    component.setBundleSubType("bundleSubType");
     component.setEngineType("FLINK");
     component.setPath("path");
     component.setClassname("classname");
@@ -34,6 +36,8 @@ public class WorkflowComponentTest {
     Assert.assertEquals("path", component.getPath());
     Assert.assertEquals("classname", component.getClassname());
     Assert.assertEquals(0, component.getConfig().getProperties().size());
+    Assert.assertEquals("bundleName", component.getBundleName());
+    Assert.assertEquals("bundleSubType", component.getBundleSubType());
 
     WorkflowComponent.Config config = new WorkflowComponent.Config();
     component.setConfig(config);

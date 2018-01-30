@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +28,10 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -433,12 +438,21 @@ public class WorkflowController extends AbstractController {
   }
 
   @ApiOperation(value = "Export workflow", notes = "Exports a workflow")
-  @RequestMapping(value = "/workflows/{workflowId}/actions/export", method = RequestMethod.GET)
+  @RequestMapping(value = "/workflows/{workflowId}/actions/export", method = RequestMethod.GET,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity exportWorkflow(@PathVariable("workflowId") Long workflowId) {
     try {
       Workflow workflow = this.workflowTableManager.getWorkflow(workflowId);
       String exportedWorkflow = this.workflowTableManager.exportWorkflow(workflow);
-      return respond(exportedWorkflow, HttpStatus.OK);
+
+      byte[] bExportedWorkflow = exportedWorkflow.getBytes();
+      try (InputStream inputStream = new ByteArrayInputStream(bExportedWorkflow)) {
+        InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(bExportedWorkflow.length);
+        headers.add("Content-Disposition", "attachment;filename=" + workflow.getName() + ".json");
+        return new ResponseEntity(inputStreamResource, headers, HttpStatus.OK);
+      }
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),

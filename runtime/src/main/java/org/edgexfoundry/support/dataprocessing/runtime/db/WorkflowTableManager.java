@@ -971,6 +971,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         .append("workflow_component_bundle.path as path,")
         .append("workflow_component_bundle.classname as classname,")
         .append("workflow_component_bundle.type AS type, ")
+        .append("workflow_component_bundle.name as bundleName,")
+        .append("workflow_component_bundle.subType as bundleSubType,")
         .append("workflow_component_bundle.streamingEngine AS streamingEngine ")
         .append("FROM workflow_component, workflow_component_bundle ")
         .append("WHERE workflow_component.workflowId = ? ")
@@ -1277,6 +1279,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     component.setConfigStr(rs.getString("config"));
     component.setPath(rs.getString("path"));
     component.setClassname(rs.getString("classname"));
+    component.setBundleName(rs.getString("bundleName"));
+    component.setBundleSubType(rs.getString("bundleSubType"));
 
     return component;
   }
@@ -1314,6 +1318,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         .append("workflow_component.componentBundleId AS componentBundleId,")
         .append("workflow_component.name AS name,")
         .append("workflow_component.config as config,")
+        .append("workflow_component_bundle.name as bundleName,")
+        .append("workflow_component_bundle.subType as bundleSubType,")
         .append("workflow_component_bundle.path as path,")
         .append("workflow_component_bundle.classname as classname,")
         .append("workflow_component_bundle.type AS type, ")
