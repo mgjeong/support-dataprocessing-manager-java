@@ -17,62 +17,63 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
+import java.io.IOException;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
+import org.mockito.Mockito;
 
 public class DataSetSchemeTest {
-    @Test
-    public void testSerialize() {
-        DataSet dataSet = DataSet.create("testId", "{}");
-        DataSetSchema schema = new DataSetSchema();
-        byte[] b = schema.serialize(dataSet);
-        Assert.assertNotNull(b);
-        Assert.assertTrue(b.length > 0);
-    }
 
-    @Test
-    public void testDeserialize() throws IOException {
-        DataSet dataSet = DataSet.create("testId", "{}");
-        DataSetSchema schema = new DataSetSchema();
-        byte[] b = schema.serialize(dataSet);
-        Assert.assertNotNull(b);
-        Assert.assertTrue(b.length > 0);
+  @Test
+  public void testSerialize() {
+    DataSet dataSet = DataSet.create("testId", "{}");
+    DataSetSchema schema = new DataSetSchema();
+    byte[] b = schema.serialize(dataSet);
+    Assert.assertNotNull(b);
+    Assert.assertTrue(b.length > 0);
+  }
 
-        DataSet newDataSet = schema.deserialize(b);
-        Assert.assertNotNull(newDataSet);
-        Assert.assertEquals(newDataSet.toString().length(),
-                dataSet.toString().length());
-        Assert.assertEquals(newDataSet.values().size(), dataSet.values().size());
-    }
+  @Test
+  public void testDeserialize() throws IOException {
+    DataSet dataSet = DataSet.create("testId", "{}");
+    DataSetSchema schema = new DataSetSchema();
+    byte[] b = schema.serialize(dataSet);
+    Assert.assertNotNull(b);
+    Assert.assertTrue(b.length > 0);
 
-    @Test
-    public void testTypeInformation() {
-        DataSetSchema schema = new DataSetSchema();
-        TypeInformation<DataSet> producedType = schema.getProducedType();
-        Assert.assertNotNull(producedType);
-        Assert.assertEquals(producedType.getTypeClass(), DataSet.class);
-    }
+    DataSet newDataSet = schema.deserialize(b);
+    Assert.assertNotNull(newDataSet);
+    Assert.assertEquals(newDataSet.toString().length(),
+        dataSet.toString().length());
+    Assert.assertEquals(newDataSet.values().size(), dataSet.values().size());
+  }
 
-    @Test
-    public void testIsEndOfStream() {
-        DataSet streamData = DataSet.create("testId", "{}");
-        DataSetSchema schema = new DataSetSchema();
-        Assert.assertFalse(schema.isEndOfStream(streamData));
-    }
+  @Test
+  public void testTypeInformation() {
+    DataSetSchema schema = new DataSetSchema();
+    TypeInformation<DataSet> producedType = schema.getProducedType();
+    Assert.assertNotNull(producedType);
+    Assert.assertEquals(producedType.getTypeClass(), DataSet.class);
+  }
 
-    @Test
-    public void testDeserializeFail() {
-        DataSetSchema schema = new DataSetSchema();
-        Assert.assertNull(schema.deserialize(null));
-    }
+  @Test
+  public void testIsEndOfStream() {
+    DataSet streamData = DataSet.create("testId", "{}");
+    DataSetSchema schema = new DataSetSchema();
+    Assert.assertFalse(schema.isEndOfStream(streamData));
+  }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSerializeFail() {
-        DataSetSchema schema = new DataSetSchema();
-        schema.serialize(null);
-    }
+  @Test
+  public void testDeserializeFail() {
+    DataSetSchema schema = new DataSetSchema();
+    Assert.assertNull(schema.deserialize(null));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testSerializeWithNullDataSet() {
+    DataSetSchema schema = new DataSetSchema();
+    schema.serialize(null);
+  }
 }

@@ -45,5 +45,6 @@ rm $framework_dir/jar/task/task-model-*.jar
 
 echo "Copying engine-flink.jar..."
 cp $framework_repo/engine/engine-flink/target/engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar $framework_repo/runtime/resource/engine-flink.jar
+cp $framework_repo/engine/engine-flink/target/engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar $framework_dir/resource/engine-flink.jar
 
 echo "Done."

@@ -17,17 +17,23 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.response.JobResponseFormat;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 
 public interface Engine {
-    JobResponseFormat createJob();
 
-    JobResponseFormat createJob(String jobId);
+  /**
+   * Creates an engine job instance from workflow data
+   */
+  Job create(WorkflowData workflow) throws Exception;
 
-    JobResponseFormat run(String jobId);
+  /**
+   * Runs an engine job
+   */
+  Job run(Job job) throws Exception;
 
-    JobResponseFormat stop(String jobId);
+  Job stop(Job job) throws Exception;
 
-    JobResponseFormat delete(String jobId);
+  Job delete(Job job) throws Exception;
 }
 

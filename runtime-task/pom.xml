@@ -14,6 +14,7 @@
         <module>Regression</module>
         <module>SVMModel</module>
         <module>QueryModel</module>
+        <module>ErrorModel</module>
     </modules>
 
     <modelVersion>4.0.0</modelVersion>
