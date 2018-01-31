@@ -18,9 +18,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.net.URLClassLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,8 +28,10 @@ public final class JarLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
-  public static <T> T newInstance(File jarFile, String className, ClassLoader classLoader,
-      Class<T> clazz)
+  private static TaskClassLoader taskClassLoader = new TaskClassLoader(
+      ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs());
+
+  public static <T> T newInstance(File jarFile, String className, Class<T> clazz)
       throws Exception {
     if (jarFile == null || !jarFile.exists()) {
       throw new RuntimeException("Invalid jar file");
@@ -39,24 +39,19 @@ public final class JarLoader {
       throw new RuntimeException("Invalid classname for " + jarFile.getName());
     }
 
-    try (URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{jarFile.toURI().toURL()},
-        classLoader)) {
-      Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-      method.setAccessible(true);
-      method.invoke(urlClassLoader, new Object[]{jarFile.toURI().toURL()});
+    taskClassLoader.addURL(jarFile.toURI().toURL());
 
-      Class classToInstantiate = Class.forName(className, true, urlClassLoader);
-      if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
-        LOGGER.error(className + " is an abstract class.");
-        return null;
+    Class classToInstantiate = Class.forName(className, true, taskClassLoader);
+    if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
+      LOGGER.error(className + " is an abstract class.");
+      return null;
+    } else {
+      Object o = classToInstantiate.newInstance();
+      if (clazz.isInstance(o)) {
+        return clazz.cast(o);
       } else {
-        Object o = classToInstantiate.newInstance();
-        if (clazz.isInstance(o)) {
-          return clazz.cast(o);
-        } else {
-          LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
-          return null;
-        }
+        LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+        return null;
       }
     }
   }

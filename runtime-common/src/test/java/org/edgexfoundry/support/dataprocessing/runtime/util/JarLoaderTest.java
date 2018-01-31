@@ -11,10 +11,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
 public class JarLoaderTest {
 
   private static final File testDir = new File("./testDir/");
@@ -72,7 +69,7 @@ public class JarLoaderTest {
     SimpleClassTest test = JarLoader
         .newInstance(testTaskModelJar,
             JarLoaderTest.class.getCanonicalName() + "$" + SimpleClassTest.class.getSimpleName(),
-            getClass().getClassLoader(), SimpleClassTest.class);
+            SimpleClassTest.class);
     Assert.assertNotNull(test);
   }
 
@@ -80,7 +77,7 @@ public class JarLoaderTest {
   public void testInvalidJarLoader() throws Exception {
     String obj = JarLoader.newInstance(testTaskModelJar,
         JarLoaderTest.class.getCanonicalName() + "$" + SimpleClassTest.class.getSimpleName(),
-        getClass().getClassLoader(), String.class);
+        String.class);
     Assert.assertNull(obj);
   }
 
@@ -89,21 +86,21 @@ public class JarLoaderTest {
     AbstractSimpleClassTest obj = JarLoader.newInstance(testTaskModelJar,
         JarLoaderTest.class.getCanonicalName() + "$" + AbstractSimpleClassTest.class
             .getSimpleName(),
-        getClass().getClassLoader(), AbstractSimpleClassTest.class);
+        AbstractSimpleClassTest.class);
     Assert.assertNull(obj);
   }
 
   @Test
   public void testInvalidParam() throws Exception {
     try {
-      JarLoader.newInstance(null, "", null, null);
+      JarLoader.newInstance(null, "", null);
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success
     }
 
     try {
-      JarLoader.newInstance(testTaskModelJar, "", null, null);
+      JarLoader.newInstance(testTaskModelJar, "", null);
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success
