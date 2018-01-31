@@ -15,6 +15,10 @@ public final class EngineManager {
 
 
   public static Engine getEngine(String host, WorkflowData.EngineType engineType) {
+    if(null == engines) {
+      return null;
+    }
+
     Engine engine = engines.get(host);
 
     if (null == engine) {
