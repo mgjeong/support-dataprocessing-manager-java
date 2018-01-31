@@ -22,21 +22,21 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.Kapacito
 
 public class EngineFactory {
 
-    public static Engine createEngine(WorkflowData.EngineType engineType, String host, Integer port) {
-        final Engine engine;
+  public static Engine createEngine(WorkflowData.EngineType engineType, String host, Integer port) {
+    final Engine engine;
 
-        switch (engineType) {
-            case FLINK:
-                engine = new FlinkEngine(host, port);
-                break;
-            case KAPACITOR:
-                engine = new KapacitorEngine(host, port);
-                break;
+    switch (engineType) {
+      case FLINK:
+        engine = new FlinkEngine(host, port);
+        break;
+      case KAPACITOR:
+        engine = new KapacitorEngine(host, port);
+        break;
 //            case Spark: // TODO
-            default:
-                throw new RuntimeException("Unsupported engine type selected.");
-        }
-        return engine;
+      default:
+        throw new RuntimeException("Unsupported engine type selected.");
     }
+    return engine;
+  }
 }
 

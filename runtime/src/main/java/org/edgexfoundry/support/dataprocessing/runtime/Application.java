@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime;
 
+import java.io.File;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
@@ -23,8 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
-
-import java.io.File;
 
 @SpringBootApplication
 public class Application extends SpringBootServletInitializer {
@@ -44,7 +43,7 @@ public class Application extends SpringBootServletInitializer {
     TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
 
     // 4. Run Monitoring
-    MonitoringManager.getInstance().setInterval(10).start();
+    MonitoringManager.getInstance().setInterval(MonitoringManager.INTERVAL).start();
   }
 
   private static void makeDatabaseIfNecessary() throws Exception {

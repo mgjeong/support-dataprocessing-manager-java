@@ -2,6 +2,8 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
@@ -17,10 +19,11 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -64,10 +67,10 @@ public class JobController extends AbstractController {
 
     Job job;
 
-    if(null == engine) {
+    if (null == engine) {
       // Todo : define what type error will response.
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, ""),
-        HttpStatus.OK);
+          HttpStatus.OK);
     }
 
     try {
@@ -92,7 +95,8 @@ public class JobController extends AbstractController {
 
       return respond(job, HttpStatus.OK);
     } catch (Exception e) {
-      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()), HttpStatus.OK);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, e.getMessage()),
+          HttpStatus.OK);
     }
   }
 
@@ -115,7 +119,8 @@ public class JobController extends AbstractController {
   public ResponseEntity getWorkflowJobs(@PathVariable("workflowId") Long workflowId) {
     try {
       Collection<Job> jobs = jobTableManager.listWorkflowJobs(workflowId);
-      jobs = jobs.stream().filter(workflowJob -> workflowJob.getState().getState() == State.RUNNING).collect(Collectors.toSet());
+      jobs = jobs.stream().filter(workflowJob -> workflowJob.getState().getState() == State.RUNNING)
+          .collect(Collectors.toSet());
       return respondEntity(jobs, HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
@@ -127,11 +132,17 @@ public class JobController extends AbstractController {
    **/
   @ApiOperation(value = "Stop job", notes = "Stop job")
   @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
-  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId, @PathVariable("jobId") String jobId) {
+  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
+      @PathVariable("jobId") String jobId) {
     try {
       Job job = jobTableManager.getWorkflowJob(jobId);
       String targetHost = job.getConfig("targetHost");
       Engine engine = createEngine(targetHost, WorkflowData.EngineType.FLINK);
+
+      if (null == engine) {
+        return respond(new ErrorFormat(ErrorType.DPFW_ERROR_CONNECTION_ERROR,
+            "Cannot create engine instance."), HttpStatus.OK);
+      }
 
       try {
         job = engine.stop(job);

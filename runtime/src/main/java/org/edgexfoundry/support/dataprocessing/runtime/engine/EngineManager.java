@@ -1,11 +1,10 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.concurrent.Semaphore;
 
 public final class EngineManager {
 

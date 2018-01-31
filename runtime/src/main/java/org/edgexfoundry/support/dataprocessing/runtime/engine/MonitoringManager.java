@@ -13,8 +13,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 
 public class MonitoringManager implements Runnable {
 
+  public static final long INTERVAL = 60;
+
   static Semaphore semaphore = new Semaphore(1);
-  private static long DEFALUT_INTERVAL = 60;
   private static MonitoringManager instance = null;
 
   private HashMap<Long, HashMap<String, JobState>> workflowStates;
@@ -29,7 +30,6 @@ public class MonitoringManager implements Runnable {
     setInterval(interval);
     createThread();
 
-//    workflowStates = new HashMap<>();
     workflowStates = JobTableManager.getInstance().getWorkflowState();
   }
 
@@ -93,7 +93,7 @@ public class MonitoringManager implements Runnable {
 
   public synchronized static MonitoringManager getInstance() {
     if (instance == null) {
-      instance = getInstance(DEFALUT_INTERVAL);
+      instance = getInstance(MonitoringManager.INTERVAL);
     }
     return instance;
   }

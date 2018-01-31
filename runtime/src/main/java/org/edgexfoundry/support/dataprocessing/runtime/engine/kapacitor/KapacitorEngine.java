@@ -3,8 +3,10 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
@@ -149,6 +151,27 @@ public class KapacitorEngine extends AbstractEngine {
 //    }
     return job;
   }
+
+  @Override
+  public List<JobState> getMetrics() throws Exception {
+    return null;
+  }
+
+  @Override
+  public boolean updateMetrics(JobState jobState) throws Exception {
+    return false;
+  }
+
+  @Override
+  public String getHost() {
+    return null;
+  }
+
+  @Override
+  public int getPort() {
+    return 0;
+  }
+
 /*
   @Override
   public JobResponseFormat createJob() {

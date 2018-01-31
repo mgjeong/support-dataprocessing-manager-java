@@ -3,6 +3,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 import java.util.ArrayList;
 
 public class FlinkJobOverview {
+
   private ArrayList<FlinkJob> running;
   private ArrayList<FlinkJob> finished;
 

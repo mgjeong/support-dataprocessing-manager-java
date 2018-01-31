@@ -6,13 +6,12 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.lang3.StringUtils;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 
 @JsonInclude(Include.NON_NULL)
 public class Job extends Format {

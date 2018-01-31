@@ -276,7 +276,7 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public ArrayList<JobState> getMetrics() throws Exception {
+  public List<JobState> getMetrics() throws Exception {
     JsonElement element = this.httpClient.get("/joboverview");
 
     FlinkJobOverview overview = new Gson().fromJson(element.toString(), FlinkJobOverview.class);
