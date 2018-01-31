@@ -1398,7 +1398,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(workflow.getId());
     workflowData.setWorkflowName(workflow.getName());
-    workflowData.setConfig(workflow.getConfigStr());
+    workflowData.setConfig(workflow.getConfig());
     workflowData.setWorkflowEditorMetadata(
         getWorkflowEditorMetadata(workflow.getId()));
 

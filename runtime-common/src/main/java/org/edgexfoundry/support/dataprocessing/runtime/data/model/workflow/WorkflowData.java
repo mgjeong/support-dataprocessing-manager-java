@@ -44,7 +44,7 @@ public class WorkflowData {
     this.workflowName = workflowName;
   }
 
-  @JsonProperty("config")
+  @JsonIgnore
   public String getConfigStr() {
     try {
       if (!this.config.isEmpty()) {
@@ -57,23 +57,18 @@ public class WorkflowData {
     }
   }
 
-  @JsonIgnore
+  @JsonProperty("config")
   public Map<String, Object> getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(String configStr) {
-    try {
-      if (StringUtils.isEmpty(configStr)) {
-        throw new RuntimeException("Invalid config");
-      }
-      this.config = mapper
-          .readValue(configStr, new TypeReference<Map<String, Object>>() {
-          });
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+  public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config");
     }
+
+    this.config = config;
   }
 
   public List<WorkflowSource> getSources() {
