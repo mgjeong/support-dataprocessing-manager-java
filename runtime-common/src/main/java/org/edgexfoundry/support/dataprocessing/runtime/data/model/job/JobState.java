@@ -52,16 +52,16 @@ public class JobState extends Format {
     return state;
   }
 
-  public JobState setState(State state) {
-    this.state = state;
-    return this;
-  }
-
   public JobState setState(String state) {
     this.state = State.toState(state);
     if (this.state == null) {
       throw new RuntimeException("Failed to update state to " + state);
     }
+    return this;
+  }
+
+  public JobState setState(State state) {
+    this.state = state;
     return this;
   }
 

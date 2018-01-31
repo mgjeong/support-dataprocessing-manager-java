@@ -1,5 +1,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
@@ -7,12 +11,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-
 public class MonitoringManager implements Runnable {
+
   static Semaphore semaphore = new Semaphore(1);
   private static long DEFALUT_INTERVAL = 60;
   private static MonitoringManager instance = null;
@@ -57,7 +57,8 @@ public class MonitoringManager implements Runnable {
     return new WorkflowMetric.Work(success, finished);
   }
 
-  public static synchronized WorkflowMetric convertWorkflowMetrics(HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
+  public static synchronized WorkflowMetric convertWorkflowMetrics(
+      HashMap<Long, HashMap<String, JobState>> healthOfworkflows) {
     ArrayList<WorkflowMetric.GroupInfo> groups = new ArrayList<>();
     WorkflowMetric metrics = new WorkflowMetric();
 
@@ -76,13 +77,14 @@ public class MonitoringManager implements Runnable {
   }
 
   public static synchronized WorkflowGroupState convertGroupMetrics(String groupId, HashMap<Long,
-    HashMap<String, JobState>> healthOfworkflows) {
+      HashMap<String, JobState>> healthOfworkflows) {
 
     if (healthOfworkflows.containsKey(Long.parseLong(groupId))) {
 
       WorkflowGroupState groupState = new WorkflowGroupState();
 
-      return groupState.setGroupId(groupId).setJobStates(new ArrayList<>(healthOfworkflows.get(Long.parseLong(groupId)).values()));
+      return groupState.setGroupId(groupId)
+          .setJobStates(new ArrayList<>(healthOfworkflows.get(Long.parseLong(groupId)).values()));
 
     } else {
       return new WorkflowGroupState();
@@ -166,14 +168,15 @@ public class MonitoringManager implements Runnable {
           continue;
         }
 
-        for (Map.Entry<Long, HashMap<String, JobState>> workflowStatesEntry : workflowStates.entrySet()) {
+        for (Map.Entry<Long, HashMap<String, JobState>> workflowStatesEntry : workflowStates
+            .entrySet()) {
           ArrayList<String> removingKeys = new ArrayList<>();
           HashMap<String, JobState> jobStateHashMap = workflowStatesEntry.getValue();
           for (Map.Entry<String, JobState> jobStateEntry : jobStateHashMap.entrySet()) {
             JobState jobState = jobStateEntry.getValue();
             if (null != jobState.getHost()) {
               Engine engine = EngineManager.getEngine(jobState.getHost() + ":" + jobState.getPort(),
-                WorkflowData.EngineType.valueOf(jobState.getEngineType()));
+                  WorkflowData.EngineType.valueOf(jobState.getEngineType()));
 
               if (engine.updateMetrics(jobState)) {
                 // It has been updated.
@@ -227,7 +230,8 @@ public class MonitoringManager implements Runnable {
   public synchronized WorkflowMetric.GroupInfo getGroupState(String groupId) {
     WorkflowMetric.GroupInfo groupInfo = new WorkflowMetric.GroupInfo();
     groupInfo.setGroupId(groupId);
-    groupInfo.setWorks(MonitoringManager.getCountWorks(workflowStates.get(Long.parseLong(groupId))));
+    groupInfo
+        .setWorks(MonitoringManager.getCountWorks(workflowStates.get(Long.parseLong(groupId))));
     return groupInfo;
   }
 

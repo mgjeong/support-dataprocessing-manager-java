@@ -1,8 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-
 import java.util.ArrayList;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 public class WorkflowMetric extends Format {
 
@@ -17,6 +16,7 @@ public class WorkflowMetric extends Format {
   }
 
   public static class Work extends Format {
+
     private long running;
     private long stop;
 
@@ -43,6 +43,7 @@ public class WorkflowMetric extends Format {
   }
 
   public static class GroupInfo extends Format {
+
     private String groupId;
     private Work works;
 

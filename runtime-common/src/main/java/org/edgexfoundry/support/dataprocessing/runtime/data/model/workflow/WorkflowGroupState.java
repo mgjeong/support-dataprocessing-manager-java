@@ -1,9 +1,8 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
+import java.util.ArrayList;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
-
-import java.util.ArrayList;
 
 public class WorkflowGroupState extends Format {
 

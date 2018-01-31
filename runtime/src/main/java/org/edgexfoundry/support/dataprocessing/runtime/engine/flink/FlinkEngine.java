@@ -21,6 +21,18 @@ import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
@@ -34,20 +46,13 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
 public class FlinkEngine extends AbstractEngine {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkEngine.class);
   private static final String DEFAULT_JOB_JAR_LOCATION = Settings.RESOURCE_PATH;
 
-  private static final String DEFAULT_LAUNCHER_JAR_LOCATION = DEFAULT_JOB_JAR_LOCATION + "engine-flink.jar";
+  private static final String DEFAULT_LAUNCHER_JAR_LOCATION =
+      DEFAULT_JOB_JAR_LOCATION + "engine-flink.jar";
 
   private HTTP httpClient = null;
 
@@ -137,8 +142,10 @@ public class FlinkEngine extends AbstractEngine {
     Process process = executeShellProcess(commands);
     ShellProcessResult shellProcessResult = waitProcessFor(process);
     if (shellProcessResult.exitValue != 0) {
-      LOGGER.error("Adding job-specific data to jar is failed - exit code: {} / output: {}", shellProcessResult.exitValue, shellProcessResult.stdout);
-      throw new RuntimeException("Workflow could not be deployed " + "successfully: fail to add config and artifacts to jar");
+      LOGGER.error("Adding job-specific data to jar is failed - exit code: {} / output: {}",
+          shellProcessResult.exitValue, shellProcessResult.stdout);
+      throw new RuntimeException("Workflow could not be deployed "
+          + "successfully: fail to add config and artifacts to jar");
     }
     LOGGER.info("Added files to jar {}", jarName);
     return targetJar.toAbsolutePath().toString();
@@ -151,7 +158,8 @@ public class FlinkEngine extends AbstractEngine {
     return processBuilder.start();
   }
 
-  private ShellProcessResult waitProcessFor(Process process) throws IOException, InterruptedException {
+  private ShellProcessResult waitProcessFor(Process process)
+      throws IOException, InterruptedException {
     StringWriter sw = new StringWriter();
     IOUtils.copy(process.getInputStream(), sw);
     String stdout = sw.toString();
@@ -199,20 +207,23 @@ public class FlinkEngine extends AbstractEngine {
     } else if (job.getId() == null) {
       throw new Exception("Job id does not exist.");
     } else if ((launcherJarId = job.getConfig("launcherJarId")) == null) {
-      throw new Exception("Launcher jar for job(" + job.getId() + ") does not exist. Make sure job is created first.");
+      throw new Exception("Launcher jar for job(" + job.getId()
+          + ") does not exist. Make sure job is created first.");
     }
 
     // Flink options
     Map<String, String> args = new HashMap<>();
     args.put("program-args", String.format("--internal --json %s", job.getId()));
-    args.put("entry-class", "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
+    args.put("entry-class",
+        "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
     args.put("parallelism", "1");
     LOGGER.info("Running job {}({})", new Object[]{job.getId(), launcherJarId});
 
     // POST to flink
     JsonObject flinkResponse = null;
     try {
-      flinkResponse = this.httpClient.post("/jars/" + launcherJarId + "/run", args, true).getAsJsonObject();
+      flinkResponse = this.httpClient.post("/jars/" + launcherJarId + "/run", args, true)
+          .getAsJsonObject();
       LOGGER.debug("/run response: {}", flinkResponse);
     } catch (Exception e) {
       throw new Exception("Failed to get response from flink.", e);
@@ -289,7 +300,8 @@ public class FlinkEngine extends AbstractEngine {
         jobState.setState(State.ERROR.name());
 
         JsonElement jsonElement = this.httpClient.get("/jobs/" + flinkJob.getJid() + "/exceptions");
-        FlinkException flinkException = new Gson().fromJson(jsonElement.toString(), FlinkException.class);
+        FlinkException flinkException = new Gson()
+            .fromJson(jsonElement.toString(), FlinkException.class);
         jobState.setErrorMessage(flinkException.getRootException());
       } else {
         jobState.setState(State.STOPPED.name());
@@ -311,16 +323,17 @@ public class FlinkEngine extends AbstractEngine {
 
     jobState.setFinishTime(flinkJob.getEndtime());
     if (0 == flinkJob.getState().compareTo("FAILED")) {
-      if(jobState.getState().name().compareTo(State.ERROR.name()) != 0) {
+      if (jobState.getState().name().compareTo(State.ERROR.name()) != 0) {
         jobState.setState(State.ERROR.name());
         isUpdated = true;
       }
 
       JsonElement jsonElement = this.httpClient.get("/jobs/" + flinkJob.getJid() + "/exceptions");
-      FlinkException flinkException = new Gson().fromJson(jsonElement.toString(), FlinkException.class);
+      FlinkException flinkException = new Gson()
+          .fromJson(jsonElement.toString(), FlinkException.class);
       jobState.setErrorMessage(flinkException.getRootException());
     } else {
-      if(0 == flinkJob.getState().compareTo("CANCELED")) {
+      if (0 == flinkJob.getState().compareTo("CANCELED")) {
         jobState.setState(State.STOPPED);
       } else {
         jobState.setState(flinkJob.getState());
