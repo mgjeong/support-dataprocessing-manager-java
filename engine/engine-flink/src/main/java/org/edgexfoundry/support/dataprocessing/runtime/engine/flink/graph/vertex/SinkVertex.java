@@ -1,19 +1,17 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.vertex;
 
 import java.util.Map;
-import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.util.Collector;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.ezmq.EzmqSink;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file.FileOutputSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.mongodb.MongoDbSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.websocket.WebSocketServerSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.ZmqSink;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig.Builder;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SinkVertex implements Vertex {
@@ -33,34 +31,36 @@ public class SinkVertex implements Vertex {
   @Override
   public DataStream<DataSet> serve() throws Exception {
     Map<String, Object> properties = this.config.getConfig().getProperties();
-    String type = ((String) properties.get("dataType")).toLowerCase();
+    if (!properties.containsKey("dataType") || !properties.containsKey("dataSink")) {
+      throw new NullPointerException("dataType and dataSink must be specified");
+    }
+    String type = ((String) properties.get("dataType"));
     String sink = ((String) properties.get("dataSink"));
 
-    if (type.equals("") || sink.equals("")) {
-      throw new IllegalStateException("Empty sink error");
-    }
-
     if (type == null || sink == null) {
-      throw new IllegalStateException("Null sink error");
+      throw new NullPointerException("Null sink error");
     }
 
+    if (type.equals("") || sink.equals("")) {
+      throw new NullPointerException("Empty sink error");
+    }
+
+    type = type.toLowerCase();
+    String[] dataSink = sink.split(":");
     if (type.equals("zmq")) {
-      String[] dataSource = sink.split(":");
       ZmqConnectionConfig zmqConnectionConfig = new Builder()
-          .setHost(dataSource[0].trim())
-          .setPort(Integer.parseInt(dataSource[1].trim()))
+          .setHost(dataSink[0].trim())
+          .setPort(Integer.parseInt(dataSink[1].trim()))
           .setIoThreads(1)
           .build();
 
-      influx.addSink(new ZmqSink<>(zmqConnectionConfig, dataSource[2], new DataSetSchema()))
+      influx.addSink(new ZmqSink<>(zmqConnectionConfig, dataSink[2], new DataSetSchema()))
           .setParallelism(1);
     } else if (type.equals("ws")) {
-      String[] dataSource = sink.split(":");
-      influx.addSink(new WebSocketServerSink(Integer.parseInt(dataSource[1])))
+      influx.addSink(new WebSocketServerSink(Integer.parseInt(dataSink[1])))
           .setParallelism(1);
     } else if (type.equals("ezmq")) {
-      String[] dataSource = sink.split(":");
-      int port = Integer.parseInt(dataSource[1].trim());
+      int port = Integer.parseInt(dataSink[1].trim());
       influx.addSink(new EzmqSink(port)).setParallelism(1);
     } else if (type.equals("f")) {
       String outputFilePath = sink;
@@ -69,11 +69,11 @@ public class SinkVertex implements Vertex {
       }
       influx.addSink(new FileOutputSink(outputFilePath));
     } else if (type.equals("mongodb")) {
-      String name = ((String) properties.get("name"));
-      influx.addSink(new MongoDbSink(sink, name))
+      String[] name = ((String) properties.get("name")).split(":", 2);
+      influx.addSink(new MongoDbSink(dataSink[0], Integer.parseInt(dataSink[1]), name[0], name[1]))
           .setParallelism(1);
     } else {
-      throw new RuntimeException("Unsupported output data type: " + type);
+      throw new UnsupportedOperationException("Unsupported output data type: " + type);
     }
 
     return null;
@@ -84,12 +84,9 @@ public class SinkVertex implements Vertex {
     if (this.influx == null) {
       this.influx = influx;
     } else {
-      this.influx = this.influx.union(influx).flatMap(new FlatMapFunction<DataSet, DataSet>() {
-        @Override
-        public void flatMap(DataSet dataSet, Collector<DataSet> collector) throws Exception {
-          collector.collect(dataSet);
-        }
-      });
+      this.influx = this.influx.union(influx).flatMap((dataSet, collector) ->
+          collector.collect(dataSet)
+      );
     }
   }
 }

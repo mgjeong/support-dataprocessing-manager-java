@@ -16,9 +16,9 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
+import org.edgexfoundry.support.dataprocessing.runtime.task.model.ErrorModel;
 import java.util.ArrayList;
 import java.util.List;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.ErrorModel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -78,13 +78,8 @@ public class ErrorModelTest {
 
   @Test
   public void testGetName() {
-
     ErrorModel model = new ErrorModel();
-
     Assert.assertEquals("error", model.getName());
-
-    Assert.assertNotNull(model.getDefaultParam());
-
   }
 
   @Test

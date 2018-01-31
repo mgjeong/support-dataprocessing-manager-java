@@ -24,13 +24,17 @@ public class QueryVertex implements ScriptVertex{
       LOGGER.error("Cannot handle types except query");
     }
     Map<String, Object> properties = this.config.getConfig().getProperties();
-    String scriptBody = "";
+    StringBuilder builder = new StringBuilder();
+    builder.append("var id");
+    builder.append(getId());
+    builder.append('=');
+
     Object scriptBodyObject = properties.get("request");
     if (scriptBodyObject instanceof String) {
-      scriptBody += scriptBodyObject + "\n";
+      builder.append(((String) scriptBodyObject).replace("<", "\'").replace(">", "\'") + "\n");
     } else {
       throw new RuntimeException("Request should be String type");
     }
-    return scriptBody;
+    return builder.toString();
   }
 }

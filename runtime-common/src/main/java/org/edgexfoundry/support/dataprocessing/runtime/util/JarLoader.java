@@ -18,62 +18,41 @@
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URL;
+import java.lang.reflect.Modifier;
 import java.net.URLClassLoader;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JarLoader {
+public final class JarLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
-  protected URLClassLoader urlClassLoader = null;
-  private ClassLoader classLoader = null;
+  private static TaskClassLoader taskClassLoader = new TaskClassLoader(
+      ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs());
 
-  public JarLoader(String jarPath, ClassLoader classLoader) throws Exception {
-    if (null == jarPath) {
-      return;
+  public static <T> T newInstance(File jarFile, String className, Class<T> clazz)
+      throws Exception {
+    if (jarFile == null || !jarFile.exists()) {
+      throw new RuntimeException("Invalid jar file");
+    } else if (StringUtils.isEmpty(className)) {
+      throw new RuntimeException("Invalid classname for " + jarFile.getName());
     }
 
-    this.classLoader = classLoader;
+    taskClassLoader.addURL(jarFile.toURI().toURL());
 
-    loadJar(jarPath);
-  }
-
-  /**
-   * @param className This should be included the package name. likes
-   * "org.edgexfoundry.support.dataprocessing.runtime.task.model.SVMModel"
-   */
-  public Class getClassInstance(String className)
-      throws ClassNotFoundException, NoClassDefFoundError {
-
-    LOGGER.info("Attempting to load " + className);
-    return urlClassLoader.loadClass(className);
-
-  }
-
-  public void loadJar(String jarPath) throws Exception {
-
-    File file = new File(jarPath);
-
-    if (!file.exists() || file.length() == 0) {
-      throw new RuntimeException("Jar file is not valid. " + jarPath);
+    Class classToInstantiate = Class.forName(className, true, taskClassLoader);
+    if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
+      LOGGER.error(className + " is an abstract class.");
+      return null;
+    } else {
+      Object o = classToInstantiate.newInstance();
+      if (clazz.isInstance(o)) {
+        return clazz.cast(o);
+      } else {
+        LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+        return null;
+      }
     }
-    //urlClassLoader = new URLClassLoader(new URL[] {file.toURL()}, ClassLoader.getSystemClassLoader());
-    //this.urlClassLoader = new URLClassLoader(new URL[] {file.toURI().toURL()}, this.getClass().getClassLoader());
-    this.urlClassLoader = new URLClassLoader(new URL[]{file.toURI().toURL()}, this.classLoader);
-
-    Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-    method.setAccessible(true);
-    method.invoke(this.classLoader, new Object[]{file.toURI().toURL()});
-
-    LOGGER.info("URL ClassLoader loaded: " + jarPath);
   }
-
-  public void unloadJar() throws IOException {
-    urlClassLoader.close();
-  }
-
 }

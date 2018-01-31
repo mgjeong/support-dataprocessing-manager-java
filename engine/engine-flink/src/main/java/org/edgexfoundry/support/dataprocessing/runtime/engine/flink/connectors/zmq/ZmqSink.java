@@ -3,8 +3,8 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.util.serialization.SerializationSchema;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqUtil;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;

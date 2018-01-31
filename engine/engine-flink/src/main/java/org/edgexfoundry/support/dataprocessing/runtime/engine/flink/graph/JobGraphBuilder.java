@@ -1,7 +1,5 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph;
 
-import com.google.gson.Gson;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,26 +15,41 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.vertex
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.vertex.SourceVertex;
 
 public class JobGraphBuilder {
+
   private WorkflowData jobConfig;
 
   private Map<Vertex, List<Vertex>> edges;
 
   public JobGraph getInstance(StreamExecutionEnvironment env,
-      Reader jsonConfig) throws Exception {
+      WorkflowData workflowData) throws Exception {
 
-    if (env == null || jsonConfig == null) {
-      throw new RuntimeException("Failed to set execution environment");
+    if (env == null) {
+      throw new NullPointerException("Invalid execution environment");
     }
-    readJson(jsonConfig);
+
+    if (workflowData == null) {
+      throw new NullPointerException("Null job configurations");
+    }
+
+    this.jobConfig = workflowData;
     initConfig(env);
 
     return new JobGraph(jobConfig.getWorkflowName(), edges);
   }
 
   private void initConfig(StreamExecutionEnvironment env) throws Exception {
-    if (this.jobConfig == null) {
-      throw new RuntimeException("Job configuration is null");
+    if (isEmpty(jobConfig.getSources())) {
+      throw new NullPointerException("Empty source information");
     }
+
+    if (isEmpty(jobConfig.getSinks())) {
+      throw new NullPointerException("Empty sink information");
+    }
+
+    if (isEmpty(jobConfig.getProcessors())) {
+      throw new NullPointerException("Empty task information");
+    }
+
     HashMap<Long, Vertex> map = new HashMap<>();
     for (WorkflowSource sourceInfo : jobConfig.getSources()) {
       SourceVertex source = new SourceVertex(env, sourceInfo);
@@ -67,13 +80,13 @@ public class JobGraphBuilder {
         } else {
           edges.get(fromVertex).add(toVertex);
         }
+      } else {
+        throw new IllegalStateException("Unavailable vertex included when " + from + "->" + to);
       }
     }
-
   }
 
-  private void readJson(Reader jsonConfig) throws Exception {
-    this.jobConfig = new Gson().fromJson(jsonConfig, WorkflowData.class);
+  private <T> boolean isEmpty(List<T> list) {
+    return list == null || list.isEmpty();
   }
-
 }
