@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
@@ -40,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -55,6 +55,14 @@ public class WorkflowController extends AbstractController {
    * Use getter to access edge info, as it is initialized lazily.
    */
   private EdgeInfo edgeInfo = null;
+
+  /**
+   * Import workflow in file or json string format.
+   */
+  protected enum ImportType {
+    File, Json
+  }
+
 
   public WorkflowController() {
     this.workflowTableManager = WorkflowTableManager.getInstance();
@@ -461,17 +469,26 @@ public class WorkflowController extends AbstractController {
   }
 
   @ApiOperation(value = "Import workflow", notes = "Imports a workflow")
-  @RequestMapping(value = "/workflows/actions/import", method = RequestMethod.POST)
-  public ResponseEntity importWorkflow(@RequestParam("file") Part part,
+  @RequestMapping(value = "/workflows/actions/import", method = RequestMethod.POST,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity importWorkflow(
+      @RequestParam(value = "type") ImportType type,
+      @RequestParam(value = "file", required = false) MultipartFile part,
+      @RequestParam(value = "json", required = false) String json,
       @RequestParam("workflowName") final String workflowName) {
     try {
-      WorkflowData workflowData = this.mapper
-          .readValue(part.getInputStream(), WorkflowData.class);
-      Workflow imported = this.workflowTableManager
-          .importWorkflow(workflowName, workflowData);
+      WorkflowData workflowData;
+      if (type == ImportType.File) {
+        workflowData = this.mapper.readValue(part.getInputStream(), WorkflowData.class);
+      } else if (type == ImportType.Json) {
+        workflowData = this.mapper.readValue(json, WorkflowData.class);
+      } else {
+        throw new RuntimeException("Invalid type.");
+      }
+      Workflow imported = this.workflowTableManager.importWorkflow(workflowName, workflowData);
       return respond(imported, HttpStatus.OK);
+
     } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }

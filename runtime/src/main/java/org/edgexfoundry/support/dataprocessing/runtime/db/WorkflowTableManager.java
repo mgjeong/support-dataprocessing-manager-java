@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
@@ -1414,6 +1415,33 @@ public final class WorkflowTableManager extends AbstractStorageManager {
   }
 
   public Workflow importWorkflow(String workflowName, WorkflowData workflowData) {
+    // First validate if this workflow data is import-able
+    if (workflowData == null || StringUtils.isEmpty(workflowName)) {
+      throw new RuntimeException("Invalid workflow data or workflow name.");
+    }
+
+    // Check if bundle exists for all imported components
+    // Update bundle id for each component
+    List<WorkflowComponent> componentsToImport = new ArrayList<>();
+    componentsToImport.addAll(workflowData.getSources());
+    componentsToImport.addAll(workflowData.getProcessors());
+    componentsToImport.addAll(workflowData.getSinks());
+    Collection<WorkflowComponentBundle> bundles = listWorkflowComponentBundles();
+    for (WorkflowComponent component : componentsToImport) {
+      boolean bundleExists = false;
+      for (WorkflowComponentBundle bundle : bundles) {
+        if (bundle.getName().equalsIgnoreCase(component.getBundleName())
+            && bundle.getSubType().equalsIgnoreCase(component.getBundleSubType())) {
+          component.setWorkflowComponentBundleId(bundle.getId());
+          bundleExists = true;
+          break;
+        }
+      }
+      if (!bundleExists) {
+        throw new RuntimeException("Bundle for " + component.getName() + " does not exist.");
+      }
+    }
+
     // Add workflow
     Workflow newWorkflow = new Workflow();
     newWorkflow.setName(workflowName);

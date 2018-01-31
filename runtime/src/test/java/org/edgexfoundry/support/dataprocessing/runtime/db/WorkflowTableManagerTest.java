@@ -406,6 +406,14 @@ public class WorkflowTableManagerTest extends DatabaseTest {
       workflowTable.removeWorkflowComponentBundle(sinkBundle.getId());
       workflowTable.removeWorkflowComponentBundle(processorBundle.getId());
     }
+
+    try {
+      workflowTable.importWorkflow("imported", null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+
   }
 
   @Test

@@ -147,6 +147,7 @@ public class WorkflowData {
     this.workflowId = workflowId;
   }
 
+  @JsonIgnore
   public EngineType getEngineType() {
     EngineType engineType = null;
 
