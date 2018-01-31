@@ -28,6 +28,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.commons.io.FileUtils;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TestModel;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -70,10 +71,10 @@ public class TaskManagerTest {
     tmp.deleteOnExit();
     try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(tmp),
         new Manifest())) {
-      String entry = SimpleTaskModelTest.class.getName().replace('.', '/') + ".class";
+      String entry = TestModel.class.getName().replace('.', '/') + ".class";
       jos.putNextEntry(new JarEntry(entry));
 
-      Class<?> testClass = Class.forName(SimpleTaskModelTest.class.getName());
+      Class<?> testClass = Class.forName(TestModel.class.getName());
       final byte[] buf = new byte[128];
       try (InputStream classInputStream = testClass
           .getResourceAsStream(testClass.getSimpleName() + ".class")) {

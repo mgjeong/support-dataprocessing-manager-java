@@ -14,6 +14,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.util.Collector;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TestModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.junit.AfterClass;
 import org.junit.Assert;
