@@ -37,9 +37,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
@@ -48,9 +49,9 @@ import org.slf4j.LoggerFactory;
 public class FlinkEngine extends AbstractEngine {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkEngine.class);
-  private static final String DEFAULT_JOB_JAR_LOCATION = Settings.RESOURCE_PATH;
+  private String defaultJobJarLocation = Settings.RESOURCE_PATH;
 
-  private static final String DEFAULT_LAUNCHER_JAR_LOCATION = DEFAULT_JOB_JAR_LOCATION
+  private String defaultLauncherJarLocation = Settings.RESOURCE_PATH
       + "engine-flink.jar";
 
   private HTTP httpClient = null;
@@ -60,61 +61,81 @@ public class FlinkEngine extends AbstractEngine {
     this.httpClient.initialize(flinkHost, flinkPort, "http");
   }
 
-  private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) {
-    String jsonConfig = new Gson().toJson(workflowData);
-    String targetPath = DEFAULT_JOB_JAR_LOCATION + jobId + ".json";
-    Path configJson = Paths.get(targetPath);
-    File configJsonFile = configJson.toFile();
+  @Override
+  public Job create(WorkflowData workflowData) {
+    Job job = Job.create(workflowData.getWorkflowId());
+    String launcherJarId = null;
     try {
-      // OutputStreamWriter fileWriter = null;
+      List<Path> jobSpecificData = new ArrayList<>();
+      jobSpecificData.addAll(getModelInfo(workflowData));
+      jobSpecificData.add(prepareFlinkJobPlan(workflowData, job.getId()));
 
-      if (configJsonFile.exists()) {
-        if (!configJsonFile.delete()) {
-          throw new RuntimeException("Unable to old config json configuration" + configJson);
-        }
+      // Generate flink jar to deploy
+      Path jobJarFile = prepareJarToDeploy(jobSpecificData, job.getId());
+      if (jobJarFile == null) {
+        throw new RuntimeException("Failed to prepare jar file to deploy.");
       }
 
-      FileUtils.writeStringToFile(configJsonFile, jsonConfig);
-
-//      fileWriter = new OutputStreamWriter(new FileOutputStream(configJson));
-//      fileWriter.write(jsonConfig);
-//      fileWriter.flush();
-    } catch (IOException e) {
-      LOGGER.debug(e.getMessage());
-    } finally {
-//      try {
-//        fileWriter.close();
-//      } catch (IOException e) {
-//        LOGGER.debug(e.getMessage());
-//      }
+      // Upload jar to flink
+      launcherJarId = uploadLauncherJar(jobJarFile);
+      if (launcherJarId == null) {
+        throw new RuntimeException("Failed to upload Flink jar; Please check out connection");
+      }
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+      job.getState().setState(State.ERROR);
+      job.getState().setErrorMessage(e.getMessage());
+      return job;
     }
+
+    // Update job
+    job.getState().setState(State.CREATED);
+    job.setConfig(workflowData.getConfig());
+    job.addConfig("launcherJarId", launcherJarId);
+    job.getState().setEngineType("FLINK");
+    return job;
+
+  }
+
+  private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) throws Exception {
+    String jsonConfig = new Gson().toJson(workflowData);
+    String targetPath = defaultJobJarLocation + jobId + ".json";
+    Path configJson = Paths.get(targetPath);
+    File configJsonFile = configJson.toFile();
+
+    if (configJsonFile.exists()) {
+      if (!configJsonFile.delete()) {
+        throw new RuntimeException("Unable to delete old configuration " + configJson);
+      }
+    }
+
+    FileUtils.writeStringToFile(configJsonFile, jsonConfig);
+
     return configJson.toAbsolutePath();
   }
 
   private Set<Path> getModelInfo(WorkflowData workflowData) {
     Set<Path> artifacts = new HashSet<>();
-    try {
-      for (WorkflowProcessor processor : workflowData.getProcessors()) {
-        String name = processor.getName();
-        String className = processor.getClassname();
-        processor.getConfig().getProperties().put("className", className);
+    for (WorkflowProcessor processor : workflowData.getProcessors()) {
+      String className = processor.getClassname();
+      processor.getConfig().getProperties().put("className", className);
 
-        String jarPath = processor.getPath();
+      String jarPath = processor.getPath();
 
-        Path artifact = Paths.get(jarPath);
-        processor.getConfig().getProperties().put("jar", artifact.getFileName().toString());
-        artifacts.add(artifact);
-      }
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
+      Path artifact = Paths.get(jarPath);
+      processor.getConfig().getProperties().put("jar", artifact.getFileName().toString());
+      artifacts.add(artifact);
     }
 
+    if (artifacts.size() == 0) {
+      throw new IllegalStateException("At least one processor required");
+    }
     return artifacts;
   }
 
-  private String prepareJarToDeploy(List<Path> jobData, String jarName) throws Exception {
-    Path referenceJar = Paths.get(DEFAULT_LAUNCHER_JAR_LOCATION);
-    Path targetJar = Paths.get(DEFAULT_JOB_JAR_LOCATION + jarName + ".jar");
+  private Path prepareJarToDeploy(List<Path> jobData, String jarName) throws Exception {
+    Path referenceJar = Paths.get(defaultLauncherJarLocation);
+    Path targetJar = Paths.get(defaultJobJarLocation + jarName + ".jar");
 
     if (targetJar.toFile().exists()) {
       LOGGER.info("Delete old version of Job Jar file {}", targetJar.toAbsolutePath().toString());
@@ -136,11 +157,11 @@ public class FlinkEngine extends AbstractEngine {
     if (shellProcessResult.exitValue != 0) {
       LOGGER.error("Adding job-specific data to jar is failed - exit code: {} / output: {}",
           shellProcessResult.exitValue, shellProcessResult.stdout);
-      throw new RuntimeException("Workflow could not be deployed " +
-          "successfully: fail to add config and artifacts to jar");
+      throw new RuntimeException("Workflow could not be deployed "
+          + "successfully: fail to add config and artifacts to jar");
     }
     LOGGER.info("Added files to jar {}", jarName);
-    return targetJar.toAbsolutePath().toString();
+    return targetJar;
   }
 
   private Process executeShellProcess(List<String> commands) throws Exception {
@@ -163,84 +184,65 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public Job create(WorkflowData workflowData) throws Exception {
-    // Create job
-    Job job = Job.create(workflowData.getWorkflowId());
-
-    List<Path> jobSpecificData = new ArrayList<>();
-    jobSpecificData.addAll(getModelInfo(workflowData));
-    jobSpecificData.add(prepareFlinkJobPlan(workflowData, job.getId()));
-
-    // Generate flink jar to deploy
-    String jobJarFile = prepareJarToDeploy(jobSpecificData, job.getId());
-    if (jobJarFile == null) {
-      throw new Exception("Failed to prepare jar file to deploy.");
-    }
-
-    // Upload jar to flink
-    String launcherJarId = uploadLauncherJar(jobJarFile);
-    if (launcherJarId == null) {
-      throw new Exception("Failed to upload Flink jar; Please check out connection");
-    }
-
-    // Update job
-    job.getState().setState(State.CREATED);
-    job.setConfig(workflowData.getConfig());
-    job.addConfig("launcherJarId", launcherJarId);
-    job.getState().setEngineType("FLINK");
-    return job;
-  }
-
-  @Override
-  public Job run(Job job) throws Exception {
-    String launcherJarId;
+  public Job run(Job job) {
     if (job == null) {
-      throw new Exception("Job is null.");
-    } else if (job.getId() == null) {
-      throw new Exception("Job id does not exist.");
-    } else if ((launcherJarId = job.getConfig("launcherJarId")) == null) {
-      throw new Exception("Launcher jar for job(" + job.getId()
+      throw new NullPointerException("Job is null.");
+    }
+
+    if (job.getId() == null) {
+      throw new IllegalStateException("Job id does not exist.");
+    }
+
+    String launcherJarId;
+    if ((launcherJarId = job.getConfig("launcherJarId")) == null) {
+      throw new IllegalStateException("Launcher jar for job(" + job.getId()
           + ") does not exist. Make sure job is created first.");
     }
 
-    // Flink options
-    Map<String, String> args = new HashMap<>();
-    args.put("program-args", String.format("--internal --json %s", job.getId()));
-    args.put("entry-class",
-        "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
-    args.put("parallelism", "1");
-    LOGGER.info("Running job {}({})", new Object[]{job.getId(), launcherJarId});
-
-    // POST to flink
-    JsonObject flinkResponse = null;
+    JsonObject flinkResponse;
     try {
+      // Flink options
+      Map<String, String> args = new HashMap<>();
+      args.put("program-args", String.format("--internal --json %s", job.getId()));
+      args.put("entry-class",
+          "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
+      args.put("parallelism", "1");
+      LOGGER.info("Running job {}({})", new Object[]{job.getId(), launcherJarId});
+
+      // POST to flink
       flinkResponse = this.httpClient
           .post("/jars/" + launcherJarId + "/run", args, true).getAsJsonObject();
       LOGGER.debug("/run response: {}", flinkResponse);
     } catch (Exception e) {
-      throw new Exception("Failed to get response from flink.", e);
+      job.getState().setState(State.ERROR);
+      job.getState().setStartTime(System.currentTimeMillis());
+      job.getState().setErrorMessage(e.getMessage());
+      return job;
     }
 
     // Parse flink response and update job state
+    JobState jobState = job.getState();
     if (flinkResponse.get("jobid") == null) {
-      job.getState().setState(State.ERROR);
-      job.getState().setStartTime(System.currentTimeMillis());
-      job.getState().setErrorMessage(flinkResponse.get("error").getAsString());
+      jobState.setState(State.ERROR);
+      jobState.setStartTime(System.currentTimeMillis());
+      jobState.setErrorMessage(flinkResponse.get("error").getAsString());
     } else {
-      job.getState().setState(State.RUNNING);
-      job.getState().setStartTime(System.currentTimeMillis());
-      job.getState().setEngineId(flinkResponse.get("jobid").getAsString());
+      jobState.setState(State.RUNNING);
+      jobState.setStartTime(System.currentTimeMillis());
+      jobState.setEngineId(flinkResponse.get("jobid").getAsString());
     }
 
     return job;
   }
 
   @Override
-  public Job stop(Job job) throws Exception {
+  public Job stop(Job job) {
     if (job == null) {
-      throw new Exception("Job is null.");
-    } else if (job.getState().getEngineId() == null) {
-      throw new Exception("Engine id for the job does not exist.");
+      throw new NullPointerException("Job is null.");
+    }
+
+    if (job.getState().getEngineId() == null) {
+      throw new IllegalStateException("Engine id for the job does not exist.");
     }
 
     // DELETE to flink
@@ -249,7 +251,9 @@ public class FlinkEngine extends AbstractEngine {
       flinkResponse = this.httpClient.delete("/jobs/" + job.getState().getEngineId() + "/cancel");
       LOGGER.debug("/jobs/{}/cancel response: {}", job.getState().getEngineId(), flinkResponse);
     } catch (Exception e) {
-      throw new Exception("Failed to get response from flink.", e);
+      job.getState().setState(State.ERROR);
+      job.getState().setErrorMessage(e.getMessage());
+      return job;
     }
 
     // Result on success is {} (According to flink documentation)
@@ -263,8 +267,8 @@ public class FlinkEngine extends AbstractEngine {
     return job;
   }
 
-  private String uploadLauncherJar(String path) {
-    File jarFile = new File(path);
+  private String uploadLauncherJar(Path path) {
+    File jarFile = path.toFile();
     JsonElement jsonString = this.httpClient.post("/jars/upload", jarFile);
     if (jsonString == null) {
       return null;
