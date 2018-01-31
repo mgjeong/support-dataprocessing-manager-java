@@ -1,0 +1,65 @@
+{
+  "runtimeHost":"localhost:8082",
+  "jobs": [
+    {
+      "targetHost":"localhost:8081",
+      "input": [
+        {
+          "dataType": "FILE",
+          "dataSource": "/home/jhvics1/Codebase/Local/Regression/data/wdbc_eval3.csv",
+	        "name":"csv"
+        }
+      ],
+      "output": [
+        {
+          "dataType": "FILE",
+          "dataSource": "/home/jhvics1/logreg_compare_mse.txt"
+        }
+      ],
+      "task": [
+        {
+          "name": "regression-logistic",
+          "params": {
+            "type": "logistic",
+            "weights": [
+                  -1.287e+15,-6.930e+13, 3.287e+14,-7.986e+12,  
+                  2.722e+16,-2.295e+16, 1.552e+16,-1.478e+16,-1.257e+16, 
+                 -3.155e+16, 2.724e+15,-5.736e+14, 3.121e+12,-6.299e+12,  
+                 -2.397e+16, 4.482e+16,-2.256e+16, 1.250e+17,-1.485e+16,  
+                 -3.276e+17, 6.759e+14, 1.288e+14,-5.036e+13,-1.713e+12,  
+                  6.434e+15,-3.252e+15, 3.736e+14, 1.346e+15, 5.274e+15,  
+                  4.329e+16  
+            ],
+            "error": -1.590e+16
+          },
+          "inrecord": [
+                             "/x2", "/x3", "/x4", "/x5", "/x6", "/x7", "/x8", "/x9",
+              "/x10","/x11","/x12","/x13","/x14","/x15","/x16","/x17","/x18","/x19",
+              "/x20","/x21","/x22","/x23","/x24","/x25","/x26","/x27","/x28","/x29",
+              "/x30","/x31"
+          ],
+          "outrecord": [
+            "/out1"
+          ]
+        },
+        {
+          "name": "error",
+          "params": {
+            "type": "mse",
+            "observation": "/x1",
+            "interval": {
+              "data": 1000
+            }
+          },
+          "inrecord": [
+              "/out1","/rvalue"
+          ],
+          "outrecord": [
+            "/err1", "/errR"
+          ]
+        }
+      ],
+      "state": "CREATE"
+    }
+  ]
+}

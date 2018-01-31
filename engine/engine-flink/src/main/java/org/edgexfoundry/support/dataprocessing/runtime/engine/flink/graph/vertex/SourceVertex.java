@@ -4,12 +4,13 @@ import java.util.Map;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file.FileInputSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.ezmq.EzmqSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.ZmqSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig.Builder;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SourceVertex implements Vertex {
@@ -64,6 +65,9 @@ public class SourceVertex implements Vertex {
       } else {
         return env.addSource(new EzmqSource(host, port)).setParallelism(1);
       }
+    } else if (type.equals("f")) {
+      String meta = ((String) properties.get("name"));
+      return env.addSource(new FileInputSource(source, meta)).setParallelism(1);
     } else {
       throw new UnsupportedOperationException("Unsupported input data type: " + type);
     }
