@@ -16,25 +16,25 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.configuration;
 
-import org.edgexfoundry.support.dataprocessing.runtime.configuration.SwaggerConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class SwaggerConfTest {
-    private SwaggerConfiguration conf = new SwaggerConfiguration();
 
-    @Test
-    public void getDocket() {
-        Assert.assertNotNull(conf.api());
-    }
+  private SwaggerConfiguration conf = new SwaggerConfiguration();
 
-    @Test
-    public void getMultipartConfigElement() {
-        Assert.assertNotNull(conf.multipartConfigElement());
-    }
+  @Test
+  public void getDocket() {
+    Assert.assertNotNull(conf.api());
+  }
 
-    @Test
-    public void getMultipartResolver() {
-        Assert.assertNotNull(conf.multipartResolver());
-    }
- }
+  @Test
+  public void getMultipartConfigElement() {
+    Assert.assertNotNull(conf.multipartConfigElement());
+  }
+
+  @Test
+  public void getMultipartResolver() {
+    Assert.assertNotNull(conf.multipartResolver());
+  }
+}
