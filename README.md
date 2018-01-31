@@ -8,6 +8,7 @@ A data workflow can be designed using [Data Processing Designer](https://github.
   - Deploy data workflow to data processing engines as one or more workflow jobs
   - Execute/Stop/Update/Delete workflow jobs
   - Monitor workflow job status
+  - Create and upload custom task model [More...](./runtime-task/TaskModel/README.md)
  
 ## Prerequisites ##
 - Remember, you must configure proxies if necessary.
@@ -72,7 +73,7 @@ Note that, you can find other build scripts, **build_arm.sh** and **build_arm64*
 
 #### 2. Docker Image ####
 Next, you can create it to a Docker image.
-```shell
+```shell   
 $ sudo docker build -t support-dataprocessing-manager -f Dockerfile .
 ```
 If it succeeds, you can see the built image as follows:
