@@ -81,18 +81,21 @@ public class FlinkEngine extends AbstractEngine {
       if (launcherJarId == null) {
         throw new RuntimeException("Failed to upload Flink jar; Please check out connection");
       }
+
+      // Update job
+      job.getState().setState(State.CREATED);
+      job.setConfig(workflowData.getConfig());
+      job.addConfig("launcherJarId", launcherJarId);
+      job.getState().setEngineType("FLINK");
+      job.getState().setStartTime(System.currentTimeMillis());
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
       job.getState().setState(State.ERROR);
       job.getState().setErrorMessage(e.getMessage());
+      job.getState().setStartTime(System.currentTimeMillis());
       return job;
     }
 
-    // Update job
-    job.getState().setState(State.CREATED);
-    job.setConfig(workflowData.getConfig());
-    job.addConfig("launcherJarId", launcherJarId);
-    job.getState().setEngineType("FLINK");
     return job;
 
   }
@@ -213,23 +216,24 @@ public class FlinkEngine extends AbstractEngine {
       flinkResponse = this.httpClient
           .post("/jars/" + launcherJarId + "/run", args, true).getAsJsonObject();
       LOGGER.debug("/run response: {}", flinkResponse);
+
+      // Parse flink response and update job state
+      JobState jobState = job.getState();
+
+      if (flinkResponse.get("jobid") == null) {
+        jobState.setState(State.ERROR);
+        jobState.setStartTime(System.currentTimeMillis());
+        jobState.setErrorMessage(flinkResponse.get("error").getAsString());
+      } else {
+        jobState.setState(State.RUNNING);
+        jobState.setStartTime(System.currentTimeMillis());
+        jobState.setEngineId(flinkResponse.get("jobid").getAsString());
+      }
     } catch (Exception e) {
       job.getState().setState(State.ERROR);
       job.getState().setStartTime(System.currentTimeMillis());
       job.getState().setErrorMessage(e.getMessage());
       return job;
-    }
-
-    // Parse flink response and update job state
-    JobState jobState = job.getState();
-    if (flinkResponse.get("jobid") == null) {
-      jobState.setState(State.ERROR);
-      jobState.setStartTime(System.currentTimeMillis());
-      jobState.setErrorMessage(flinkResponse.get("error").getAsString());
-    } else {
-      jobState.setState(State.RUNNING);
-      jobState.setStartTime(System.currentTimeMillis());
-      jobState.setEngineId(flinkResponse.get("jobid").getAsString());
     }
 
     return job;
@@ -250,14 +254,15 @@ public class FlinkEngine extends AbstractEngine {
     try {
       flinkResponse = this.httpClient.delete("/jobs/" + job.getState().getEngineId() + "/cancel");
       LOGGER.debug("/jobs/{}/cancel response: {}", job.getState().getEngineId(), flinkResponse);
+
+      // Result on success is {} (According to flink documentation)
+      job.getState().setState(State.STOPPED);
     } catch (Exception e) {
       job.getState().setState(State.ERROR);
       job.getState().setErrorMessage(e.getMessage());
       return job;
     }
 
-    // Result on success is {} (According to flink documentation)
-    job.getState().setState(State.STOPPED);
     return job;
   }
 
