@@ -1,9 +1,18 @@
-package org.edgexfoundry.support.dataprocessing.runtime.task;
+package org.edgexfoundry.support.dataprocessing.runtime.data.model.task;
 
 import java.util.List;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 
-public class SimpleTaskModelTest implements TaskModel {
+/**
+ * Class TestModel is provided only for unit tests.
+ * Use this only when you want to ensure that your code works with arbitrary model.
+ */
+public final class TestModel implements TaskModel {
 
   @TaskParam(key = "age", uiType = UiFieldType.NUMBER, uiName = "Age")
   private int age;
@@ -22,7 +31,7 @@ public class SimpleTaskModelTest implements TaskModel {
 
   @Override
   public String getName() {
-    return SimpleTaskModelTest.class.getSimpleName();
+    return TestModel.class.getSimpleName();
   }
 
   @Override
