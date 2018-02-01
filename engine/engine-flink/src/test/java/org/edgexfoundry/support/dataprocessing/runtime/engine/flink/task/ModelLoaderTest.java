@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TestModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
 import org.junit.AfterClass;

@@ -10,10 +10,11 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 import org.springframework.http.HttpStatus;
@@ -58,10 +59,22 @@ public class JobController extends AbstractController {
 
     // Create
     String targetHost = (String) workflowData.getConfig().get("targetHost");
-    Engine engine = createEngine(targetHost, workflowData.getEngineType());
+    // targetHost = "localhost:8081";
+    workflowData.getConfig().put("targetHost", targetHost);
+    String[] splits = targetHost.split(":");
+//    FlinkEngine engine = new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
+    Engine engine = EngineManager.getEngine(targetHost, workflowData.getEngineType());
 
     Job job;
+
+    if (null == engine) {
+      // Todo : define what type error will response.
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_ENGINE_FLINK, ""),
+          HttpStatus.OK);
+    }
+
     try {
+
       job = engine.create(workflowData);
       if (job == null) {
         throw new Exception("Failed to create job.");
@@ -71,6 +84,9 @@ public class JobController extends AbstractController {
       // Run job
       job = engine.run(job);
       jobTableManager.addOrUpdateWorkflowJobState(job.getId(), job.getState());
+
+      // Todo : define how to handle exception when failed to run for monitoring.
+      MonitoringManager.getInstance().addJob(job);
 
       // Failed to run job
       if (job.getState().getState() != State.RUNNING) {
@@ -84,11 +100,11 @@ public class JobController extends AbstractController {
     }
   }
 
-  protected Engine createEngine(String targetHost, EngineType engineType) {
+  protected Engine createEngine(String targetHost, WorkflowData.EngineType engineType) {
     String[] splits = targetHost.split(":");
-    if (engineType == EngineType.FLINK) {
+    if (engineType == WorkflowData.EngineType.FLINK) {
       return new FlinkEngine(splits[0], Integer.parseInt(splits[1]));
-    } else if (engineType == EngineType.KAPACITOR) {
+    } else if (engineType == WorkflowData.EngineType.KAPACITOR) {
       return new KapacitorEngine(splits[0], Integer.parseInt(splits[1]));
     } else {
       throw new RuntimeException("Unsupported operation.");
@@ -103,8 +119,7 @@ public class JobController extends AbstractController {
   public ResponseEntity getWorkflowJobs(@PathVariable("workflowId") Long workflowId) {
     try {
       Collection<Job> jobs = jobTableManager.listWorkflowJobs(workflowId);
-      jobs = jobs.stream().filter(
-          workflowJob -> workflowJob.getState().getState() == State.RUNNING)
+      jobs = jobs.stream().filter(workflowJob -> workflowJob.getState().getState() == State.RUNNING)
           .collect(Collectors.toSet());
       return respondEntity(jobs, HttpStatus.OK);
     } catch (Exception e) {
@@ -122,7 +137,12 @@ public class JobController extends AbstractController {
     try {
       Job job = jobTableManager.getWorkflowJob(jobId);
       String targetHost = job.getConfig("targetHost");
-      Engine engine = createEngine(targetHost, EngineType.FLINK);
+      Engine engine = createEngine(targetHost, WorkflowData.EngineType.FLINK);
+
+      if (null == engine) {
+        return respond(new ErrorFormat(ErrorType.DPFW_ERROR_CONNECTION_ERROR,
+            "Cannot create engine instance."), HttpStatus.OK);
+      }
 
       try {
         job = engine.stop(job);
@@ -137,4 +157,33 @@ public class JobController extends AbstractController {
     }
   }
 
+  @ApiOperation(value = "Monitor jobs", notes = "Monitor jobs")
+  @RequestMapping(value = "/workflows/monitor/", method = RequestMethod.GET)
+  public ResponseEntity monitorJobs() {
+    try {
+      return respond(MonitoringManager.getInstance().getWorkflowsState(), HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Monitor Job", notes = "Monitor job")
+  @RequestMapping(value = "/workflows/monitor/{groupId}", method = RequestMethod.GET)
+  public ResponseEntity monitorJob(@PathVariable("groupId") String groupId) {
+    try {
+      return respond(MonitoringManager.getInstance().getGroupState(groupId), HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Monitor Job", notes = "Monitor job")
+  @RequestMapping(value = "/workflows/monitor/{groupId}/details", method = RequestMethod.GET)
+  public ResponseEntity monitorJobDetails(@PathVariable("groupId") String groupId) {
+    try {
+      return respond(MonitoringManager.getInstance().getGroupDetails(groupId), HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
 }

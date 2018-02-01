@@ -17,6 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.junit.Test;
 
 public class EngineFactoryTest {
@@ -25,9 +26,9 @@ public class EngineFactoryTest {
     public void testCreateEngine() {
 
         try {
-            Engine fw = EngineFactory.createEngine(EngineType.Flink, "localhost", 8081);
+            Engine fw = EngineFactory.createEngine(WorkflowData.EngineType.FLINK, "localhost", 8081);
 
-            fw = EngineFactory.createEngine(EngineType.Kapacitor, "localhost", 8081);
+            fw = EngineFactory.createEngine(WorkflowData.EngineType.KAPACITOR, "localhost", 8081);
 
         } catch (RuntimeException e) {
 
