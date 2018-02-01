@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 
 @JsonInclude(Include.NON_NULL)
 public class WorkflowData {
@@ -44,7 +42,7 @@ public class WorkflowData {
     this.workflowName = workflowName;
   }
 
-  @JsonProperty("config")
+  @JsonIgnore
   public String getConfigStr() {
     try {
       if (!this.config.isEmpty()) {
@@ -57,23 +55,18 @@ public class WorkflowData {
     }
   }
 
-  @JsonIgnore
+  @JsonProperty("config")
   public Map<String, Object> getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(String configStr) {
-    try {
-      if (StringUtils.isEmpty(configStr)) {
-        throw new RuntimeException("Invalid config");
-      }
-      this.config = mapper
-          .readValue(configStr, new TypeReference<Map<String, Object>>() {
-          });
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+  public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config");
     }
+
+    this.config = config;
   }
 
   public List<WorkflowSource> getSources() {
@@ -147,6 +140,7 @@ public class WorkflowData {
     this.workflowId = workflowId;
   }
 
+  @JsonIgnore
   public EngineType getEngineType() {
     EngineType engineType = null;
 

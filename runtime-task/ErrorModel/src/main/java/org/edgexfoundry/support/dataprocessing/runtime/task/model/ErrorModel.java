@@ -16,30 +16,47 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.function.ErrorFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * Computes Error <p> Flink requires this class to be serializable.
  */
 public class ErrorModel extends AbstractTaskModel {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorModel.class);
 
-  private String algorithmType = null;
+  @TaskParam(key = "algorithmType", uiName = "Algorithm Type",
+      uiType = UiFieldType.ENUMSTRING, defaultValue = "MAE")
+  private ErrorFunction.MEASURE algorithmType;
+
+  @TaskParam(key = "observation", uiName = "Observation", uiType = UiFieldType.STRING)
   private String observation = null;
+
+  @TaskParam(key = "windowOption", uiName = "Window Option",
+      uiType = UiFieldType.ENUMSTRING, defaultValue = "TIME")
+  private WindowOption windowOption;
+
+  @TaskParam(key = "windowSize", uiName = "Window Size", uiType = UiFieldType.NUMBER, defaultValue = "2")
+  private int mWindowSize = 2;
+
   private HashMap<String, LinkedList<Number>> targetList = null;
   private LinkedList<Number> observationList = null;
-  private int mWindowSize = 2;
+
+  public enum WindowOption {
+    TIME, COUNT
+  }
 
   /**
    * @desc Construtor of thismodel
@@ -50,8 +67,8 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Get type of this model
    * @return TaskType.ERROR
+   * @desc Get type of this model
    */
   @Override
   public TaskType getType() {
@@ -59,8 +76,8 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Get name of this model
    * @return "error"
+   * @desc Get name of this model
    */
   @Override
   public String getName() {
@@ -69,31 +86,21 @@ public class ErrorModel extends AbstractTaskModel {
 
   /**
    * @desc Set parameters for this model
-   * @param params
    */
   @Override
   public void setParam(TaskModelParam params) {
 
     if (params.containsKey("type")) {
-      this.algorithmType = params.get("type").toString();
+      this.algorithmType = ErrorFunction.MEASURE.valueOf(params.get("type").toString().toUpperCase());
     }
     if (params.containsKey("observation")) {
       this.observation = params.get("observation").toString();
     }
-    if (params.containsKey("interval")) {
-      HashMap<String, Object> tInterval = (HashMap<String, Object>) params.get("interval");
-      if (tInterval.containsKey("data")) {
-        Integer dataSize = ((Number) tInterval.get("data")).intValue();
-        if (dataSize != null) {
-          this.mWindowSize = (dataSize.intValue());
-        }
-      }
-      if (tInterval.containsKey("time")) {
-        Integer timeSize = ((Number) tInterval.get("time")).intValue();
-        if (timeSize != null) {
-          this.mWindowSize = (timeSize.intValue());
-        }
-      }
+    if (params.containsKey("windowOption")) {
+      this.windowOption = WindowOption.valueOf(params.get("windowOption").toString().toUpperCase());
+    }
+    if (params.containsKey("windowSize")) {
+      this.mWindowSize = Integer.parseInt(params.get("windowSize").toString());
     }
   }
 
@@ -109,17 +116,8 @@ public class ErrorModel extends AbstractTaskModel {
         obsv[index] = observe[index].doubleValue();
       }
 
-      if (this.algorithmType.equals("me")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.ME);
-      } else if (this.algorithmType.equals("mae")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.MAE);
-      } else if (this.algorithmType.equals("mse")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.MSE);
-      } else if (this.algorithmType.equals("rmse")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.RMSE);
-      } else {
-        LOGGER.error("Not Supporting Type : {}", this.algorithmType);
-      }
+      error = ErrorFunction.calculate(pred, obsv, this.algorithmType);
+
     } else {
       LOGGER.error("Length Not Match - Target {}, Observe {}", targets.length, observe.length);
     }
@@ -127,16 +125,16 @@ public class ErrorModel extends AbstractTaskModel {
   }
 
   /**
-   * @desc Calculate error value
    * @param in : Data in json format to be processed
    * @param inRecordKeys : Target data key name
    * @param outRecordKeys : Data key name for processing result
+   * @desc Calculate error value
    */
   @Override
   public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
     LOGGER.info("[Error] Entering calculation");
 
-    if(in.getRecords().size() < 1) {
+    if (in.getRecords().size() < 1) {
       LinkedList<Number> value = null;
       Double observe = in.getValue(this.observation, Double.class);
       if (observe != null) {
@@ -176,17 +174,18 @@ public class ErrorModel extends AbstractTaskModel {
       }
     } else {
       ArrayList<Number> observe = in.getValue(this.observation, ArrayList.class);
-      if(observe != null) {
+      if (observe != null) {
         for (int index = 0; index < inRecordKeys.size(); index++) {
           ArrayList<Number> predict = in.getValue(inRecordKeys.get(index), ArrayList.class);
 
-          if(observe.size() == predict.size()) {
+          if (observe.size() == predict.size()) {
             Double[] tArr = observe.toArray(new Double[0]);
             Double[] tObs = predict.toArray(new Double[0]);
 
             in.setValue(outRecordKeys.get(index), getAverageError(tArr, tObs));
           } else {
-            LOGGER.error("Size of List not match Observe {} : Predict {}", observe.size(), predict.size());
+            LOGGER.error("Size of List not match Observe {} : Predict {}", observe.size(),
+                predict.size());
           }
         }
       }

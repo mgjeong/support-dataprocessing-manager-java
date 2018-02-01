@@ -18,6 +18,8 @@ public class WorkflowComponent extends Format {
   private Long id;
   private Long workflowId;
   private Long workflowComponentBundleId;
+  private String bundleName = StringUtils.EMPTY;
+  private String bundleSubType = StringUtils.EMPTY;
   private String name = StringUtils.EMPTY;
   private String description = StringUtils.EMPTY;
   private String engineType = StringUtils.EMPTY;
@@ -94,6 +96,22 @@ public class WorkflowComponent extends Format {
 
   public Config getConfig() {
     return config;
+  }
+
+  public String getBundleName() {
+    return bundleName;
+  }
+
+  public void setBundleName(String bundleName) {
+    this.bundleName = bundleName;
+  }
+
+  public String getBundleSubType() {
+    return bundleSubType;
+  }
+
+  public void setBundleSubType(String bundleSubType) {
+    this.bundleSubType = bundleSubType;
   }
 
   public void setConfig(Config config) {

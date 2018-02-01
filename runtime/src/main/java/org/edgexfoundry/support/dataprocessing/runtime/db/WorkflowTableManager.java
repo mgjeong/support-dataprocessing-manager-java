@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
@@ -971,6 +972,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         .append("workflow_component_bundle.path as path,")
         .append("workflow_component_bundle.classname as classname,")
         .append("workflow_component_bundle.type AS type, ")
+        .append("workflow_component_bundle.name as bundleName,")
+        .append("workflow_component_bundle.subType as bundleSubType,")
         .append("workflow_component_bundle.streamingEngine AS streamingEngine ")
         .append("FROM workflow_component, workflow_component_bundle ")
         .append("WHERE workflow_component.workflowId = ? ")
@@ -1277,6 +1280,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     component.setConfigStr(rs.getString("config"));
     component.setPath(rs.getString("path"));
     component.setClassname(rs.getString("classname"));
+    component.setBundleName(rs.getString("bundleName"));
+    component.setBundleSubType(rs.getString("bundleSubType"));
 
     return component;
   }
@@ -1314,6 +1319,8 @@ public final class WorkflowTableManager extends AbstractStorageManager {
         .append("workflow_component.componentBundleId AS componentBundleId,")
         .append("workflow_component.name AS name,")
         .append("workflow_component.config as config,")
+        .append("workflow_component_bundle.name as bundleName,")
+        .append("workflow_component_bundle.subType as bundleSubType,")
         .append("workflow_component_bundle.path as path,")
         .append("workflow_component_bundle.classname as classname,")
         .append("workflow_component_bundle.type AS type, ")
@@ -1391,7 +1398,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(workflow.getId());
     workflowData.setWorkflowName(workflow.getName());
-    workflowData.setConfig(workflow.getConfigStr());
+    workflowData.setConfig(workflow.getConfig());
     workflowData.setWorkflowEditorMetadata(
         getWorkflowEditorMetadata(workflow.getId()));
 
@@ -1408,6 +1415,33 @@ public final class WorkflowTableManager extends AbstractStorageManager {
   }
 
   public Workflow importWorkflow(String workflowName, WorkflowData workflowData) {
+    // First validate if this workflow data is import-able
+    if (workflowData == null || StringUtils.isEmpty(workflowName)) {
+      throw new RuntimeException("Invalid workflow data or workflow name.");
+    }
+
+    // Check if bundle exists for all imported components
+    // Update bundle id for each component
+    List<WorkflowComponent> componentsToImport = new ArrayList<>();
+    componentsToImport.addAll(workflowData.getSources());
+    componentsToImport.addAll(workflowData.getProcessors());
+    componentsToImport.addAll(workflowData.getSinks());
+    Collection<WorkflowComponentBundle> bundles = listWorkflowComponentBundles();
+    for (WorkflowComponent component : componentsToImport) {
+      boolean bundleExists = false;
+      for (WorkflowComponentBundle bundle : bundles) {
+        if (bundle.getName().equalsIgnoreCase(component.getBundleName())
+            && bundle.getSubType().equalsIgnoreCase(component.getBundleSubType())) {
+          component.setWorkflowComponentBundleId(bundle.getId());
+          bundleExists = true;
+          break;
+        }
+      }
+      if (!bundleExists) {
+        throw new RuntimeException("Bundle for " + component.getName() + " does not exist.");
+      }
+    }
+
     // Add workflow
     Workflow newWorkflow = new Workflow();
     newWorkflow.setName(workflowName);

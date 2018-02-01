@@ -1,22 +1,133 @@
 {
-	"jobs": [{
-		"targetHost": "localhost:9092",
-		"input": [{
-			"dataType": "emf",
-			"dataSource": "localhost:5562:CNC/AE4-A21/N2, CNC/AE4-A21/N3"
-		}],
-		"output": [{
-			"dataType": "emf",
-			"dataSource": "localhost:5570"
-		}],
-		"task": [{			
-			"name": "query",
-            "param": {
-					"request": "CNCAE4A21N2|join(CNCAE4A21N3).as(<A>, <B>).tolerance(50ms)|delete().field(<B.ProcessTime>).field(<B.DEV_IP>).field(<B.delay>).field(<B.ret>)"
-			}
-		}],
-		"inrecord": [],
-		"outrecord": [],
-		"state": "CREATE"
-	}]
+  "workflowId":3,
+  "workflowName":"Query",
+  "sources":[
+    {
+      "id":10,
+      "workflowId":3,
+      "workflowComponentBundleId":2,
+      "bundleName":"DPFW-SOURCE",
+      "bundleSubType":"DPFW",
+      "name":"DPFW-SOURCE",
+      "description":"",
+      "engineType":"FLINK",
+      "path":"",
+      "classname":"",
+      "config":{
+        "properties":{
+          "dataType":"EZMQ",
+          "dataSource":"localhost:5562:CNC/AE4-A21/N2, CNC/AE4-A21/N3"
+        }
+      },
+      "outputStreams":[
+        {
+          "id":14,
+          "streamId":"dpfw_stream_10",
+          "workflowId":3,
+          "fields":[
+            {
+              "name":"sample_key",
+              "type":"STRING",
+              "optional":true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sinks":[
+    {
+      "id":11,
+      "workflowId":3,
+      "workflowComponentBundleId":3,
+      "bundleName":"DPFW-SINK",
+      "bundleSubType":"DPFW",
+      "name":"DPFW-SINK",
+      "description":"",
+      "engineType":"FLINK",
+      "path":"",
+      "classname":"",
+      "config":{
+        "properties":{
+          "dataType":"EZMQ",
+          "dataSink":"localhost:5570"
+        }
+      }
+    }
+  ],
+  "processors":[
+    {
+      "id":9,
+      "workflowId":3,
+      "workflowComponentBundleId":8,
+      "bundleName":"query",
+      "bundleSubType":"QUERY",
+      "name":"QUERY",
+      "description":"",
+      "engineType":"KAPACITOR",
+      "path":"/runtime/ha/jar/task/query-model-0.1.0-SNAPSHOT.jar",
+      "classname":"org.edgexfoundry.support.dataprocessing.runtime.task.model.QueryModel",
+      "config":{
+        "properties":{
+          "request":"CNCAE4A21N2|join(CNCAE4A21N3).as(<A>, <B>).tolerance(50ms)|delete().field(<B.ProcessTime>).field(<B.DEV_IP>).field(<B.delay>).field(<B.ret>)",
+          "inrecord":[
+            "A",
+            "B"
+          ],
+          "outrecord":[
+            "AB"
+          ]
+        }
+      },
+      "outputStreams":[
+        {
+          "id":15,
+          "streamId":"query_stream_9",
+          "workflowId":3,
+          "fields":[
+            {
+              "name":"AB",
+              "type":"STRING",
+              "optional":true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "edges":[
+    {
+      "id":7,
+      "workflowId":3,
+      "fromId":10,
+      "toId":9,
+      "streamGroupings":[
+        {
+          "streamId":14,
+          "grouping":"SHUFFLE"
+        }
+      ]
+    },
+    {
+      "id":8,
+      "workflowId":3,
+      "fromId":9,
+      "toId":11,
+      "streamGroupings":[
+        {
+          "streamId":15,
+          "grouping":"SHUFFLE"
+        }
+      ]
+    }
+  ],
+  "workflowEditorMetadata":{
+    "workflowId":3,
+    "data":"{\"sources\":[{\"x\":157.5,\"y\":168.25,\"id\":10}],\"processors\":[{\"x\":528.75,\"y\":243,\"id\":9}],\"sinks\":[{\"x\":833.75,\"y\":173.25,\"id\":11}],\"graphTransforms\":{\"dragCoords\":[-14,-7],\"zoomScale\":0.8}}",
+    "timestamp":1517460801357
+  },
+  "config":{
+    "targetHost":"",
+    "workflowType":"query"
+  }
 }

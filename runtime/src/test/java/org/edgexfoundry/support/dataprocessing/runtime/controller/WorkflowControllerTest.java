@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.servlet.http.Part;
+import org.edgexfoundry.support.dataprocessing.runtime.controller.WorkflowController.ImportType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
@@ -30,6 +30,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(value = {WorkflowTableManager.class})
@@ -511,19 +512,24 @@ public class WorkflowControllerTest {
     doReturn(workflow).when(workflowTableManager).importWorkflow(any(), any());
 
     // valid
-    Part mockedPart = mock(Part.class);
+    MultipartFile mockedPart = mock(MultipartFile.class);
     ObjectMapper mockedMapper = mock(ObjectMapper.class);
     Field mapperField = workflowController.getClass().getDeclaredField("mapper");
     mapperField.setAccessible(true);
     mapperField.set(workflowController, mockedMapper);
-    ResponseEntity response = workflowController.importWorkflow(mockedPart, "sample");
+    ResponseEntity response = workflowController
+        .importWorkflow(ImportType.FILE, mockedPart, null, "sample");
     Assert.assertNotNull(response);
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
 
     // invalid
-    response = workflowController.importWorkflow(null, "sample");
+    response = workflowController.importWorkflow(null, null, null, "sample");
     Assert.assertNotNull(response);
     Assert.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+
+    // test json
+    response = workflowController.importWorkflow(ImportType.JSON, null, "{}", "sample");
+    Assert.assertNotNull(response);
   }
 
   @Test

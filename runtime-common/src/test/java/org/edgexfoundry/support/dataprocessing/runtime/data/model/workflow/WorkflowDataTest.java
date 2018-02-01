@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +20,7 @@ public class WorkflowDataTest {
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(1L);
     workflowData.setWorkflowName("sample");
-    workflowData.setConfig("{}");
+    workflowData.setConfig(new HashMap<>());
 
     WorkflowEditorMetadata metadata = makeWorkflowEditorMetadata();
     workflowData.setWorkflowEditorMetadata(metadata);
@@ -40,7 +42,9 @@ public class WorkflowDataTest {
     Assert.assertEquals(0, workflowData.getEdges().size());
     Assert.assertEquals(null, workflowData.getEngineType());
 
-    workflowData.setConfig("{\"targetHost\": \"localhost\"}");
+    Map<String, Object> config = new HashMap<>();
+    config.put("targetHost", "localhost");
+    workflowData.setConfig(config);
     Assert.assertEquals(1, workflowData.getConfig().size());
     Assert.assertTrue(!workflowData.getConfigStr().isEmpty());
   }
@@ -139,7 +143,9 @@ public class WorkflowDataTest {
         });
     Whitebox.setInternalState(workflowData, "mapper", objectMapper);
     try {
-      workflowData.setConfig("{\"targetHost\":\"localhost\"}");
+      Map<String, Object> config = new HashMap<>();
+      config.put("targetHost", "localhost");
+      workflowData.setConfig(config);
       workflowData.getConfigStr();
       Assert.fail("Should not reach here.");
     } catch (RuntimeException e) {
@@ -152,8 +158,7 @@ public class WorkflowDataTest {
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(1L);
     workflowData.setWorkflowName("sample");
-    workflowData.setConfig("{}");
-
+    workflowData.setConfig(new HashMap<>());
     String json = new Gson().toJson(workflowData);
     Assert.assertNotNull(json);
   }
