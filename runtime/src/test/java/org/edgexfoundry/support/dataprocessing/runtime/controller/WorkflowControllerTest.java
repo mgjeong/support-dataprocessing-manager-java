@@ -518,7 +518,7 @@ public class WorkflowControllerTest {
     mapperField.setAccessible(true);
     mapperField.set(workflowController, mockedMapper);
     ResponseEntity response = workflowController
-        .importWorkflow(ImportType.File, mockedPart, null, "sample");
+        .importWorkflow(ImportType.FILE, mockedPart, null, "sample");
     Assert.assertNotNull(response);
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -528,7 +528,7 @@ public class WorkflowControllerTest {
     Assert.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
 
     // test json
-    response = workflowController.importWorkflow(ImportType.Json, null, "{}", "sample");
+    response = workflowController.importWorkflow(ImportType.JSON, null, "{}", "sample");
     Assert.assertNotNull(response);
   }
 

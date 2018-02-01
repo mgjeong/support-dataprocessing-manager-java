@@ -60,7 +60,7 @@ public class WorkflowController extends AbstractController {
    * Import workflow in file or json string format.
    */
   protected enum ImportType {
-    File, Json
+    FILE, JSON
   }
 
 
@@ -478,9 +478,9 @@ public class WorkflowController extends AbstractController {
       @RequestParam("workflowName") final String workflowName) {
     try {
       WorkflowData workflowData;
-      if (type == ImportType.File) {
+      if (type == ImportType.FILE) {
         workflowData = this.mapper.readValue(part.getInputStream(), WorkflowData.class);
-      } else if (type == ImportType.Json) {
+      } else if (type == ImportType.JSON) {
         workflowData = this.mapper.readValue(json, WorkflowData.class);
       } else {
         throw new RuntimeException("Invalid type.");
