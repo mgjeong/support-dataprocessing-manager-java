@@ -89,10 +89,7 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    interval.put("time", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     model.setParam(params);
   }
@@ -111,9 +108,7 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -147,9 +142,7 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "rmse");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -182,9 +175,7 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "mae");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -217,9 +208,7 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "me");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -252,9 +241,7 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "me");
     params.put("observation", "/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -288,11 +275,9 @@ public class ErrorModelTest {
     List<String> output = new ArrayList<>();
     output.add("/Out1");
     TaskModelParam params = new TaskModelParam();
-    params.put("type", "aa");
+    params.put("type", "mse");
     params.put("observation", "/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -326,11 +311,9 @@ public class ErrorModelTest {
     List<String> output = new ArrayList<>();
     output.add("/Out1");
     TaskModelParam params = new TaskModelParam();
-    params.put("type", "aa");
+    params.put("type", "rmse");
     params.put("observation", "/FIELD10");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -364,11 +347,9 @@ public class ErrorModelTest {
     List<String> output = new ArrayList<>();
     output.add("/Out1");
     TaskModelParam params = new TaskModelParam();
-    params.put("type", "aa");
+    params.put("type", "me");
     params.put("observation", "/FIELD10");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);

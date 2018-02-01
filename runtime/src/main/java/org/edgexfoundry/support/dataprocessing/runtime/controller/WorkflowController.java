@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.servlet.http.Part;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
@@ -26,7 +27,10 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -50,6 +55,14 @@ public class WorkflowController extends AbstractController {
    * Use getter to access edge info, as it is initialized lazily.
    */
   private EdgeInfo edgeInfo = null;
+
+  /**
+   * Import workflow in file or json string format.
+   */
+  protected enum ImportType {
+    FILE, JSON
+  }
+
 
   public WorkflowController() {
     this.workflowTableManager = WorkflowTableManager.getInstance();
@@ -433,12 +446,21 @@ public class WorkflowController extends AbstractController {
   }
 
   @ApiOperation(value = "Export workflow", notes = "Exports a workflow")
-  @RequestMapping(value = "/workflows/{workflowId}/actions/export", method = RequestMethod.GET)
+  @RequestMapping(value = "/workflows/{workflowId}/actions/export", method = RequestMethod.GET,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity exportWorkflow(@PathVariable("workflowId") Long workflowId) {
     try {
       Workflow workflow = this.workflowTableManager.getWorkflow(workflowId);
       String exportedWorkflow = this.workflowTableManager.exportWorkflow(workflow);
-      return respond(exportedWorkflow, HttpStatus.OK);
+
+      byte[] bExportedWorkflow = exportedWorkflow.getBytes();
+      try (InputStream inputStream = new ByteArrayInputStream(bExportedWorkflow)) {
+        InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(bExportedWorkflow.length);
+        headers.add("Content-Disposition", "attachment;filename=" + workflow.getName() + ".json");
+        return new ResponseEntity(inputStreamResource, headers, HttpStatus.OK);
+      }
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
@@ -447,17 +469,26 @@ public class WorkflowController extends AbstractController {
   }
 
   @ApiOperation(value = "Import workflow", notes = "Imports a workflow")
-  @RequestMapping(value = "/workflows/actions/import", method = RequestMethod.POST)
-  public ResponseEntity importWorkflow(@RequestParam("file") Part part,
+  @RequestMapping(value = "/workflows/actions/import", method = RequestMethod.POST,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity importWorkflow(
+      @RequestParam(value = "type") ImportType type,
+      @RequestParam(value = "file", required = false) MultipartFile part,
+      @RequestParam(value = "json", required = false) String json,
       @RequestParam("workflowName") final String workflowName) {
     try {
-      WorkflowData workflowData = this.mapper
-          .readValue(part.getInputStream(), WorkflowData.class);
-      Workflow imported = this.workflowTableManager
-          .importWorkflow(workflowName, workflowData);
+      WorkflowData workflowData;
+      if (type == ImportType.FILE) {
+        workflowData = this.mapper.readValue(part.getInputStream(), WorkflowData.class);
+      } else if (type == ImportType.JSON) {
+        workflowData = this.mapper.readValue(json, WorkflowData.class);
+      } else {
+        throw new RuntimeException("Invalid type.");
+      }
+      Workflow imported = this.workflowTableManager.importWorkflow(workflowName, workflowData);
       return respond(imported, HttpStatus.OK);
+
     } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }

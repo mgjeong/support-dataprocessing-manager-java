@@ -147,14 +147,13 @@ public final class TaskManager implements FileAlterationListener {
       // Check if bundle already exists
       WorkflowComponentBundle bundle = workflowTableManager
           .getWorkflowComponentBundle(model.getName(), WorkflowComponentBundleType.PROCESSOR,
-              "DPFW");
+              model.getType().name());
       if (bundle == null) {
         // make new bundle
         bundle = new WorkflowComponentBundle();
         bundle.setName(model.getName());
         bundle.setType(WorkflowComponentBundleType.PROCESSOR);
-        //bundle.setSubType(model.getType().name());
-        bundle.setSubType("DPFW");
+        bundle.setSubType(model.getType().name());
       }
       bundle = updateWorkflowComponentBundle(bundle, model);
       bundle.setBundleJar(jarPath);
