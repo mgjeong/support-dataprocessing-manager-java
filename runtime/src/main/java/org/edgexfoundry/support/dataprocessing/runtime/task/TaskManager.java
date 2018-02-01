@@ -138,6 +138,7 @@ public final class TaskManager implements FileAlterationListener {
       LOGGER.error(e.getMessage(), e);
     }
 
+    LOGGER.info("Found {} classNames from {}", classNames.size(), taskModelFile);
     return classNames;
   }
 
