@@ -59,6 +59,13 @@ public class FlinkEngine extends AbstractEngine {
   private String host;
   private int port;
 
+  /**
+   * Request generator for each Flink JobManager
+   * The corresponding method of an instance of this class is called
+   * on each request, such as job deploying, stopping, or status monitoring.
+   * @param host hostname of Flink REST server
+   * @param port port number of Flink REST server
+   */
   public FlinkEngine(String host, int port) {
     setHost(host);
     setPort(port);
@@ -103,7 +110,6 @@ public class FlinkEngine extends AbstractEngine {
     }
 
     return job;
-
   }
 
   private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) throws Exception {
@@ -287,10 +293,10 @@ public class FlinkEngine extends AbstractEngine {
     ArrayList<JobState> jobStates = new ArrayList<>();
 
     // Running Job State * TBD
-//    for (FlinkJob flinkJob : overview.getFinished()) {
-//      JobState jobState = new JobState();
-//      jobStates.add(jobState);
-//    }
+    //for (FlinkJob flinkJob : overview.getFinished()) {
+    //  JobState jobState = new JobState();
+    //  jobStates.add(jobState);
+    //}
 
     // Finished Job State, any reasons.
     for (FlinkJob flinkJob : overview.getFinished()) {
