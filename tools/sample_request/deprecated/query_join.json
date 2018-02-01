@@ -1,0 +1,22 @@
+{
+	"jobs": [{
+		"targetHost": "localhost:9092",
+		"input": [{
+			"dataType": "emf",
+			"dataSource": "localhost:5562:CNC/AE4-A21/N2, CNC/AE4-A21/N3"
+		}],
+		"output": [{
+			"dataType": "emf",
+			"dataSource": "localhost:5570"
+		}],
+		"task": [{			
+			"name": "query",
+            "param": {
+					"request": "CNCAE4A21N2|join(CNCAE4A21N3).as(<A>, <B>).tolerance(50ms)|delete().field(<B.ProcessTime>).field(<B.DEV_IP>).field(<B.delay>).field(<B.ret>)"
+			}
+		}],
+		"inrecord": [],
+		"outrecord": [],
+		"state": "CREATE"
+	}]
+}
