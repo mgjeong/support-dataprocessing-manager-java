@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
@@ -22,6 +23,14 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.Kapacito
 
 public class EngineFactory {
 
+  /**
+   * Create an request generator depending on engine type
+   * Generally, it will make a job/request which is runnable on actual engines respectively.
+   * @param engineType Type of the engine to use
+   * @param host hostname of the engine
+   * @param port port number of the engine
+   * @return Request generator of specified engine
+   */
   public static Engine createEngine(WorkflowData.EngineType engineType, String host, Integer port) {
     final Engine engine;
 
@@ -32,7 +41,6 @@ public class EngineFactory {
       case KAPACITOR:
         engine = new KapacitorEngine(host, port);
         break;
-//            case Spark: // TODO
       default:
         throw new RuntimeException("Unsupported engine type selected.");
     }
