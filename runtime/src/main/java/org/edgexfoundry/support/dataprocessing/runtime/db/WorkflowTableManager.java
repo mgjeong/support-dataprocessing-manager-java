@@ -1237,7 +1237,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     // TODO: is this correct mapping?
     bundle.setBundleJar(rs.getString("path"));
     bundle.setTransformationClass(rs.getString("classname"));
-    bundle.setBuiltin(rs.getByte("removable") == (byte) '0');
+    bundle.setBuiltin(rs.getString("removable").startsWith("0"));
     return bundle;
   }
 
