@@ -59,12 +59,14 @@ public class TaskController extends AbstractController {
 
     try {
       // make file
-      this.taskManager.uploadCustomTask(file.getOriginalFilename(), file.getInputStream());
+      int added = this.taskManager
+          .uploadCustomTask(file.getOriginalFilename(), file.getInputStream());
 
       // TODO: format response
       JsonObject response = new JsonObject();
       response.addProperty("status", "Success");
       response.addProperty("filename", file.getOriginalFilename());
+      response.addProperty("added", added);
       return respond(response, HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),

@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -34,12 +33,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.internal.WhiteboxImpl;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({TaskManager.class, WorkflowTableManager.class})
 public class TaskManagerTest {
 
   private static final File testDir = new File("./testDir/");
@@ -54,15 +49,14 @@ public class TaskManagerTest {
       throw new Exception("Failed to create test directory: " + testDir.getAbsolutePath());
     }
 
-    // Initialize task manager
-    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
-    Field wtmField = taskManager.getClass().getDeclaredField("workflowTableManager");
-    wtmField.setAccessible(true);
-    wtmField.set(taskManager, workflowTableManager);
-
     // Make sample task model
     File testTaskModelJar = new File(testDir, "test.jar");
     makeSampleTaskModel(testTaskModelJar);
+
+    // Initialize task manager
+    taskManager.initialize(testDir.getAbsolutePath());
+    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+    WhiteboxImpl.setInternalState(taskManager, "workflowTableManager", workflowTableManager);
   }
 
   private static void makeSampleTaskModel(File testTaskModelJar)
@@ -96,39 +90,15 @@ public class TaskManagerTest {
 
   @Test
   public void testScanDir() throws Exception {
-    taskManager.scanTaskModel(testDir.getAbsolutePath());
-  }
-
-  @Test
-  public void testFileCreatedThenRemoved() throws Exception {
-    taskManager.initialize(testDir.getAbsolutePath());
-
-    File created = new File(testDir, "created.jar");
-    makeSampleTaskModel(created);
-
-    Thread.sleep(1500);
-
-    created.delete();
-    Thread.sleep(1500);
-
-    taskManager.terminate();
-  }
-
-  @Test
-  public void testDirectoryChanged() throws Exception {
-    taskManager.onDirectoryCreate(null);
-    taskManager.onDirectoryChange(null);
-    taskManager.onDirectoryDelete(null);
-    taskManager.onFileChange(null);
+    taskManager.scanBuiltinTaskModel(testDir.getAbsolutePath());
   }
 
   @Test
   public void testCustomTask() throws Exception {
-    taskManager.initialize(testDir.getAbsolutePath());
     File custom = new File(testDir, "custom.jar");
     makeSampleTaskModel(custom);
-    taskManager.uploadCustomTask("custom.jar", new FileInputStream(custom));
-    Thread.sleep(1500);
+    int added = taskManager.uploadCustomTask("custom.jar", new FileInputStream(custom));
+    Assert.assertTrue(added > 0);
 
     // invalid
     File invalidFile = new File(testDir, "invalid.txt");
@@ -136,6 +106,32 @@ public class TaskManagerTest {
     invalidFile.createNewFile();
     try {
       taskManager.uploadCustomTask("invalid.txt", new FileInputStream(invalidFile));
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+
+    taskManager.terminate();
+  }
+
+  @Test
+  public void testInvalidInitialization() throws Exception {
+    try {
+      taskManager.initialize(null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+
+    try {
+      taskManager.uploadCustomTask(null, null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+
+    try {
+      taskManager.scanBuiltinTaskModel(null);
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success

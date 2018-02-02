@@ -30,7 +30,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 
-public final class WorkflowTableManager extends AbstractStorageManager {
+public class WorkflowTableManager extends AbstractStorageManager {
 
   private static WorkflowTableManager instance = null;
 

@@ -40,7 +40,7 @@ public class Application extends SpringBootServletInitializer {
 
     // 3. Run task manager to scan for tasks
     TaskManager.getInstance().initialize(Settings.CUSTOM_JAR_PATH);
-    TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
+    TaskManager.getInstance().scanBuiltinTaskModel(Settings.FW_JAR_PATH);
 
     // 4. Run Monitoring
     MonitoringManager.getInstance().setInterval(MonitoringManager.INTERVAL).start();

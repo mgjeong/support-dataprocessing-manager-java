@@ -22,7 +22,7 @@ public @interface TaskParam {
 
   boolean isOptional() default false;
 
-  public enum UiFieldType {
+  enum UiFieldType {
     STRING("string"),
     ENUMSTRING("enumstring"),
     ARRAYSTRING("array.string"),
