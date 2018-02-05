@@ -118,5 +118,22 @@ The easiest way to upload custom task is to use [Swagger UI](http://localhost:80
 
 Upload the packaged jar and we are done!
 
+
+### Updating custom task jar ###
+You can make a PUT request to `http://{workflowManager}/api/v1/catalog/upload/task` .
+
+The easiest way to update custom task is to use [Swagger UI](http://localhost:8082/swagger-ui.html#!/Task_Manager/uploadCustomTaskUsingPOST) provided by the workflow manager.
+
+Upload the packaged jar and we are done!
+
+Note that updating an existing custom task is not possible if it is used by at least one of the existing workflows.
+
+### Removing custom task jar ###
+You can make a DELETE request to `http://{workflowManager}/api/v1/catalog/upload/task` .
+
+The easiest way to remove custom task is to use [Swagger UI](http://localhost:8082/swagger-ui.html#!/Task_Manager/uploadCustomTaskUsingPOST) provided by the workflow manager.
+
+Note that removing an existing custom task is not possible if it is used by at least one of the existing workflows.
+
 ## Reminder ##
  - A packaged custom task model jar should not be larger than 8MB in size.
