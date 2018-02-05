@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
+import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.io.File;
@@ -28,6 +29,8 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.commons.io.FileUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TestModel;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -94,10 +97,88 @@ public class TaskManagerTest {
   }
 
   @Test
-  public void testCustomTask() throws Exception {
-    File custom = new File(testDir, "custom.jar");
+  public void testUpdateCustomTask() throws Exception {
+    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+    WhiteboxImpl.setInternalState(taskManager, "workflowTableManager", workflowTableManager);
+
+    // Add
+    File custom = new File(testDir, "custom_update.jar");
     makeSampleTaskModel(custom);
-    int added = taskManager.uploadCustomTask("custom.jar", new FileInputStream(custom));
+    int added = taskManager.addCustomTask("custom_update.jar", new FileInputStream(custom));
+    Assert.assertTrue(added > 0);
+
+    // Update
+    WorkflowComponentBundle bundle = new WorkflowComponentBundle();
+    bundle.setBuiltin(false);
+    bundle.setTransformationClass(TestModel.class.getCanonicalName());
+    bundle.setBundleJar(custom.getAbsolutePath());
+    bundle.setName(TestModel.class.getSimpleName());
+    bundle.setType(WorkflowComponentBundleType.PROCESSOR);
+    bundle.setSubType(TaskType.INVALID.name());
+    doReturn(bundle).when(workflowTableManager)
+        .getWorkflowComponentBundle(TestModel.class.getSimpleName(), TaskType.INVALID.name());
+
+    int updated = taskManager
+        .updateCustomTask(TestModel.class.getSimpleName(), TaskType.INVALID, "custom.jar",
+            new FileInputStream(custom));
+    Assert.assertTrue(updated > 0);
+
+    // invalid
+    try {
+      taskManager
+          .updateCustomTask("invalid", TaskType.INVALID, "custom.jar", new FileInputStream(custom));
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+
+    taskManager.terminate();
+  }
+
+  @Test
+  public void testRemoveCustomTask() throws Exception {
+    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+    WhiteboxImpl.setInternalState(taskManager, "workflowTableManager", workflowTableManager);
+
+    // Add
+    File custom = new File(testDir, "custom_remove.jar");
+    makeSampleTaskModel(custom);
+    int added = taskManager.addCustomTask("custom_remove.jar", new FileInputStream(custom));
+    Assert.assertTrue(added > 0);
+
+    // Remove
+    WorkflowComponentBundle bundle = new WorkflowComponentBundle();
+    bundle.setBuiltin(false);
+    bundle.setTransformationClass(TestModel.class.getCanonicalName());
+    bundle.setBundleJar(custom.getAbsolutePath());
+    bundle.setName(TestModel.class.getSimpleName());
+    bundle.setType(WorkflowComponentBundleType.PROCESSOR);
+    bundle.setSubType(TaskType.INVALID.name());
+    doReturn(bundle).when(workflowTableManager)
+        .getWorkflowComponentBundle(TestModel.class.getSimpleName(), TaskType.INVALID.name());
+
+    taskManager.removeCustomTask(TestModel.class.getSimpleName(), TaskType.INVALID);
+
+    // invalid
+    try {
+      taskManager.removeCustomTask("invalid", TaskType.INVALID);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
+
+    taskManager.terminate();
+  }
+
+  @Test
+  public void testAddCustomTask() throws Exception {
+    WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+    WhiteboxImpl.setInternalState(taskManager, "workflowTableManager", workflowTableManager);
+
+    // Add
+    File custom = new File(testDir, "custom_add.jar");
+    makeSampleTaskModel(custom);
+    int added = taskManager.addCustomTask("custom_add.jar", new FileInputStream(custom));
     Assert.assertTrue(added > 0);
 
     // invalid
@@ -105,7 +186,7 @@ public class TaskManagerTest {
     invalidFile.deleteOnExit();
     invalidFile.createNewFile();
     try {
-      taskManager.uploadCustomTask("invalid.txt", new FileInputStream(invalidFile));
+      taskManager.addCustomTask("invalid.txt", new FileInputStream(invalidFile));
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success
@@ -124,7 +205,7 @@ public class TaskManagerTest {
     }
 
     try {
-      taskManager.uploadCustomTask(null, null);
+      taskManager.addCustomTask(null, null);
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success

@@ -20,9 +20,11 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -48,9 +50,9 @@ public class TaskController extends AbstractController {
     this.taskManager = TaskManager.getInstance();
   }
 
-  @ApiOperation(value = "Upload custom task", notes = "Upload a custom task jar")
+  @ApiOperation(value = "Add custom task", notes = "Adds a new custom task jar")
   @RequestMapping(value = "/upload/task", method = RequestMethod.POST)
-  public ResponseEntity uploadCustomTask(@RequestParam("file") MultipartFile file) {
+  public ResponseEntity addCustomTask(@RequestParam("file") MultipartFile file) {
     if (file == null || file.isEmpty()) {
       return respond(
           new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Uploaded file is empty."),
@@ -60,7 +62,7 @@ public class TaskController extends AbstractController {
     try {
       // make file
       int added = this.taskManager
-          .uploadCustomTask(file.getOriginalFilename(), file.getInputStream());
+          .addCustomTask(file.getOriginalFilename(), file.getInputStream());
 
       // TODO: format response
       JsonObject response = new JsonObject();
@@ -74,23 +76,53 @@ public class TaskController extends AbstractController {
     }
   }
 
+  @ApiOperation(value = "Update custom task", notes = "Updates an existing custom task jar")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.PUT)
+  public ResponseEntity updateCustomTask(@RequestParam("name") String taskName,
+      @RequestParam("type") TaskType taskType,
+      @RequestParam("file") MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Uploaded file is empty."),
+          HttpStatus.OK);
+    } else if (StringUtils.isEmpty(taskName) || taskType == null) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Invalid task name or type."),
+          HttpStatus.OK);
+    }
 
-/*
-  @ApiOperation(value = "Delete Custom Task", notes = "Delete Custom Task")
-  @RequestMapping(value = "/delete", method = RequestMethod.POST)
-  @ResponseBody
-  public ResponseFormat deleteTask(Locale locale, Model model,
-      @RequestParam("type") TaskType type,
-      @RequestParam("name") String name) {
-    LOGGER.debug("Data : " + name + ", " + type);
+    try {
+      // make file
+      int updated = this.taskManager
+          .updateCustomTask(taskName, taskType, file.getOriginalFilename(), file.getInputStream());
 
-    ResponseFormat response = new ResponseFormat();
-    // TODO:
-    //ErrorFormat result = taskManager.deleteTask(type, name);
-    //response.setError(result);
-
-    LOGGER.debug(response.toString());
-    return response;
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      response.addProperty("filename", file.getOriginalFilename());
+      response.addProperty("updated", updated);
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
   }
-  */
+
+  @ApiOperation(value = "Remove custom task", notes = "Removes an existing custom task")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.DELETE)
+  public ResponseEntity removeCustomTask(@RequestParam("name") String taskName,
+      @RequestParam("type") TaskType taskType) {
+    try {
+      this.taskManager.removeCustomTask(taskName, taskType);
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
+  }
+
 }
