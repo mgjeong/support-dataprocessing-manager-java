@@ -401,6 +401,29 @@ public class WorkflowTableManager extends AbstractStorageManager {
   }
 
   /**
+   * Returns a list of workflow component bundles having a specific bundle jar path
+   *
+   * @param bundleJar path to bundle jar
+   */
+  public Collection<WorkflowComponentBundle> listWorkflowComponentBundlesByJar(String bundleJar) {
+    if (StringUtils.isEmpty(bundleJar)) {
+      throw new RuntimeException("Invalid bundle jar path.");
+    }
+
+    Collection<WorkflowComponentBundle> bundles = new ArrayList<>();
+    String sql = "SELECT * FROM workflow_component_bundle WHERE path = ?";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, bundleJar);
+        ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        bundles.add(mapToWorkflowComponentBundle(rs));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return bundles;
+  }
+
+  /**
    * Inserts a workflow component bundle
    *
    * @param bundle bundle to insert
@@ -500,6 +523,27 @@ public class WorkflowTableManager extends AbstractStorageManager {
   }
 
   public WorkflowComponentBundle getWorkflowComponentBundle(String componentName,
+      String componentSubType) {
+    if (componentName == null || componentSubType == null) {
+      throw new RuntimeException("Component name or subtype is null.");
+    }
+
+    String sql = "SELECT * FROM workflow_component_bundle WHERE " +
+        "name = ? AND subType = ?";
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, componentName,
+        componentSubType);
+        ResultSet rs = ps.executeQuery()) {
+      if (!rs.next()) {
+        return null;
+      } else {
+        return mapToWorkflowComponentBundle(rs);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public WorkflowComponentBundle getWorkflowComponentBundle(String componentName,
       WorkflowComponentBundleType componentType,
       String componentSubType) {
     if (componentName == null || componentType == null || componentSubType == null) {
@@ -531,7 +575,7 @@ public class WorkflowTableManager extends AbstractStorageManager {
       throw new RuntimeException("Workflow component bundle id is null.");
     }
 
-    String sql = "DELETE FROM workflow_component_bundle WHERE id = ?";
+    String sql = "DELETE FROM workflow_component_bundle WHERE id = ? AND removable = 1";
     try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
             workflowComponentBundleId)) {
@@ -549,6 +593,38 @@ public class WorkflowTableManager extends AbstractStorageManager {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public Collection<Long> listWorkflowIdsUsingWorkflowComponentBundle(Long existingBundleId) {
+    if (existingBundleId == null) {
+      throw new RuntimeException("Workflow component bundle id is null.");
+    }
+
+    // Use SQL below to select workflow Ids that have jobs running
+    //StringBuilder sqlBuilder = new StringBuilder();
+    //sqlBuilder.append("SELECT workflow_component.workflowId AS workflowId ");
+    //sqlBuilder.append("FROM workflow_component ");
+    //sqlBuilder.append("INNER JOIN job ON workflow_component.workflowId = job.workflowId ");
+    //sqlBuilder.append("INNER JOIN job_state ON job.id = job_state.jobId ");
+    //sqlBuilder.append("WHERE job_state.state != 'RUNNING' ");
+    //sqlBuilder.append("AND workflow_component.componentBundleId = ? ");
+
+    StringBuilder sqlBuilder = new StringBuilder();
+    sqlBuilder.append("SELECT workflowId ");
+    sqlBuilder.append("FROM workflow_component WHERE componentBundleId = ?");
+
+    List<Long> workflowIds = new ArrayList<>();
+    try (PreparedStatement ps = createPreparedStatement(getConnection(), sqlBuilder.toString(),
+        existingBundleId);
+        ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        workflowIds.add(rs.getLong("workflowId"));
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    return workflowIds;
   }
 
   /**

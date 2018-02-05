@@ -54,16 +54,16 @@ public class TaskControllerTest {
     doReturn("sample.jar").when(mocked).getName();
     doReturn("hello".getBytes()).when(mocked).getBytes();
 
-    ResponseEntity responseEntity = taskController.uploadCustomTask(mocked);
+    ResponseEntity responseEntity = taskController.addCustomTask(mocked);
     Assert.assertTrue(responseEntity.getBody().toString().contains(mocked.getOriginalFilename()));
 
     // test exception
-    doThrow(new Exception("Mocked")).when(taskManager).uploadCustomTask(any(), any());
-    responseEntity = taskController.uploadCustomTask(mocked);
+    doThrow(new Exception("Mocked")).when(taskManager).addCustomTask(any(), any());
+    responseEntity = taskController.addCustomTask(mocked);
     Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
 
     // test invalid param
-    responseEntity = taskController.uploadCustomTask(null);
+    responseEntity = taskController.addCustomTask(null);
     Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
   }
 

@@ -18,12 +18,14 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -108,8 +110,7 @@ public final class TaskManager {
       TaskOwner taskOwner) throws Exception {
     // Check if bundle already exists
     WorkflowComponentBundle bundle = workflowTableManager
-        .getWorkflowComponentBundle(model.getName(), WorkflowComponentBundleType.PROCESSOR,
-            model.getType().name());
+        .getWorkflowComponentBundle(model.getName(), model.getType().name());
     if (bundle != null) {
       LOGGER.error(
           "Task model for " + model.getName() + " / " + model.getType() + " already exists.");
@@ -212,7 +213,126 @@ public final class TaskManager {
     }
   }
 
-  public int uploadCustomTask(String filename, InputStream inputStream) throws Exception {
+  public int addCustomTask(String filename, InputStream inputStream) throws Exception {
+    File customFile = saveFile(filename, inputStream);
+
+    int added = insertTaskModels(customFile, TaskOwner.USER);
+    if (added == 0) {
+      customFile.delete(); // remove invalid custom task jar
+      throw new RuntimeException("No new custom tasks found in " + filename);
+    } else {
+      return added;
+    }
+  }
+
+  public int updateCustomTask(String taskName, TaskType taskType, String filename,
+      InputStream inputStream) throws Exception {
+    if (StringUtils.isEmpty(taskName) || taskType == null) {
+      throw new RuntimeException("Invalid task name or type.");
+    }
+
+    // Check if there exists a bundle with taskName and taskType
+    WorkflowComponentBundle existingBundle = this.workflowTableManager
+        .getWorkflowComponentBundle(taskName, taskType.name());
+    if (existingBundle == null) {
+      throw new RuntimeException(
+          "Bundle for " + taskName + " / " + taskType.name() + " does not exist.");
+    } else if (existingBundle.isBuiltin()) {
+      throw new RuntimeException("Unable to update built in task.");
+    }
+
+    // Check if bundle is used by any workflow
+    Collection<Long> workflowIds = this.workflowTableManager
+        .listWorkflowIdsUsingWorkflowComponentBundle(existingBundle.getId());
+    if (workflowIds.size() > 0) {
+      throw new RuntimeException(
+          "Bundle for " + taskName + " / " + taskType.name() + " is used in " +
+              workflowIds.size() + " workflow(s).");
+    }
+
+    File customFile = saveFile(filename, inputStream);
+    int updated = updateCustomTaskModel(existingBundle, customFile);
+    if (updated == 0) {
+      customFile.delete(); // remove invalid custom task jar
+      throw new RuntimeException("No custom tasks found in " + filename);
+    } else {
+      return updated;
+    }
+  }
+
+  public void removeCustomTask(String taskName, TaskType taskType) {
+    if (StringUtils.isEmpty(taskName) || taskType == null) {
+      throw new RuntimeException("Invalid task name or type.");
+    }
+
+    // Check if there exists a bundle with taskName and taskType
+    WorkflowComponentBundle existingBundle = this.workflowTableManager
+        .getWorkflowComponentBundle(taskName, taskType.name());
+    if (existingBundle == null) {
+      throw new RuntimeException(
+          "Bundle for " + taskName + " / " + taskType.name() + " does not exist.");
+    } else if (existingBundle.isBuiltin()) {
+      throw new RuntimeException("Unable to remove built in task.");
+    }
+
+    // Check if bundle is used by any workflow
+    Collection<Long> workflowIds = this.workflowTableManager
+        .listWorkflowIdsUsingWorkflowComponentBundle(existingBundle.getId());
+    if (workflowIds.size() > 0) {
+      throw new RuntimeException(
+          "Bundle for " + taskName + " / " + taskType.name() + " is used in " +
+              workflowIds.size() + " workflow(s).");
+    }
+
+    // Remove from database
+    this.workflowTableManager.removeWorkflowComponentBundle(existingBundle.getId());
+
+    // TODO: Is it a good idea to remove jar file if it is no longer used?
+    try {
+      Collection<WorkflowComponentBundle> existingBundles = this.workflowTableManager
+          .listWorkflowComponentBundlesByJar(existingBundle.getBundleJar());
+      if (existingBundles.isEmpty()) {
+        // Remove jar file, since it is not used anymore
+        File jarFile = new File(existingBundle.getBundleJar());
+        if (jarFile.exists()) {
+          jarFile.delete();
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e); // Let the file exist, if delete fails.
+    }
+  }
+
+  private int updateCustomTaskModel(WorkflowComponentBundle existingBundle, File customFile)
+      throws Exception {
+
+    // Check if jar file contains existing bundle
+    List<String> classNames = getClassNames(customFile);
+    if (classNames == null || classNames.isEmpty()) {
+      LOGGER.info("No task models found in " + customFile.getName());
+      return 0;
+    }
+
+    int updated = 0;
+    for (String className : classNames) {
+      TaskModel tm = JarLoader.newInstance(customFile, className, TaskModel.class);
+
+      if (tm == null || !(tm instanceof TaskModel)) {
+        continue;
+      } else if (tm.getName().equalsIgnoreCase(existingBundle.getName())
+          && tm.getType().name().equalsIgnoreCase(existingBundle.getSubType())) {
+        existingBundle.setBundleJar(customFile.getAbsolutePath());
+        existingBundle.setTransformationClass(tm.getClass().getCanonicalName());
+        this.workflowTableManager.addOrUpdateWorkflowComponentBundle(existingBundle);
+        updated++;
+        break;
+      }
+    }
+
+    return updated;
+  }
+
+  private File saveFile(String filename, InputStream inputStream) throws IOException {
     if (StringUtils.isEmpty(filename)) {
       throw new RuntimeException("Invalid filename");
     } else if (inputStream == null) {
@@ -227,27 +347,7 @@ public final class TaskManager {
 
     Files.copy(inputStream, customFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     IOUtils.closeQuietly(inputStream);
-
-    if (!validateCustomTask(customFile)) {
-      customFile.delete(); // remove invalid custom task jar
-      throw new RuntimeException("No custom tasks found in " + filename);
-    } else {
-      return insertTaskModels(customFile, TaskOwner.USER);
-    }
-  }
-
-  private boolean validateCustomTask(File file) {
-    if (file == null || !file.isFile()) {
-      return false;
-    }
-
-    try {
-      List<String> classNames = getClassNames(file);
-      return (classNames != null && !classNames.isEmpty());
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-      return false;
-    }
+    return customFile;
   }
 
   private int insertTaskModels(File createdFile, TaskOwner taskOwner) throws Exception {
