@@ -23,6 +23,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +44,7 @@ public class TaskControllerTest {
   }
 
   @Test
-  public void testUploadCustomTask() throws Exception {
+  public void testAddCustomTask() throws Exception {
     TaskController taskController = spy(new TaskController());
     TaskManager taskManager = mock(TaskManager.class);
     WhiteboxImpl.setInternalState(taskController, "taskManager", taskManager);
@@ -67,4 +68,53 @@ public class TaskControllerTest {
     Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
   }
 
+  @Test
+  public void testUpdateCustomTask() throws Exception {
+    TaskController taskController = spy(new TaskController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(taskController, "taskManager", taskManager);
+    // test successful validation
+    MultipartFile mocked = mock(MultipartFile.class);
+    doReturn(false).when(mocked).isEmpty();
+    doReturn("sample.jar").when(mocked).getOriginalFilename();
+    doReturn("sample.jar").when(mocked).getName();
+    doReturn("hello".getBytes()).when(mocked).getBytes();
+
+    ResponseEntity responseEntity = taskController.updateCustomTask("A", TaskType.INVALID, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("Success"));
+
+    // test exception
+    doThrow(new Exception("Mocked")).when(taskManager).updateCustomTask(any(), any(), any(), any());
+    responseEntity = taskController.updateCustomTask("A", TaskType.INVALID, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = taskController.updateCustomTask(null, null, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = taskController.updateCustomTask("A", TaskType.INVALID, null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+  }
+
+  @Test
+  public void testRemoveCustomTask() throws Exception {
+    TaskController taskController = spy(new TaskController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(taskController, "taskManager", taskManager);
+    // test successful validation
+
+    ResponseEntity responseEntity = taskController.removeCustomTask("A", TaskType.INVALID);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("Success"));
+
+    // test exception
+    doThrow(new RuntimeException("Mocked")).when(taskManager).removeCustomTask(any(), any());
+    responseEntity = taskController.removeCustomTask("A", TaskType.INVALID);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = taskController.removeCustomTask(null, null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+  }
 }
