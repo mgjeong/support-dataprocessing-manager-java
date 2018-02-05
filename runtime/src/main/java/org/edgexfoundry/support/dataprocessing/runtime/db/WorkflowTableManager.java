@@ -291,6 +291,10 @@ public class WorkflowTableManager extends AbstractStorageManager {
       throw new RuntimeException("Workflow with id=" + workflowId + " not found.");
     }
 
+    Collection<WorkflowComponent> components = listWorkflowComponents(workflowId);
+    for (WorkflowComponent component : components) {
+      removeWorkflowComponent(workflowId, component.getId());
+    }
     removeWorkflowEditorMetadata(workflowId); // delete meta
 
     String sql = "DELETE FROM workflow WHERE id = ?";
@@ -1001,6 +1005,9 @@ public class WorkflowTableManager extends AbstractStorageManager {
       throw new RuntimeException("Workflow edge not found.");
     }
 
+    // remove stream
+    removeWorkflowComponentStreams(workflowId, edge.getFromId());
+
     String sql = "DELETE FROM workflow_edge WHERE workflowId = ? AND id = ?";
     try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql, workflowId, edgeId)) {
@@ -1010,6 +1017,36 @@ public class WorkflowTableManager extends AbstractStorageManager {
         ps.executeUpdate();
         connection.commit();
         return edge;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        connection.setAutoCommit(oldState);
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Remove workflow stream by workflow id and component id
+   *
+   * @param workflowId workflow id
+   * @param componentId component id
+   */
+  public synchronized void removeWorkflowComponentStreams(Long workflowId, Long componentId) {
+    if (workflowId == null || componentId == null) {
+      throw new RuntimeException("Workflow id or component id is null.");
+    }
+
+    String sql = "DELETE FROM workflow_stream WHERE workflowId = ? AND componentId = ?";
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId, componentId)) {
+      boolean oldState = connection.getAutoCommit();
+      connection.setAutoCommit(false);
+      try {
+        ps.executeUpdate();
+        connection.commit();
       } catch (SQLException e) {
         connection.rollback();
         throw e;
@@ -1255,7 +1292,7 @@ public class WorkflowTableManager extends AbstractStorageManager {
     removeWorkflowComponentEdges(workflowId, workflowComponentId);
 
     // remove streams
-    // removeWorkflowComponentStreams(workflowId, workflowComponentId);
+    removeWorkflowComponentStreams(workflowId, workflowComponentId);
 
     String sql = "DELETE FROM workflow_component WHERE workflowId = ? AND id = ?";
     try (Connection connection = getConnection();

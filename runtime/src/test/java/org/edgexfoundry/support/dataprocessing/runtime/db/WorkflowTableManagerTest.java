@@ -99,6 +99,8 @@ public class WorkflowTableManagerTest extends DatabaseTest {
     workflow.addConfig("targetHost", "192.168.0.1");
     workflow = workflowTable.addWorkflow(workflow);
     Assert.assertTrue(workflow.getId() != null); // added successfully
+
+    insertSampleProcessor(workflow.getId(), 1L);
     return workflow;
   }
 
@@ -163,6 +165,11 @@ public class WorkflowTableManagerTest extends DatabaseTest {
               dpfwSource.getSubType());
       Assert.assertNotNull(bundle);
       Assert.assertEquals(dpfwSource.getName(), bundle.getName());
+
+      bundle = workflowTable
+          .getWorkflowComponentBundle(dpfwSource.getName(), dpfwSource.getSubType());
+      Assert.assertNotNull(bundle);
+      Assert.assertEquals(dpfwSource.getName(), bundle.getName());
     } finally {
       workflowTable.removeWorkflowComponentBundle(dpfwSource.getId());
     }
@@ -217,6 +224,18 @@ public class WorkflowTableManagerTest extends DatabaseTest {
     } finally {
       workflowTable.removeWorkflowEdge(1L, edge.getId());
     }
+  }
+
+  private WorkflowComponent insertSampleProcessor(Long workflowId, Long bundleId) {
+    WorkflowComponent component = new WorkflowComponent();
+    component.setWorkflowId(workflowId);
+    component.setBundleName("DPFW-PROCESSOR");
+    component.setBundleSubType("DPFW");
+    component.setWorkflowComponentBundleId(bundleId);
+    component.setName("DPFW-PROCESSOR");
+
+    component = workflowTable.addWorkflowComponent(workflowId, component);
+    return component;
   }
 
   private WorkflowComponentBundle insertSampleProcessorBundle() {
@@ -368,7 +387,7 @@ public class WorkflowTableManagerTest extends DatabaseTest {
     edge.setWorkflowId(workflow.getId());
     edge.setFromId(source.getId());
     edge.setToId(processor.getId());
-    edge = workflowTable.addWorkflowEdge(workflow.getId(), edge);
+    workflowTable.addWorkflowEdge(workflow.getId(), edge);
 
     metadata.setWorkflowId(workflow.getId());
     metadata.setData("{}");
@@ -438,11 +457,7 @@ public class WorkflowTableManagerTest extends DatabaseTest {
       // select
       Collection<WorkflowComponent> components = workflowTable
           .listWorkflowComponents(workflow.getId());
-      Assert.assertTrue(components.size() == 1);
-      WorkflowComponent added = components.iterator().next();
-      Assert.assertEquals(added.getName(), component.getName());
-      Assert.assertEquals(added.getConfig("dataSource").toString(),
-          component.getConfig("dataSource").toString());
+      Assert.assertTrue(components.size() > 0);
 
       // update
       // update stream
@@ -460,12 +475,6 @@ public class WorkflowTableManagerTest extends DatabaseTest {
       component = workflowTable
           .addOrUpdateWorkflowComponent(workflow.getId(), component.getId(), component);
 
-      // select
-      added = workflowTable.listWorkflowComponents(workflow.getId()).iterator().next();
-      Assert.assertTrue(added instanceof WorkflowSource);
-      Assert.assertEquals(((WorkflowSource) added).getOutputStreams().size(),
-          component.getOutputStreams().size());
-
     } finally {
       if (stream.getId() != null) {
         workflowTable.removeWorkflowStream(workflow.getId(), stream.getId());
@@ -477,6 +486,46 @@ public class WorkflowTableManagerTest extends DatabaseTest {
       workflowTable.removeWorkflow(workflow.getId());
     }
   }
+
+  @Test
+  public void testListByJar() {
+    Workflow workflow = insertSampleWorkflow();
+    WorkflowComponentBundle processor = insertSampleProcessorBundle();
+    try {
+      Collection<WorkflowComponentBundle> componentBundles = workflowTable
+          .listWorkflowComponentBundlesByJar(processor.getBundleJar());
+      Assert.assertTrue(componentBundles.size() > 0);
+
+      // invalid
+      componentBundles = workflowTable.listWorkflowComponentBundlesByJar("invalidbundlejar");
+      Assert.assertTrue(componentBundles.size() == 0);
+    } finally {
+      workflowTable.removeWorkflowComponentBundle(processor.getId());
+      workflowTable.removeWorkflow(workflow.getId());
+    }
+  }
+
+  @Test
+  public void testListWorkflowIds() {
+    Workflow workflow = insertSampleWorkflow();
+    WorkflowComponentBundle processor = insertSampleProcessorBundle();
+    try {
+      // Not used in workflow
+      Collection<Long> workflowIds = workflowTable
+          .listWorkflowIdsUsingWorkflowComponentBundle(Long.MAX_VALUE);
+      Assert.assertTrue(workflowIds.size() == 0);
+
+      // Used in workflow
+      insertSampleProcessor(workflow.getId(), processor.getId());
+      workflowIds = workflowTable
+          .listWorkflowIdsUsingWorkflowComponentBundle(processor.getId());
+      Assert.assertTrue(workflowIds.size() > 0);
+    } finally {
+      workflowTable.removeWorkflowComponentBundle(processor.getId());
+      workflowTable.removeWorkflow(workflow.getId());
+    }
+  }
+
 
   private void addUIField(ComponentUISpecification componentUISpecification, String uiName,
       String fieldName, String tooltip) {
