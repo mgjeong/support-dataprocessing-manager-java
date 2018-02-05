@@ -30,7 +30,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
 
-public final class WorkflowTableManager extends AbstractStorageManager {
+public class WorkflowTableManager extends AbstractStorageManager {
 
   private static WorkflowTableManager instance = null;
 
@@ -1237,7 +1237,7 @@ public final class WorkflowTableManager extends AbstractStorageManager {
     // TODO: is this correct mapping?
     bundle.setBundleJar(rs.getString("path"));
     bundle.setTransformationClass(rs.getString("classname"));
-    bundle.setBuiltin(rs.getByte("removable") == (byte) '0');
+    bundle.setBuiltin(rs.getString("removable").startsWith("0"));
     return bundle;
   }
 
