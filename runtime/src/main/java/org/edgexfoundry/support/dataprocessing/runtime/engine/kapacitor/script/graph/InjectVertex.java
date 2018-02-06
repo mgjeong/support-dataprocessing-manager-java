@@ -25,9 +25,6 @@ public class InjectVertex implements ScriptVertex {
     if (!dataType.equals("ezmq")) {
       throw new RuntimeException("Unsupported input data type; " + dataType);
     }
-    if (dataSource == null) {
-      throw new RuntimeException("Invalid data source; " + dataSource);
-    }
 
     String[] sourceSplits = dataSource.split(":", 3);
     String[] topics = null;
@@ -38,14 +35,14 @@ public class InjectVertex implements ScriptVertex {
     String sourceAddress = sourceSplits[0] + ':' + sourceSplits[1];
     Map<String, String> scriptHeaders = new HashMap<>();
 
-    for (String topic : topics) {
-      String key = topic;
-      scriptHeaders.put(key, generateScriptHeaderByTopic(topic, sourceAddress, topic));
-    }
-
     if (topics == null) {
       String value = generateScriptHeaderByTopic("v" + sourceAddress, sourceAddress, null);
       scriptHeaders.put(sourceAddress, value);
+    } else {
+      for (String topic : topics) {
+        String key = topic;
+        scriptHeaders.put(key, generateScriptHeaderByTopic(topic, sourceAddress, topic));
+      }
     }
 
     String script = "";

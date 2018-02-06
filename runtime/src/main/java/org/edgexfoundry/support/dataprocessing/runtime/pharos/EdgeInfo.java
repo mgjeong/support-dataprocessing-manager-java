@@ -101,6 +101,7 @@ public class EdgeInfo {
       engineList.add("localhost:8081");
     } else if (engineType.equalsIgnoreCase("KAPACITOR")) {
       engineList.add("localhost:9092");
+      engineList.add("10.113.66.252:9092");
     }
 
     return engineList;
