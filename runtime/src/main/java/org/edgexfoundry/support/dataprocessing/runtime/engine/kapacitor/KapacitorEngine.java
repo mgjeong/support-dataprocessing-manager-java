@@ -63,8 +63,7 @@ public class KapacitorEngine extends AbstractEngine {
       LOGGER.error(e.getMessage());
       job.getState().setState(State.ERROR);
       job.getState().setErrorMessage(e.getMessage());
-      job.getState().setStartTime(System.currentTimeMillis());
-      return job;
+      job.getState().setStartTime(System.currentTimeMillis());   
     }
 
     return job;
