@@ -18,6 +18,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URLClassLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -46,13 +47,28 @@ public final class JarLoader {
       LOGGER.error(className + " is an abstract class.");
       return null;
     } else {
-      Object o = classToInstantiate.newInstance();
-      if (clazz.isInstance(o)) {
-        return clazz.cast(o);
+      if (hasParameterlessConstructor(classToInstantiate)) {
+        Object o = classToInstantiate.newInstance();
+        if (clazz.isInstance(o)) {
+          return clazz.cast(o);
+        } else {
+          LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+          return null;
+        }
       } else {
-        LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+        LOGGER.error(className + " does not have parameter-less constructor");
         return null;
       }
     }
+  }
+
+  private static boolean hasParameterlessConstructor(Class clazz) {
+    for (Constructor constructor : clazz.getConstructors()) {
+      if (constructor.getParameterCount() == 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

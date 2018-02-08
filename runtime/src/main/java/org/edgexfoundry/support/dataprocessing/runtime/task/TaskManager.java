@@ -315,7 +315,19 @@ public final class TaskManager {
 
     int updated = 0;
     for (String className : classNames) {
-      TaskModel tm = JarLoader.newInstance(customFile, className, TaskModel.class);
+      TaskModel tm;
+
+      try {
+        tm = JarLoader.newInstance(customFile, className, TaskModel.class);
+      } catch (Exception e) {
+        LOGGER.error("Failed to load class " + className);
+        LOGGER.error(e.getMessage(), e);
+        continue;
+      } catch (Error e) {
+        LOGGER.error("(ERROR!) Failed to load class " + className);
+        LOGGER.error(e.getMessage(), e);
+        continue;
+      }
 
       if (tm == null || !(tm instanceof TaskModel)) {
         continue;
@@ -359,7 +371,19 @@ public final class TaskManager {
 
     int added = 0;
     for (String className : classNames) {
-      TaskModel tm = JarLoader.newInstance(createdFile, className, TaskModel.class);
+      TaskModel tm;
+
+      try {
+        tm = JarLoader.newInstance(createdFile, className, TaskModel.class);
+      } catch (Exception e) {
+        LOGGER.error("Failed to load class " + className);
+        LOGGER.error(e.getMessage(), e);
+        continue;
+      } catch (Error e) {
+        LOGGER.error("(ERROR!) Failed to load class " + className);
+        LOGGER.error(e.getMessage(), e);
+        continue;
+      }
 
       if (tm == null || !(tm instanceof TaskModel)) {
         continue;

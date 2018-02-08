@@ -28,8 +28,8 @@ public final class Settings {
 
   public static final long DIRECTORY_WATCHER_SCAN_INTERVAL = 1000L; // in milliseconds
 
-  public static final String API_MAX_FILE_SIZE = "8MB";
-  public static final String API_MAX_REQUEST_SIZE = "16MB";
+  public static final String API_MAX_FILE_SIZE = "16MB";
+  public static final String API_MAX_REQUEST_SIZE = "32MB";
 
   private Settings() {
 
