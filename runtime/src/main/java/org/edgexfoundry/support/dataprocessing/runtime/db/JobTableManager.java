@@ -29,10 +29,14 @@ public class JobTableManager extends AbstractStorageManager {
 
   public JobState updateWorkflowJobState(JobState jobState) {
 
-    String sql = "UPDATE job_state SET state=?, finishTime=?, errorMessage=? where engineId=?";
+    String sql = "UPDATE job_state SET "
+        + "state=?, startTime=?, finishTime=?, errorMessage=?, "
+        + "engineId=?, engineType=?, engineHost=?, enginePort=? where jobId=?";
     try (Connection connection = getConnection(); PreparedStatement ps = createPreparedStatement(
-        connection, sql, jobState.getState().name(), jobState.getFinishTime(),
-        jobState.getErrorMessage(), jobState.getEngineId())) {
+        connection, sql, jobState.getState().name(), jobState.getStartTime(),
+        jobState.getFinishTime(), jobState.getErrorMessage(), jobState.getEngineId(),
+        jobState.getHost(), jobState.getPort(),
+        jobState.getJobId())) {
 
       boolean oldState = connection.getAutoCommit();
       connection.setAutoCommit(false);
@@ -119,11 +123,12 @@ public class JobTableManager extends AbstractStorageManager {
     }
 
     String sql =
-        "INSERT OR REPLACE INTO job_state (jobId, state, startTime, engineId, engineType, engineHost,"
-            + "enginePort) " + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        "INSERT OR REPLACE INTO job_state (jobId, state, startTime, finishTime, errorMessage, engineId, engineType, engineHost,"
+            + "enginePort) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     try (Connection connection = getConnection(); PreparedStatement ps = createPreparedStatement(
         connection, sql, jobId, jobState.getState().name(), jobState.getStartTime(),
-        jobState.getEngineId(), jobState.getEngineType(), jobState.getHost(), jobState.getPort())) {
+        jobState.getFinishTime(), jobState.getErrorMessage(), jobState.getEngineId(),
+        jobState.getEngineType(), jobState.getHost(), jobState.getPort())) {
       boolean oldState = connection.getAutoCommit();
       connection.setAutoCommit(false);
       try {
@@ -152,9 +157,6 @@ public class JobTableManager extends AbstractStorageManager {
     }
 
     String sqlJob = "INSERT OR REPLACE INTO job (id, workflowId, config) VALUES (?, ?, ?)";
-    String sqlJobState =
-        "INSERT OR REPLACE INTO job_state " + "(jobId, state, startTime, engineId, engineType) "
-            + "VALUES (?, ?, ?, ?, ?)";
     try (Connection connection = getConnection(); PreparedStatement psJob = createPreparedStatement(
         connection, sqlJob, job.getId(), job.getWorkflowId(), job.getConfigStr())) {
       boolean oldState = connection.getAutoCommit();
@@ -167,9 +169,15 @@ public class JobTableManager extends AbstractStorageManager {
         }
 
         // Add state
+        String sqlJobState =
+            "INSERT OR REPLACE INTO job_state "
+                + "(jobId, state, startTime, finishTime, errorMessage, engineId, engineType, engineHost, enginePort) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement psJobState = createPreparedStatement(connection, sqlJobState,
-            job.getId(), job.getState().getState(), job.getState().getStartTime(),
-            job.getState().getEngineId(), job.getState().getEngineType())) {
+            job.getId(), job.getState().getState().name(), job.getState().getStartTime(),
+            job.getState().getFinishTime(), job.getState().getErrorMessage(),
+            job.getState().getEngineId(), job.getState().getEngineType(), job.getState().getHost(),
+            job.getState().getPort())) {
           affectedRows = psJobState.executeUpdate();
           if (affectedRows == 0) {
             throw new SQLException("Failed to insert job state.");
@@ -202,8 +210,12 @@ public class JobTableManager extends AbstractStorageManager {
     sb.append("job.config AS config, ");
     sb.append("job_state.state AS state, ");
     sb.append("job_state.startTime AS startTime, ");
+    sb.append("job_state.finishTime AS finishTime, ");
+    sb.append("job_state.errorMessage AS errorMessage, ");
     sb.append("job_state.engineId AS engineId, ");
-    sb.append("job_state.engineType AS engineType ");
+    sb.append("job_state.engineType AS engineType, ");
+    sb.append("job_state.engineHost AS engineHost, ");
+    sb.append("job_state.enginePort AS enginePort ");
     sb.append("FROM job, job_state WHERE ");
     sb.append("job_state.jobId = job.id AND ");
     sb.append("job.workflowId = ?");
@@ -230,8 +242,12 @@ public class JobTableManager extends AbstractStorageManager {
     JobState jobState = new JobState();
     jobState.setState(rs.getString("state"));
     jobState.setStartTime(rs.getLong("startTime"));
+    jobState.setFinishTime(rs.getLong("finishTime"));
+    jobState.setErrorMessage(rs.getString("errorMessage"));
     jobState.setEngineId(rs.getString("engineId"));
     jobState.setEngineType(rs.getString("engineType"));
+    jobState.setHost(rs.getString("engineHost"));
+    jobState.setPort(rs.getInt("enginePort"));
     job.setState(jobState);
 
     return job;
@@ -309,8 +325,12 @@ public class JobTableManager extends AbstractStorageManager {
     sb.append("job.config AS config, ");
     sb.append("job_state.state AS state, ");
     sb.append("job_state.startTime AS startTime, ");
+    sb.append("job_state.finishTime AS finishTime, ");
+    sb.append("job_state.errorMessage AS errorMessage, ");
     sb.append("job_state.engineId AS engineId, ");
-    sb.append("job_state.engineType AS engineType ");
+    sb.append("job_state.engineType AS engineType, ");
+    sb.append("job_state.engineHost AS engineHost, ");
+    sb.append("job_state.enginePort AS enginePort ");
     sb.append("FROM job, job_state WHERE ");
     sb.append("job_state.jobId = job.id AND ");
     sb.append("job.id = ?");
