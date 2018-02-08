@@ -231,14 +231,15 @@ public class FlinkEngine extends AbstractEngine {
 
       // Parse flink response and update job state
       JobState jobState = job.getState();
+      jobState.setStartTime(System.currentTimeMillis());
+      jobState.setHost(host);
+      jobState.setPort(port);
 
       if (flinkResponse.get("jobid") == null) {
         jobState.setState(State.ERROR);
-        jobState.setStartTime(System.currentTimeMillis());
         jobState.setErrorMessage(flinkResponse.get("error").getAsString());
       } else {
         jobState.setState(State.RUNNING);
-        jobState.setStartTime(System.currentTimeMillis());
         jobState.setEngineId(flinkResponse.get("jobid").getAsString());
       }
     } catch (Exception e) {
