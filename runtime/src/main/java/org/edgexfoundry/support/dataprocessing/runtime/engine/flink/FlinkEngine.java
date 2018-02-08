@@ -106,7 +106,6 @@ public class FlinkEngine extends AbstractEngine {
       job.getState().setState(State.ERROR);
       job.getState().setErrorMessage(e.getMessage());
       job.getState().setStartTime(System.currentTimeMillis());
-      return job;
     }
 
     return job;
@@ -180,7 +179,7 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   private Process executeShellProcess(List<String> commands) throws Exception {
-    System.out.println("Executing command: " + Joiner.on(" ").join(commands));
+    LOGGER.info("Executing command: " + Joiner.on(" ").join(commands));
     ProcessBuilder processBuilder = new ProcessBuilder(commands);
     processBuilder.redirectErrorStream(true);
     return processBuilder.start();
@@ -193,8 +192,8 @@ public class FlinkEngine extends AbstractEngine {
     String stdout = sw.toString();
     process.waitFor();
     int exitValue = process.exitValue();
-    System.out.println("Command output: " + stdout);
-    System.out.println("Command exit status: " + exitValue);
+    LOGGER.debug("Command output: " + stdout);
+    LOGGER.debug("Command exit status: " + exitValue);
     return new ShellProcessResult(exitValue, stdout);
   }
 
@@ -246,7 +245,6 @@ public class FlinkEngine extends AbstractEngine {
       job.getState().setState(State.ERROR);
       job.getState().setStartTime(System.currentTimeMillis());
       job.getState().setErrorMessage(e.getMessage());
-      return job;
     }
 
     return job;
@@ -273,7 +271,6 @@ public class FlinkEngine extends AbstractEngine {
     } catch (Exception e) {
       job.getState().setState(State.ERROR);
       job.getState().setErrorMessage(e.getMessage());
-      return job;
     }
 
     return job;

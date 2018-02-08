@@ -2,11 +2,9 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.
 
 import java.util.Map;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class QueryVertex implements ScriptVertex{
-  final static Logger LOGGER = LoggerFactory.getLogger(QueryVertex.class);
+public class QueryVertex implements ScriptVertex {
+
   WorkflowProcessor config;
 
   public QueryVertex(WorkflowProcessor config) {
@@ -21,7 +19,7 @@ public class QueryVertex implements ScriptVertex{
   @Override
   public String getScript() {
     if (!this.config.getName().equalsIgnoreCase("query")) {
-      LOGGER.error("Cannot handle types except query");
+      throw new IllegalStateException("Cannot handle types except query");
     }
     Map<String, Object> properties = this.config.getConfig().getProperties();
     StringBuilder builder = new StringBuilder();

@@ -29,12 +29,11 @@ public class ScriptGraph {
     this.jobId = jobId;
   }
 
-  public ScriptGraph initialize() {
-    this.processingOrder = TopologicalSort();
-    return this;
+  public void initialize() {
+    this.processingOrder = topologicalSort();
   }
 
-  private List<ScriptVertex> TopologicalSort() {
+  private List<ScriptVertex> topologicalSort() {
     Map<ScriptVertex, State> state = new HashMap<>();
     List<ScriptVertex> res = new ArrayList<>();
     for (ScriptVertex component : edges.keySet()) {
@@ -49,7 +48,7 @@ public class ScriptGraph {
   private List<ScriptVertex> dfs(ScriptVertex current, Map<ScriptVertex, State> state) {
     List<ScriptVertex> res = new ArrayList<>();
     if (state.get(current) == State.UNVISITED) {
-      throw new IllegalStateException("Cycle");
+      throw new IllegalStateException("Cycle is detected. Failed to compose job graph");
     }
     state.put(current, State.UNVISITED);
     List<ScriptVertex> adjVertices = adjacent(current);
@@ -69,7 +68,13 @@ public class ScriptGraph {
     return edges.get(current);
   }
 
-  public String generateScript() throws Exception {
+  /**
+   * Compose scripts from the graph and generate Kapacitor script.
+   * Automatically it uses user-defined functions in Kapacitor for EdgeX message framework
+   * when it comes to sourcing and sinking.
+   * @return Kapacitor script from the given graph
+   */
+  public String generateScript() {
     String jobScript = "";
     for (ScriptVertex vertex : processingOrder) {
       jobScript += vertex.getScript() + "\n";
