@@ -7,14 +7,15 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 public class WorkflowGroupState extends Format {
 
   private String groupId;
-  private ArrayList<JobState> jobStates;
+  private ArrayList<JobState> jobStates = new ArrayList<>();
 
   public ArrayList<JobState> getJobStates() {
     return jobStates;
   }
 
   public WorkflowGroupState setJobStates(ArrayList<JobState> jobStates) {
-    this.jobStates = jobStates;
+    this.jobStates.clear();
+    this.jobStates.addAll(jobStates);
     return this;
   }
 
