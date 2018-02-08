@@ -77,6 +77,11 @@ public class FlinkEngine extends AbstractEngine {
   @Override
   public Job create(WorkflowData workflowData) {
     Job job = Job.create(workflowData.getWorkflowId());
+    job.setConfig(workflowData.getConfig());
+    job.getState().setJobId(job.getId());
+    job.getState().setState(State.CREATED);
+    job.getState().setEngineType("FLINK");
+
     String launcherJarId = null;
     try {
       List<Path> jobSpecificData = new ArrayList<>();
@@ -96,16 +101,11 @@ public class FlinkEngine extends AbstractEngine {
       }
 
       // Update job
-      job.getState().setState(State.CREATED);
-      job.setConfig(workflowData.getConfig());
       job.addConfig("launcherJarId", launcherJarId);
-      job.getState().setEngineType("FLINK");
-      job.getState().setStartTime(System.currentTimeMillis());
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
       job.getState().setState(State.ERROR);
       job.getState().setErrorMessage(e.getMessage());
-      job.getState().setStartTime(System.currentTimeMillis());
     }
 
     return job;
@@ -230,6 +230,7 @@ public class FlinkEngine extends AbstractEngine {
 
       // Parse flink response and update job state
       JobState jobState = job.getState();
+      jobState.setJobId(job.getId());
       jobState.setStartTime(System.currentTimeMillis());
       jobState.setHost(host);
       jobState.setPort(port);
