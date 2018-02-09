@@ -35,7 +35,7 @@ public class JobTableManager extends AbstractStorageManager {
     try (Connection connection = getConnection(); PreparedStatement ps = createPreparedStatement(
         connection, sql, jobState.getState().name(), jobState.getStartTime(),
         jobState.getFinishTime(), jobState.getErrorMessage(), jobState.getEngineId(),
-        jobState.getHost(), jobState.getPort(),
+        jobState.getEngineType(), jobState.getHost(), jobState.getPort(),
         jobState.getJobId())) {
 
       boolean oldState = connection.getAutoCommit();
