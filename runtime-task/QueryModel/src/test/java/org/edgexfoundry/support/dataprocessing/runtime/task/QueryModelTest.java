@@ -44,14 +44,6 @@ public class QueryModelTest {
     }
 
     @Test
-    public void testGetDefaultParam() {
-
-        TaskModel model1 = new QueryModel();
-
-        Assert.assertNotNull( model1.getDefaultParam());
-    }
-
-    @Test
     public void testSetParam() {
 
         TaskModel model1 = new QueryModel();

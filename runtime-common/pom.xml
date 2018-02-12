@@ -53,12 +53,5 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.9.0.pr4</version>
         </dependency>
-
-        <!-- SQLite JDBC library -->
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.8.11.2</version>
-        </dependency>
     </dependencies>
 </project>

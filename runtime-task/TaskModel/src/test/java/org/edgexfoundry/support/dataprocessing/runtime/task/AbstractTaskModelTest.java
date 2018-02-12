@@ -16,52 +16,45 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
-
 public class AbstractTaskModelTest {
-    @Test
-    public void testCreate() {
 
-        class UserImple extends AbstractTaskModel {
+  @Test
+  public void testCreate() {
 
-            @Override
-            public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
-                return DataSet.create();
-            }
+    class UserImple extends AbstractTaskModel {
 
-            @Override
-            public TaskType getType() {
-                return TaskType.CUSTOM;
-            }
+      @Override
+      public DataSet calculate(DataSet in, List<String> inRecordKeys, List<String> outRecordKeys) {
+        return DataSet.create();
+      }
 
-            @Override
-            public String getName() {
-                return "test";
-            }
+      @Override
+      public TaskType getType() {
+        return TaskType.CUSTOM;
+      }
 
-            @Override
-            public TaskModelParam getDefaultParam() {
-                return new TaskModelParam();
-            }
+      @Override
+      public String getName() {
+        return "test";
+      }
 
-            @Override
-            public void setParam(TaskModelParam param) {
+      @Override
+      public void setParam(TaskModelParam param) {
 
-            }
-        }
-
-        UserImple test = new UserImple();
-
-        test.setInRecordKeys(new ArrayList<>());
-        test.setOutRecordKeys(new ArrayList<>());
-
-        Assert.assertNotNull(test.calculate( DataSet.create()));
+      }
     }
+
+    UserImple test = new UserImple();
+
+    test.setInRecordKeys(new ArrayList<>());
+    test.setOutRecordKeys(new ArrayList<>());
+
+    Assert.assertNotNull(test.calculate(DataSet.create()));
+  }
 
 }

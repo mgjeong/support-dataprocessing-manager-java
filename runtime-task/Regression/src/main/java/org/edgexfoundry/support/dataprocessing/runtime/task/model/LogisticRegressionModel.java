@@ -19,7 +19,8 @@ package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 
 public class LogisticRegressionModel extends RegressionModel {
-    public LogisticRegressionModel() {
-        super(TaskType.REGRESSION, "regression-logistic", LOGISTIC);
-    }
+
+  public LogisticRegressionModel() {
+    super(TaskType.REGRESSION, "regression-logistic", RegressionType.Logistic);
+  }
 }

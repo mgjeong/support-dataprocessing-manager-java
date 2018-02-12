@@ -17,8 +17,6 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import java.util.UUID;
-
 public abstract class AbstractEngine implements Engine {
 
 }

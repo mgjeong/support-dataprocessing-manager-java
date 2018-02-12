@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Moving runtime common jar"
-mv -f ${ENGINE_PATH}/runtime-common.jar ${FW_HA}
+mv -f ${ENGINE_PATH}/manager-common.jar ${FW_HA}
 
 echo "Moving runtime task jar"
 mv -f ${ENGINE_PATH}/task/task-model-*.jar /

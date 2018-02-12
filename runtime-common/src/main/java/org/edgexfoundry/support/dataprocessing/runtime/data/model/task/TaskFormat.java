@@ -26,6 +26,8 @@ public class TaskFormat extends Format {
     @ApiModelProperty(required = false)
     private String className = null;
 
+    private Long id;
+
     public TaskFormat() {
         this(TaskType.INVALID, null, (TaskModelParam) null);
     }
@@ -100,5 +102,13 @@ public class TaskFormat extends Format {
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

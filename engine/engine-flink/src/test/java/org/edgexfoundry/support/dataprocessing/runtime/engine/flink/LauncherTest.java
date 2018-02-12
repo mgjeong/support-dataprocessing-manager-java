@@ -17,224 +17,140 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+
+import static org.mockito.ArgumentMatchers.any;
+
+import java.io.File;
+import org.apache.commons.io.FileUtils;
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraph;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.JobGraphBuilder;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(LauncherTest.class)
+@PrepareForTest({Launcher.class, StreamExecutionEnvironment.class,
+    JobGraphBuilder.class, JobGraph.class})
 public class LauncherTest {
-    @Test
-    public void testWithoutAnyCommandLineArguments() throws Exception {
-        try {
-            Launcher.main(new String[] {});
-            Assert.fail("Should not reach here.");
-        } catch (RuntimeException e) {
-        }
+
+  private static final String TEST_EXT_DIR = System.getProperty("user.dir") + "/LauncherTestClass";
+  private static final String TEST_INT_DIR = Launcher.class.getResource("/").getPath();
+  private static final String TEST_JSON_ID = "launcher_test_job";
+  private static final String TEST_JSON_EXT_PATH = TEST_EXT_DIR + "/" + TEST_JSON_ID + ".json";
+  private static final String TEST_JSON_INT_PATH = TEST_INT_DIR + TEST_JSON_ID + ".json";
+  private static final String JSON_CONTENT = "{}";
+  private static final String[] ARGS_NO_JSON = {"--internal", TEST_JSON_EXT_PATH};
+  private static final String[] ARGS_INVALID = {"--internal", "--json", "unreachableFile"};
+  private static final String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON_EXT_PATH};
+  private static final String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON_ID};
+
+  @Test(expected = RuntimeException.class)
+  public void testWithoutAnyCommandLineArguments() throws Exception {
+    Launcher.main(new String[]{});
+    Assert.fail("Failed: Not any exception on a job without specifications");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWithImproperArgs() throws Exception {
+    Launcher.main(ARGS_NO_JSON);
+    Assert.fail("Failed: Not any exception on a job with invalid specifications");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWithInputUnavailable() throws Exception {
+    Launcher.main(ARGS_INVALID);
+    Assert.fail("Failed: Not any exception on an invalid job configuration file");
+  }
+
+  @BeforeClass
+  public static void createTestFiles() throws Exception {
+    File jsonFile = new File(TEST_JSON_INT_PATH);
+    if (!jsonFile.exists()) {
+      jsonFile.getParentFile().mkdirs();
+      jsonFile.createNewFile();
+    }
+    FileUtils.writeStringToFile(jsonFile, JSON_CONTENT);
+
+    jsonFile = new File(TEST_JSON_EXT_PATH);
+    if (!jsonFile.exists()) {
+      jsonFile.getParentFile().mkdirs();
+      jsonFile.createNewFile();
+    }
+    FileUtils.writeStringToFile(jsonFile, JSON_CONTENT);
+  }
+
+
+  @AfterClass
+  public static void deleteTestFiles() {
+    File testJsonFile = new File(TEST_JSON_EXT_PATH);
+
+    if (testJsonFile.exists()) {
+      testJsonFile.getParentFile().deleteOnExit();
+      testJsonFile.delete();
     }
 
-    @Test
-    public void testWithJobId() throws Exception {
-        String jobId = "test-job-id";
-        Launcher launcher = new Launcher();
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // we expect job id to be missing at this point.
-        }
+    testJsonFile = new File(TEST_JSON_INT_PATH);
 
-        // add mock
-        // test with empty payload
-        List<Map<String, String>> payload = new ArrayList<>();
-        JobTableManager jobTableManager = mock(JobTableManager.class);
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        Field fieldJobTableManager = Launcher.class.getDeclaredField("jobTableManager");
-        fieldJobTableManager.setAccessible(true);
-        fieldJobTableManager.set(launcher, jobTableManager);
-
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // we expect no payload for the job id found at this point.
-        }
-
-        // make payload
-        payload = makeMockPayload();
-        jobTableManager = mock(JobTableManager.class);
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        fieldJobTableManager.set(launcher, jobTableManager);
-
-        // create spy env
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamExecutionEnvironment envSpy = spy(env);
-        Field fieldEnv = Launcher.class.getDeclaredField("env");
-        fieldEnv.setAccessible(true);
-        fieldEnv.set(launcher, envSpy);
-        doReturn(null).when(envSpy).execute(any());
-
-        // launch
-//        launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
+    if (testJsonFile.exists()) {
+      testJsonFile.delete();
     }
+  }
 
-    @Test
-    public void testWithInvalidMockPayload() throws Exception {
-        String jobId = "test-job-id";
-        Launcher launcher = new Launcher();
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
-        List<Map<String, String>> payload = makeInvalidMockPayloadInput();
-        JobTableManager jobTableManager = mock(JobTableManager.class);
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        Field fieldJobTableManager = Launcher.class.getDeclaredField("jobTableManager");
-        fieldJobTableManager.setAccessible(true);
-        fieldJobTableManager.set(launcher, jobTableManager);
+  @Test
+  public void testWithInternalJsonFile() throws Exception {
+    JobGraph mockGraph = Mockito.mock(JobGraph.class);
+    Mockito.doNothing().when(mockGraph).initialize();
+    Mockito.when(mockGraph.getJobId()).thenReturn("testId");
 
-        // create spy env
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamExecutionEnvironment envSpy = spy(env);
-        Field fieldEnv = Launcher.class.getDeclaredField("env");
-        fieldEnv.setAccessible(true);
-        fieldEnv.set(launcher, envSpy);
-        doReturn(null).when(envSpy).execute(any());
+    JobGraphBuilder builder = Mockito.mock(JobGraphBuilder.class);
+    Mockito.when(builder.getInstance(any(), any())).thenReturn(mockGraph);
+    PowerMockito.mockStatic(JobGraphBuilder.class);
+    PowerMockito.whenNew(JobGraphBuilder.class).withNoArguments().thenReturn(builder);
 
-        // launch
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // OK
-        }
+    StreamExecutionEnvironment env = Mockito.mock(StreamExecutionEnvironment.class);
+    Mockito.when(env.execute(any())).thenReturn(null);
 
-        payload = makeInvalidMockPayloadOutput();
-        when(jobTableManager.getPayloadById(anyString())).thenReturn(payload);
-        fieldJobTableManager.setAccessible(true);
-        fieldJobTableManager.set(launcher, jobTableManager);
-        // launch
-        try {
-            launcher.execute(new String[] {"--jobId", jobId, "--host", "localhost:8082"});
-            Assert.fail("Should not reach here.");
-        } catch (Exception e) {
-            // OK
-        }
-    }
+    ExecutionConfig config = Mockito.mock(ExecutionConfig.class);
+    Mockito.doNothing().when(config).setGlobalJobParameters(any());
+    Mockito.when(env.getConfig()).thenReturn(config);
+    PowerMockito.mockStatic(StreamExecutionEnvironment.class);
+    PowerMockito.when(StreamExecutionEnvironment.getExecutionEnvironment()).thenReturn(env);
 
-    private List<Map<String, String>> makeInvalidMockPayloadOutput() {
-        List<Map<String, String>> payload = new ArrayList<>();
-        Map<String, String> p = new HashMap<>();
+    Launcher.main(ARGS_FOR_INTERNAL_CONFIG);
+  }
 
-        // Input
-        JsonArray input = new JsonArray();
-        p.put(JobTableManager.Entry.input.name(), input.toString());
+  @Test
+  public void testWithExternalJsonFile() throws Exception {
+    JobGraph mockGraph = Mockito.mock(JobGraph.class);
+    Mockito.doNothing().when(mockGraph).initialize();
+    Mockito.when(mockGraph.getJobId()).thenReturn("testId");
 
-        // Output
-        JsonArray output = new JsonArray();
-        JsonObject outputZMQ = new JsonObject();
-        outputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        outputZMQ.addProperty("dataType", "InvalidInput");
-        output.add(outputZMQ);
-        p.put(JobTableManager.Entry.output.name(), output.toString());
+    JobGraphBuilder builder = Mockito.mock(JobGraphBuilder.class);
+    Mockito.when(builder.getInstance(any(), any())).thenReturn(mockGraph);
+    PowerMockito.mockStatic(JobGraphBuilder.class);
+    PowerMockito.whenNew(JobGraphBuilder.class).withNoArguments().thenReturn(builder);
 
-        // Task
-        JsonArray tasks = new JsonArray();
-        p.put(JobTableManager.Entry.taskinfo.name(), tasks.toString());
+    StreamExecutionEnvironment env = Mockito.mock(StreamExecutionEnvironment.class);
+    Mockito.when(env.execute(any())).thenReturn(null);
 
-        payload.add(p);
-        return payload;
-    }
-
-    private List<Map<String, String>> makeInvalidMockPayloadInput() {
-        List<Map<String, String>> payload = new ArrayList<>();
-        Map<String, String> p = new HashMap<>();
-
-        // Input
-        JsonArray input = new JsonArray();
-        JsonObject inputZMQ = new JsonObject();
-        inputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        inputZMQ.addProperty("dataType", "InvalidInput");
-        input.add(inputZMQ);
-        p.put(JobTableManager.Entry.input.name(), input.toString());
-
-        // Output
-        JsonArray output = new JsonArray();
-        p.put(JobTableManager.Entry.output.name(), output.toString());
-
-        // Task
-        JsonArray tasks = new JsonArray();
-        p.put(JobTableManager.Entry.taskinfo.name(), tasks.toString());
-
-        payload.add(p);
-        return payload;
-    }
-
-    private List<Map<String, String>> makeMockPayload() {
-        List<Map<String, String>> payload = new ArrayList<>();
-        Map<String, String> p = new HashMap<>();
-
-        // Input
-        JsonArray input = new JsonArray();
-        JsonObject inputZMQ = new JsonObject();
-        inputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        inputZMQ.addProperty("dataType", "ZMQ");
-        input.add(inputZMQ);
-        JsonObject inputEMF = new JsonObject();
-        inputEMF.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
-        inputEMF.addProperty("dataType", "EMF");
-        input.add(inputEMF);
-        p.put(JobTableManager.Entry.input.name(), input.toString());
-
-        // Output
-        JsonArray output = new JsonArray();
-        JsonObject outputZMQ = new JsonObject();
-        outputZMQ.addProperty("dataSource", "localhost:5555:topic");
-        outputZMQ.addProperty("dataType", "ZMQ");
-        output.add(outputZMQ);
-        JsonObject outputEMF = new JsonObject();
-        outputEMF.addProperty("dataSource", "localhost:5555:PROTOBUF_MSG");
-        outputEMF.addProperty("dataType", "EMF");
-        output.add(outputEMF);
-        JsonObject outputPayload = new JsonObject();
-        outputPayload.addProperty("dataSource", "output");
-        outputPayload.addProperty("dataType", "F");
-        output.add(outputPayload);
-        JsonObject outputWebSocket = new JsonObject();
-        outputWebSocket.addProperty("dataSource", "localhost:5555");
-        outputWebSocket.addProperty("dataType", "WS");
-        output.add(outputWebSocket);
-        p.put(JobTableManager.Entry.output.name(), output.toString());
-
-        // Task
-        JsonArray tasks = new JsonArray();
-        JsonObject taskA = new JsonObject();
-        taskA.addProperty("type", "PREPROCESSING");
-        taskA.addProperty("name", "CsvParser");
-        JsonObject taskAParam = new JsonObject();
-        taskAParam.addProperty("delimiter", "\t");
-        taskAParam.addProperty("index", "0");
-        taskA.add("params", taskAParam);
-        tasks.add(taskA);
-        p.put(JobTableManager.Entry.taskinfo.name(), tasks.toString());
-        payload.add(p);
-        return payload;
-    }
+    ExecutionConfig config = Mockito.mock(ExecutionConfig.class);
+    Mockito.doNothing().when(config).setGlobalJobParameters(any());
+    Mockito.when(env.getConfig()).thenReturn(config);
+    PowerMockito.mockStatic(StreamExecutionEnvironment.class);
+    PowerMockito.when(StreamExecutionEnvironment.getExecutionEnvironment()).thenReturn(env);
+    Launcher.main(ARGS_FOR_EXTERNAL_CONFIG);
+  }
 }

@@ -22,24 +22,24 @@ import java.lang.reflect.Modifier;
 
 public class TaskModelLoader extends JarLoader {
 
-    public TaskModelLoader(String jarPath, ClassLoader classLoader) throws Exception {
-        super(jarPath, classLoader);
-    }
+  public TaskModelLoader(String jarPath, ClassLoader classLoader) throws Exception {
+    super(jarPath, classLoader);
+  }
 
-    public TaskModel newInstance(String modelName) throws Exception {
-        TaskModel model = null;
-        Class<TaskModel> cls = getClassInstance(modelName);
+  public TaskModel newInstance(String modelName) throws Exception {
+    TaskModel model = null;
+    Class<TaskModel> cls = getClassInstance(modelName);
 
-        if (Modifier.isAbstract(cls.getModifiers())) {
-            // if abstract class, we cannot instantiate
-            return null;
-        } else {
-            Object obj = cls.newInstance();
-            if (obj instanceof TaskModel) {
-                return (TaskModel) obj;
-            } else {
-                return null;
-            }
-        }
+    if (Modifier.isAbstract(cls.getModifiers())) {
+      // if abstract class, we cannot instantiate
+      return null;
+    } else {
+      Object obj = cls.newInstance();
+      if (obj instanceof TaskModel) {
+        return (TaskModel) obj;
+      } else {
+        return null;
+      }
     }
+  }
 }
