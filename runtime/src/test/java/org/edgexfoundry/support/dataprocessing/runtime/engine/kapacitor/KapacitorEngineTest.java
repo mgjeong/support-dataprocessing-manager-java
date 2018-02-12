@@ -48,19 +48,21 @@ public class KapacitorEngineTest {
   @Test
   public void testLifeCycle() throws Exception {
     prepareTestJob();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.CREATED);
 
-    job = engine.run(job);
+    engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
 
-    job = engine.stop(job);
+    engine.stop(job);
     Assert.assertEquals(job.getState().getState(), State.STOPPED);
   }
 
   @Test
-  public void testCreateWithInvalidSpec() {
-    Job job = engine.create(spec);
+  public void testCreateWithInvalidSpec() throws Exception {
+    Job job = Job.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -70,10 +72,10 @@ public class KapacitorEngineTest {
       engine.run(null);
     } catch (NullPointerException e) {
       try {
-        engine.run(new Job());
+        engine.run(new Job(null, 1L));
       } catch (IllegalStateException e1) {
         try {
-          Job job = Job.create(spec.getWorkflowId());
+          Job job = Job.create(spec);
           engine.run(job);
         } catch (IllegalStateException e2) {
           return;
@@ -85,14 +87,14 @@ public class KapacitorEngineTest {
 
   @Test
   public void testRunWithInvalidRequests() {
-    Job unregistered = Job.create(51423L);
+    Job unregistered = Job.create("jobId", 51423L);
     Map<String, Object> config = new HashMap<>();
     config.put("script", "var test = stream|from()");
     unregistered.setConfig(config);
 
-    Job result = engine.run(unregistered);
-    Assert.assertEquals(result.getState().getState(), State.ERROR);
-    Assert.assertNotNull(result.getState().getErrorMessage());
+    engine.run(unregistered);
+    Assert.assertEquals(unregistered.getState().getState(), State.ERROR);
+    Assert.assertNotNull(unregistered.getState().getErrorMessage());
   }
 
   @Test
@@ -101,7 +103,7 @@ public class KapacitorEngineTest {
       engine.stop(null);
     } catch (NullPointerException e) {
       try {
-        engine.stop(Job.create(51423L));
+        engine.stop(Job.create("jobId", 51423L));
       } catch (IllegalStateException e1) {
         return;
       }
@@ -113,31 +115,29 @@ public class KapacitorEngineTest {
   public void testLifeCycleWithServerOff() throws Exception {
     prepareTestJob();
     server.off();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
 
     server.on();
-    job = engine.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.CREATED);
     server.off();
-    Job unfortunateJob = engine.run(job);
-    Assert.assertEquals(unfortunateJob.getState().getState(), State.ERROR);
+    engine.run(job);
+    Assert.assertEquals(job.getState().getState(), State.ERROR);
 
     server.on();
-    job = engine.run(job);
+    engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
     server.off();
-    job = engine.stop(job);
+    engine.stop(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
   @Test
   public void testTemporaries() throws Exception {
-    engine.delete(new Job());
-    engine.getMetrics();
-    engine.updateMetrics(new JobState());
-    engine.getHost();
-    engine.getPort();
+    engine.delete(new Job("jobId", 1L));
+    engine.updateMetrics(new JobState("jobId"));
   }
 
   private void prepareTestJob() throws Exception {

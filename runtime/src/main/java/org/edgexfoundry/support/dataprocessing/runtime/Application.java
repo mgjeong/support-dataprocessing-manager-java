@@ -43,7 +43,7 @@ public class Application extends SpringBootServletInitializer {
     TaskManager.getInstance().scanBuiltinTaskModel(Settings.FW_JAR_PATH);
 
     // 4. Run Monitoring
-    MonitoringManager.getInstance().setInterval(MonitoringManager.INTERVAL).start();
+    MonitoringManager.getInstance().startMonitoring();
   }
 
   private static void makeDatabaseIfNecessary() throws Exception {
@@ -85,13 +85,9 @@ public class Application extends SpringBootServletInitializer {
   }
 
   private static void terminate() {
-    TaskManager.getInstance().terminate();
+    MonitoringManager.getInstance().terminate();
 
-    try {
-      MonitoringManager.getInstance().stop();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    TaskManager.getInstance().terminate();
   }
 
   public static void main(String[] args) throws Exception {

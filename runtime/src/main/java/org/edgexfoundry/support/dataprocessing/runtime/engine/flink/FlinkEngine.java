@@ -60,55 +60,47 @@ public class FlinkEngine extends AbstractEngine {
   private int port;
 
   /**
-   * Request generator for each Flink JobManager
-   * The corresponding method of an instance of this class is called
-   * on each request, such as job deploying, stopping, or status monitoring.
+   * Request generator for each Flink JobManager The corresponding method of an instance of this
+   * class is called on each request, such as job deploying, stopping, or status monitoring.
+   *
    * @param host hostname of Flink REST server
    * @param port port number of Flink REST server
    */
   public FlinkEngine(String host, int port) {
-    setHost(host);
-    setPort(port);
+    this.host = host;
+    this.port = port;
 
     this.httpClient = new HTTP();
     this.httpClient.initialize(host, port, "http");
   }
 
   @Override
-  public Job create(WorkflowData workflowData) {
-    Job job = Job.create(workflowData.getWorkflowId());
+  public void create(Job job) throws Exception {
+    WorkflowData workflowData = job.getWorkflowData();
     job.setConfig(workflowData.getConfig());
-    job.getState().setJobId(job.getId());
-    job.getState().setState(State.CREATED);
     job.getState().setEngineType("FLINK");
+    job.getState().setHost(this.host);
+    job.getState().setPort(this.port);
 
     String launcherJarId = null;
-    try {
-      List<Path> jobSpecificData = new ArrayList<>();
-      jobSpecificData.addAll(getModelInfo(workflowData));
-      jobSpecificData.add(prepareFlinkJobPlan(workflowData, job.getId()));
+    List<Path> jobSpecificData = new ArrayList<>();
+    jobSpecificData.addAll(getModelInfo(workflowData));
+    jobSpecificData.add(prepareFlinkJobPlan(workflowData, job.getId()));
 
-      // Generate flink jar to deploy
-      Path jobJarFile = prepareJarToDeploy(jobSpecificData, job.getId());
-      if (jobJarFile == null) {
-        throw new RuntimeException("Failed to prepare jar file to deploy.");
-      }
-
-      // Upload jar to flink
-      launcherJarId = uploadLauncherJar(jobJarFile);
-      if (launcherJarId == null) {
-        throw new RuntimeException("Failed to upload Flink jar; Please check out connection");
-      }
-
-      // Update job
-      job.addConfig("launcherJarId", launcherJarId);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-      job.getState().setState(State.ERROR);
-      job.getState().setErrorMessage(e.getMessage());
+    // Generate flink jar to deploy
+    Path jobJarFile = prepareJarToDeploy(jobSpecificData, job.getId());
+    if (jobJarFile == null) {
+      throw new RuntimeException("Failed to prepare jar file to deploy.");
     }
 
-    return job;
+    // Upload jar to flink
+    launcherJarId = uploadLauncherJar(jobJarFile);
+    if (launcherJarId == null) {
+      throw new RuntimeException("Failed to upload Flink jar; Please check out connection");
+    }
+
+    // Update job
+    job.addConfig("launcherJarId", launcherJarId);
   }
 
   private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) throws Exception {
@@ -198,7 +190,7 @@ public class FlinkEngine extends AbstractEngine {
   }
 
   @Override
-  public Job run(Job job) {
+  public void run(Job job) throws Exception {
     if (job == null) {
       throw new NullPointerException("Job is null.");
     }
@@ -213,46 +205,33 @@ public class FlinkEngine extends AbstractEngine {
           + ") does not exist. Make sure job is created first.");
     }
 
-    JsonObject flinkResponse;
-    try {
-      // Flink options
-      Map<String, String> args = new HashMap<>();
-      args.put("program-args", String.format("--internal --json %s", job.getId()));
-      args.put("entry-class",
-          "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
-      args.put("parallelism", "1");
-      LOGGER.info("Running job {}({})", new Object[]{job.getId(), launcherJarId});
+    // Flink options
+    Map<String, String> args = new HashMap<>();
+    args.put("program-args", String.format("--internal --json %s", job.getId()));
+    args.put("entry-class",
+        "org.edgexfoundry.support.dataprocessing.runtime.engine.flink.Launcher");
+    args.put("parallelism", "1");
+    LOGGER.info("Running job {}({})", new Object[]{job.getId(), launcherJarId});
 
-      // POST to flink
-      flinkResponse = this.httpClient
-          .post("/jars/" + launcherJarId + "/run", args, true).getAsJsonObject();
-      LOGGER.debug("/run response: {}", flinkResponse);
+    // POST to flink
+    JsonObject flinkResponse = this.httpClient
+        .post("/jars/" + launcherJarId + "/run", args, true).getAsJsonObject();
+    LOGGER.debug("/run response: {}", flinkResponse);
 
-      // Parse flink response and update job state
-      JobState jobState = job.getState();
-      jobState.setJobId(job.getId());
-      jobState.setStartTime(System.currentTimeMillis());
-      jobState.setHost(host);
-      jobState.setPort(port);
+    // Parse flink response and update job state
+    JobState jobState = job.getState();
+    jobState.setStartTime(System.currentTimeMillis());
 
-      if (flinkResponse.get("jobid") == null) {
-        jobState.setState(State.ERROR);
-        jobState.setErrorMessage(flinkResponse.get("error").getAsString());
-      } else {
-        jobState.setState(State.RUNNING);
-        jobState.setEngineId(flinkResponse.get("jobid").getAsString());
-      }
-    } catch (Exception e) {
-      job.getState().setState(State.ERROR);
-      job.getState().setStartTime(System.currentTimeMillis());
-      job.getState().setErrorMessage(e.getMessage());
+    if (flinkResponse.get("jobid") == null) {
+      throw new RuntimeException(flinkResponse.get("error").getAsString());
+    } else {
+      jobState.setState(State.RUNNING);
+      jobState.setEngineId(flinkResponse.get("jobid").getAsString());
     }
-
-    return job;
   }
 
   @Override
-  public Job stop(Job job) {
+  public void stop(Job job) throws Exception {
     if (job == null) {
       throw new NullPointerException("Job is null.");
     }
@@ -262,63 +241,17 @@ public class FlinkEngine extends AbstractEngine {
     }
 
     // DELETE to flink
-    JsonElement flinkResponse = null;
-    try {
-      flinkResponse = this.httpClient.delete("/jobs/" + job.getState().getEngineId() + "/cancel");
-      LOGGER.debug("/jobs/{}/cancel response: {}", job.getState().getEngineId(), flinkResponse);
+    JsonElement flinkResponse = this.httpClient
+        .delete("/jobs/" + job.getState().getEngineId() + "/cancel");
+    LOGGER.debug("/jobs/{}/cancel response: {}", job.getState().getEngineId(), flinkResponse);
 
-      // Result on success is {} (According to flink documentation)
-      job.getState().setState(State.STOPPED);
-    } catch (Exception e) {
-      job.getState().setState(State.ERROR);
-      job.getState().setErrorMessage(e.getMessage());
-    }
-
-    return job;
+    // Result on success is {} (According to flink documentation)
+    job.getState().setState(State.STOPPED);
   }
 
   @Override
-  public Job delete(Job job) throws Exception {
+  public void delete(Job job) throws Exception {
     // TODO: delete?
-    return job;
-  }
-
-  @Override
-  public List<JobState> getMetrics() throws Exception {
-    JsonElement element = this.httpClient.get("/joboverview");
-
-    FlinkJobOverview overview = new Gson().fromJson(element.toString(), FlinkJobOverview.class);
-
-    ArrayList<JobState> jobStates = new ArrayList<>();
-
-    // Running Job State * TBD
-    //for (FlinkJob flinkJob : overview.getFinished()) {
-    //  JobState jobState = new JobState();
-    //  jobStates.add(jobState);
-    //}
-
-    // Finished Job State, any reasons.
-    for (FlinkJob flinkJob : overview.getFinished()) {
-
-      JobState jobState = new JobState();
-      jobState.setEngineId(flinkJob.getJid());
-      jobState.setFinishTime(flinkJob.getEndtime());
-      if (0 == flinkJob.getState().compareTo("FAILED")) {
-
-        jobState.setState(State.ERROR.name());
-
-        JsonElement jsonElement = this.httpClient.get("/jobs/" + flinkJob.getJid() + "/exceptions");
-        FlinkException flinkException = new Gson()
-            .fromJson(jsonElement.toString(), FlinkException.class);
-        jobState.setErrorMessage(flinkException.getRootException());
-      } else {
-        jobState.setState(State.STOPPED.name());
-      }
-
-      jobStates.add(jobState);
-    }
-
-    return jobStates;
   }
 
   @Override
@@ -360,24 +293,6 @@ public class FlinkEngine extends AbstractEngine {
     JsonObject jsonResponse = jsonString.getAsJsonObject();
     String jarId = jsonResponse.get("filename").getAsString(); // TODO: Exception handling
     return jarId;
-  }
-
-  @Override
-  public String getHost() {
-    return host;
-  }
-
-  public void setHost(String host) {
-    this.host = host;
-  }
-
-  @Override
-  public int getPort() {
-    return port;
-  }
-
-  public void setPort(int port) {
-    this.port = port;
   }
 
   private static class ShellProcessResult {

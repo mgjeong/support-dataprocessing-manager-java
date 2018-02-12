@@ -1,18 +1,113 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
+import java.util.Set;
+import org.eclipse.jetty.util.ConcurrentHashSet;
+import org.edgexfoundry.support.dataprocessing.runtime.Settings;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowGroupState;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MonitoringManager implements Runnable {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringManager.class);
+
+  private Thread self = null;
+  private boolean running = false;
+
+  private final Set<Job> runningJobs;
+  private final JobTableManager jobTableManager;
+
+  private static MonitoringManager instance = null;
+
+  public synchronized static MonitoringManager getInstance() {
+    if (instance == null) {
+      instance = new MonitoringManager();
+    }
+    return instance;
+  }
+
+  private MonitoringManager() {
+    this.runningJobs = new ConcurrentHashSet<>();
+    this.jobTableManager = JobTableManager.getInstance();
+  }
+
+  public synchronized void addJob(Job job) {
+    if (job == null || job.getState() == null || job.getState().getState() != State.RUNNING) {
+      return;
+    }
+
+    this.runningJobs.add(job);
+  }
+
+  public synchronized void removeJob(Job job) {
+    if (job == null || job.getState() == null) {
+      return;
+    }
+
+    this.runningJobs.removeIf(existingJob -> existingJob.getId().equalsIgnoreCase(job.getId()));
+  }
+
+  @Override
+  public void run() {
+    running = true;
+    while (running) {
+      try {
+        synchronized (runningJobs) {
+          runningJobs.forEach(job -> {
+            // get engine
+            Engine engine = EngineManager.getInstance()
+                .getEngine(job.getState().getHost(), job.getState().getPort(), EngineType
+                    .valueOf(job.getState().getEngineType()));
+            try {
+              engine.updateMetrics(job.getState());
+            } catch (Exception e) {
+              LOGGER.error(e.getMessage(), e);
+              // Something went wrong. Job is probably dead.
+              job.getState().setState(State.ERROR);
+              job.getState().setErrorMessage(e.getMessage());
+            }
+
+            // update to database
+            if (job.getState().getState() != State.RUNNING) {
+              this.jobTableManager.updateJobState(job.getState());
+            }
+          });
+
+          // remove jobs that are no longer running
+          runningJobs.removeIf(job -> job.getState().getState() != State.RUNNING);
+        }
+      } finally {
+        try {
+          Thread.sleep(Settings.JOB_MONITORING_INTERVAL);
+        } catch (InterruptedException e) {
+          running = false;
+        }
+      }
+    }
+  }
+
+  public synchronized void terminate() {
+    running = false;
+    if (this.self != null) {
+      this.self.interrupt();
+      this.self = null;
+    }
+  }
+
+  public synchronized void startMonitoring() {
+    if (this.self != null) {
+      // Thread is already running.
+      LOGGER.error("Monitoring thread is already running.");
+      return;
+    }
+    this.self = new Thread(this);
+    this.self.start();
+  }
+
+  /*
   public static final long INTERVAL = 5;
 
   static Semaphore semaphore = new Semaphore(1);
@@ -30,7 +125,7 @@ public class MonitoringManager implements Runnable {
     setInterval(interval);
     createThread();
 
-    workflowStates = JobTableManager.getInstance().getWorkflowState();
+    workflowStates = JobTableManager.getInstance().getWorkflowJobMetric();
   }
 
   public static synchronized WorkflowMetric.Work getCountWorks(HashMap<String, JobState> group) {
@@ -76,18 +171,18 @@ public class MonitoringManager implements Runnable {
     return metrics;
   }
 
-  public static synchronized WorkflowGroupState convertGroupMetrics(String groupId, HashMap<Long,
+  public static synchronized WorkflowJobMetric convertGroupMetrics(String groupId, HashMap<Long,
       HashMap<String, JobState>> healthOfworkflows) {
 
     if (healthOfworkflows.containsKey(Long.parseLong(groupId))) {
 
-      WorkflowGroupState groupState = new WorkflowGroupState();
+      WorkflowJobMetric groupState = new WorkflowJobMetric();
 
       return groupState.setGroupId(groupId)
           .setJobStates(new ArrayList<>(healthOfworkflows.get(Long.parseLong(groupId)).values()));
 
     } else {
-      return new WorkflowGroupState();
+      return new WorkflowJobMetric();
     }
   }
 
@@ -235,7 +330,8 @@ public class MonitoringManager implements Runnable {
     return groupInfo;
   }
 
-  public synchronized WorkflowGroupState getGroupDetails(String groupId) {
+  public synchronized WorkflowJobMetric getGroupDetails(String groupId) {
     return MonitoringManager.convertGroupMetrics(groupId, workflowStates);
   }
+  */
 }

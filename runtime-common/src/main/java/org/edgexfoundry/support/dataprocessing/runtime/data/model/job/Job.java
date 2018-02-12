@@ -11,36 +11,27 @@ import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 
 @JsonInclude(Include.NON_NULL)
 public class Job extends Format {
 
-  private String id;
-  private Long workflowId;
-  private Map<String, Object> config = new HashMap<>();
+  private final String id;
+  private final Long workflowId;
+  private final JobState state;
 
-  private JobState state;
+  private Map<String, Object> config;
+  private WorkflowData workflowData = null;
 
-  public Job() {
-
-  }
-
-  public static Job create(Long workflowId) {
-    Job job = new Job();
-    job.setState(new JobState());
-    job.getState().setState(State.CREATED);
-    job.setWorkflowId(workflowId);
-    job.setId(UUID.randomUUID().toString());
-    return job;
+  public Job(String id, Long workflowId) {
+    this.id = id;
+    this.workflowId = workflowId;
+    this.config = new HashMap<>();
+    this.state = new JobState(id);
   }
 
   public JobState getState() {
     return state;
-  }
-
-  public void setState(JobState state) {
-    this.state = state;
   }
 
   @JsonProperty("jobId")
@@ -48,33 +39,13 @@ public class Job extends Format {
     return id;
   }
 
-  @JsonProperty("jobId")
-  public void setId(String id) {
-    this.id = id;
-  }
-
   public Long getWorkflowId() {
     return workflowId;
-  }
-
-  public void setWorkflowId(Long workflowId) {
-    if (workflowId == null) {
-      throw new RuntimeException("Invalid workflow id");
-    }
-    this.workflowId = workflowId;
   }
 
   @JsonIgnore
   public Map<String, Object> getConfig() {
     return config;
-  }
-
-  @JsonIgnore
-  public void setConfig(Map<String, Object> config) {
-    if (config == null) {
-      throw new RuntimeException("Invalid config");
-    }
-    this.config = config;
   }
 
   @JsonIgnore
@@ -96,6 +67,14 @@ public class Job extends Format {
     }
   }
 
+  @JsonIgnore
+  public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config");
+    }
+    this.config = config;
+  }
+
   @JsonProperty("config")
   public void setConfigStr(String configStr) {
     try {
@@ -107,5 +86,33 @@ public class Job extends Format {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @JsonIgnore
+  public void setWorkflowData(WorkflowData workflowData) {
+    this.workflowData = workflowData;
+  }
+
+  @JsonIgnore
+  public WorkflowData getWorkflowData() {
+    return this.workflowData;
+  }
+
+
+  public static Job create(String jobId, Long workflowId) {
+    if (StringUtils.isEmpty(jobId) || workflowId == null) {
+      throw new RuntimeException("Job id or workflow id is null.");
+    }
+    return new Job(jobId, workflowId);
+  }
+
+  public static Job create(WorkflowData workflowData) {
+    if (workflowData == null) {
+      throw new RuntimeException("Workflow data is null.");
+    }
+    Job job = create(UUID.randomUUID().toString(), workflowData.getWorkflowId());
+    job.setWorkflowData(workflowData);
+    job.getState().setEngineType(workflowData.getEngineType().name());
+    return job;
   }
 }

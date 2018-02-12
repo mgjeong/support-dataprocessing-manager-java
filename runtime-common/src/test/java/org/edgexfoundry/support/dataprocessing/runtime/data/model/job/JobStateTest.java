@@ -10,7 +10,7 @@ public class JobStateTest {
   public void testSetterAndGetter() {
     long now = System.currentTimeMillis();
 
-    JobState state = new JobState();
+    JobState state = new JobState("");
     state.setState(State.RUNNING);
     state.setStartTime(now);
     state.setEngineId("engineId");
@@ -29,7 +29,7 @@ public class JobStateTest {
 
   @Test
   public void testInvalidSetter() {
-    JobState state = new JobState();
+    JobState state = new JobState("");
     try {
       state.setState("invalidstate");
       Assert.fail("Should not reach here");

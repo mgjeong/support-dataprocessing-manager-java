@@ -124,22 +124,24 @@ public class FlinkEngineTest {
     prepareResources();
     makeSampleData();
 
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     deleteIntermediates(job.getId());
     Assert.assertEquals(job.getState().getState(), State.CREATED);
 
-    job = engine.run(job);
+    engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
 
-    job = engine.stop(job);
+    engine.stop(job);
     Assert.assertEquals(job.getState().getState(), State.STOPPED);
   }
 
   @Test
-  public void testCreateWithInvalidPlan() {
+  public void testCreateWithInvalidPlan() throws Exception {
     spec = new WorkflowData();
     spec.setWorkflowId(15423L);
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -154,23 +156,23 @@ public class FlinkEngineTest {
     file.createNewFile();
 
     makeSampleData();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
 
     file.delete();
     deleteIntermediates(job.getId());
   }
 
   @Test
-  public void testRunWithInvalidJobs() {
+  public void testRunWithInvalidJobs() throws Exception {
     try {
       engine.run(null);
     } catch (NullPointerException e) {
       try {
-        engine.run(new Job());
+        engine.run(new Job(null, null));
       } catch (IllegalStateException e1) {
         try {
-          Job job = new Job();
-          job.setId("FlinkEngineTest");
+          Job job = new Job("FlinkEngineTest", 1L);
           engine.run(job);
         } catch (IllegalStateException e2) {
           return;
@@ -182,12 +184,12 @@ public class FlinkEngineTest {
   }
 
   @Test
-  public void testStopWithInvalidJobs() {
+  public void testStopWithInvalidJobs() throws Exception {
     try {
       engine.stop(null);
     } catch (NullPointerException e) {
       try {
-        engine.run(new Job());
+        engine.run(new Job(null, null));
       } catch (IllegalStateException e1) {
         return;
       }
@@ -201,7 +203,8 @@ public class FlinkEngineTest {
     server.shutdown();
     prepareResources();
     makeSampleData();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     deleteIntermediates(job.getId());
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
@@ -210,12 +213,13 @@ public class FlinkEngineTest {
   public void testRunWithServerOff() throws Exception {
     prepareResources();
     makeSampleData();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.CREATED);
     deleteIntermediates(job.getId());
 
     server.shutdown();
-    job = engine.run(job);
+    engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -223,15 +227,16 @@ public class FlinkEngineTest {
   public void testStopWithServerOff() throws Exception {
     prepareResources();
     makeSampleData();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.CREATED);
     deleteIntermediates(job.getId());
 
-    job = engine.run(job);
+    engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
 
     server.shutdown();
-    job = engine.stop(job);
+    engine.stop(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -240,17 +245,18 @@ public class FlinkEngineTest {
     server.incapable();
     prepareResources();
     makeSampleData();
-    Job job = engine.create(spec);
+    Job job = Job.create(spec);
+    engine.create(job);
     deleteIntermediates(job.getId());
     Assert.assertEquals(job.getState().getState(), State.ERROR);
 
     server.capable();
-    job = engine.create(spec);
+    engine.create(job);
     deleteIntermediates(job.getId());
     Assert.assertEquals(job.getState().getState(), State.CREATED);
 
     server.incapable();
-    job = engine.run(job);
+    engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 

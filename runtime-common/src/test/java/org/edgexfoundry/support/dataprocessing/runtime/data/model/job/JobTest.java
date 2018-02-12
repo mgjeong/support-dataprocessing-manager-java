@@ -13,10 +13,7 @@ public class JobTest {
 
   @Test
   public void testSetterAndGetter() {
-    Job job = new Job();
-
-    job.setId("jobid");
-    job.setWorkflowId(1L);
+    Job job = new Job("jobid", 1L);
     job.setConfigStr("{}");
 
     Assert.assertEquals("jobid", job.getId());
@@ -34,14 +31,14 @@ public class JobTest {
 
   @Test
   public void testInvalidSetter() {
-    Job job = new Job();
     try {
-      job.setWorkflowId(null);
+      Job job = Job.create(null);
       Assert.fail("Should not reach here.");
     } catch (RuntimeException e) {
       // success
     }
 
+    Job job = Job.create("jobid", 1L);
     try {
       job.setConfig(null);
       Assert.fail("Should not reach here.");
@@ -59,7 +56,7 @@ public class JobTest {
 
   @Test
   public void testObjectMapper() throws Exception {
-    Job job = new Job();
+    Job job = Job.create("jobid", 1L);
 
     job.addConfig("hello", "world");
 
@@ -85,7 +82,7 @@ public class JobTest {
 
   @Test
   public void testCreate() {
-    Job job = Job.create(1L);
+    Job job = Job.create("jobId", 1L);
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
   }
 }

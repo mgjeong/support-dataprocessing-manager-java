@@ -27,25 +27,19 @@ import java.util.ArrayList;
 public interface Engine {
 
   /**
-   * Creates an engine job instance from workflow data
+   * Creates a job
    */
-  Job create(WorkflowData workflow) throws Exception;
+  void create(Job job) throws Exception;
 
   /**
    * Runs an engine job
    */
-  Job run(Job job) throws Exception;
+  void run(Job job) throws Exception;
 
-  Job stop(Job job) throws Exception;
+  void stop(Job job) throws Exception;
 
-  Job delete(Job job) throws Exception;
-
-  List<JobState> getMetrics() throws Exception;
+  void delete(Job job) throws Exception;
 
   boolean updateMetrics(JobState jobState) throws Exception;
-
-  String getHost();
-
-  int getPort();
 }
 
