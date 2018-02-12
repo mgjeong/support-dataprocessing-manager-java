@@ -13,7 +13,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 
 public class MonitoringManager implements Runnable {
 
-  public static final long INTERVAL = 3;
+  public static final long INTERVAL = 5;
 
   static Semaphore semaphore = new Semaphore(1);
   private static MonitoringManager instance = null;
