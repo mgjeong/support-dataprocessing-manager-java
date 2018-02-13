@@ -1508,6 +1508,9 @@ public class WorkflowTableManager extends AbstractStorageManager {
   }
 
   public WorkflowData doExportWorkflow(Workflow workflow) {
+    if(workflow == null){
+      throw new RuntimeException("Workflow is null.");
+    }
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(workflow.getId());
     workflowData.setWorkflowName(workflow.getName());

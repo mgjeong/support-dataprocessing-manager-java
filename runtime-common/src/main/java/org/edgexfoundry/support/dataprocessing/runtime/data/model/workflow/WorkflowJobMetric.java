@@ -1,30 +1,30 @@
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 
-public class WorkflowGroupState extends Format {
+public class WorkflowJobMetric extends Format {
 
-  private String groupId;
-  private ArrayList<JobState> jobStates = new ArrayList<>();
+  private Long groupId;
+  private List<JobState> jobStates = new ArrayList<>();
 
-  public ArrayList<JobState> getJobStates() {
+  public List<JobState> getJobStates() {
     return jobStates;
   }
 
-  public WorkflowGroupState setJobStates(ArrayList<JobState> jobStates) {
+  public WorkflowJobMetric setJobStates(ArrayList<JobState> jobStates) {
     this.jobStates.clear();
     this.jobStates.addAll(jobStates);
     return this;
   }
 
-  public String getGroupId() {
+  public Long getGroupId() {
     return groupId;
   }
 
-  public WorkflowGroupState setGroupId(String groupId) {
+  public void setGroupId(Long groupId) {
     this.groupId = groupId;
-    return this;
   }
 }

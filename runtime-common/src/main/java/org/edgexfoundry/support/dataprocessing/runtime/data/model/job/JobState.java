@@ -10,15 +10,16 @@ public class JobState extends Format {
   private State state;
   private Long startTime;
   private Long finishTime;
-  private String jobId;
   private String engineId;
   private String engineType;
   private String errorMessage;
   private String host;
   private int port;
 
-  public JobState() {
-
+  private final String jobId;
+  public JobState(String jobId) {
+    this.jobId = jobId;
+    this.state = State.CREATED;
   }
 
   public String getHost() {
@@ -103,10 +104,6 @@ public class JobState extends Format {
 
   public String getJobId() {
     return jobId;
-  }
-
-  public void setJobId(String jobId) {
-    this.jobId = jobId;
   }
 
   public enum State {

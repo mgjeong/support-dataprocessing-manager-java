@@ -17,7 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
+import org.edgexfoundry.support.dataprocessing.runtime.monitor.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class Application extends SpringBootServletInitializer {
     TaskManager.getInstance().scanBuiltinTaskModel(Settings.FW_JAR_PATH);
 
     // 4. Run Monitoring
-    MonitoringManager.getInstance().setInterval(MonitoringManager.INTERVAL).start();
+    MonitoringManager.getInstance().startMonitoring();
   }
 
   private static void makeDatabaseIfNecessary() throws Exception {
@@ -85,13 +85,9 @@ public class Application extends SpringBootServletInitializer {
   }
 
   private static void terminate() {
-    TaskManager.getInstance().terminate();
+    MonitoringManager.getInstance().terminate();
 
-    try {
-      MonitoringManager.getInstance().stop();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    TaskManager.getInstance().terminate();
   }
 
   public static void main(String[] args) throws Exception {

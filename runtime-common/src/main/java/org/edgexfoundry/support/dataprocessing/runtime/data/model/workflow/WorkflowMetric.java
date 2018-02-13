@@ -20,6 +20,10 @@ public class WorkflowMetric extends Format {
     private long running;
     private long stop;
 
+    public Work(){
+      this(0, 0);
+    }
+
     public Work(long running, long stop) {
       setRunning(running);
       setStop(stop);

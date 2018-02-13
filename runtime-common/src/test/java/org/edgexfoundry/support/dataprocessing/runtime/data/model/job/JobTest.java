@@ -3,7 +3,9 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -13,10 +15,7 @@ public class JobTest {
 
   @Test
   public void testSetterAndGetter() {
-    Job job = new Job();
-
-    job.setId("jobid");
-    job.setWorkflowId(1L);
+    Job job = new Job("jobid", 1L);
     job.setConfigStr("{}");
 
     Assert.assertEquals("jobid", job.getId());
@@ -34,14 +33,14 @@ public class JobTest {
 
   @Test
   public void testInvalidSetter() {
-    Job job = new Job();
     try {
-      job.setWorkflowId(null);
+      Job job = Job.create(null);
       Assert.fail("Should not reach here.");
     } catch (RuntimeException e) {
       // success
     }
 
+    Job job = Job.create("jobid", 1L);
     try {
       job.setConfig(null);
       Assert.fail("Should not reach here.");
@@ -59,7 +58,7 @@ public class JobTest {
 
   @Test
   public void testObjectMapper() throws Exception {
-    Job job = new Job();
+    Job job = Job.create("jobid", 1L);
 
     job.addConfig("hello", "world");
 
@@ -85,7 +84,21 @@ public class JobTest {
 
   @Test
   public void testCreate() {
-    Job job = Job.create(1L);
+    Job job = Job.create("jobId", 1L);
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
+  }
+
+  @Test
+  public void testEqualsTo() {
+    Job jobA = new Job("jobId", 1L);
+    Job jobB = new Job("jobId", 1L);
+    Job jobC = new Job("jobC", 1L);
+
+    Set<Job> jobs = new HashSet();
+    jobs.add(jobA);
+    jobs.add(jobB);
+    jobs.add(jobC);
+
+    Assert.assertEquals(2, jobs.size());
   }
 }

@@ -1,69 +1,37 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import java.util.HashMap;
-import java.util.concurrent.Semaphore;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 
 public final class EngineManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EngineManager.class);
-  private static Semaphore semaphore = new Semaphore(1);
-  //  HashMap<IP, Engine>
-  private static HashMap<String, Engine> engines = new HashMap<String, Engine>();
+  private final Map<String, Engine> engineMap;
 
+  private static EngineManager instance = null;
 
-  public static Engine getEngine(String host, WorkflowData.EngineType engineType) {
-    if(null == engines) {
-      return null;
+  public synchronized static EngineManager getInstance() {
+    if (instance == null) {
+      instance = new EngineManager();
     }
+    return instance;
+  }
 
-    Engine engine = engines.get(host);
+  private EngineManager() {
+    this.engineMap = new ConcurrentHashMap<>();
+  }
 
-    if (null == engine) {
-      engine = EngineManager.createEngine(engineType, host);
+  public synchronized Engine getEngine(String host, int port, EngineType engineType) {
+    String key = getKey(host, port, engineType);
+    Engine engine = engineMap.get(key);
+    if (engine == null) {
+      engine = EngineFactory.createEngine(engineType, host, port);
+      engineMap.put(key, engine);
     }
-
     return engine;
   }
 
-
-  private static Engine createEngine(WorkflowData.EngineType engineType, String host) {
-
-    Engine engine = null;
-
-    try {
-      String ip = host.substring(0, host.indexOf(":"));
-      int port = Integer.parseInt(host.substring(host.indexOf(":") + 1, host.length()));
-
-      engine = EngineFactory.createEngine(engineType, ip, port);
-      semaphore.acquire();
-      engines.put(host, engine);
-    } catch (NumberFormatException e) {
-      LOGGER.error(e.getMessage(), e);
-      engine = null;
-    } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
-      engine = null;
-    } finally {
-      semaphore.release();
-    }
-
-    return engine;
-  }
-
-  public static HashMap<String, Engine> getEngineList() {
-    HashMap<String, Engine> engineList = null;
-    try {
-      semaphore.acquire();
-      engineList = (HashMap<String, Engine>) engines.clone();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    } finally {
-      semaphore.release();
-    }
-
-    return engineList;
+  private String getKey(String host, int port, EngineType engineType) {
+    return String.format("%s_%s_%d", engineType.name(), host, port);
   }
 }
