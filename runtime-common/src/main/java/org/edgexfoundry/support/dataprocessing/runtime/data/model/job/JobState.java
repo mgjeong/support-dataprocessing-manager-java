@@ -19,7 +19,7 @@ public class JobState extends Format {
   private final String jobId;
   public JobState(String jobId) {
     this.jobId = jobId;
-    this.state = State.RUNNING;
+    this.state = State.CREATED;
   }
 
   public String getHost() {

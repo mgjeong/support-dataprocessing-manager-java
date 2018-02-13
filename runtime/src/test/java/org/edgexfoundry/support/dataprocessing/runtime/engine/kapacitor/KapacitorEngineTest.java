@@ -62,12 +62,16 @@ public class KapacitorEngineTest {
   @Test
   public void testCreateWithInvalidSpec() throws Exception {
     Job job = Job.create(spec);
-    engine.create(job);
+    try {
+      engine.create(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
   @Test
-  public void testRunWithInvalidJobs() {
+  public void testRunWithInvalidJobs() throws Exception {
     try {
       engine.run(null);
     } catch (NullPointerException e) {
@@ -86,7 +90,7 @@ public class KapacitorEngineTest {
   }
 
   @Test
-  public void testRunWithInvalidRequests() {
+  public void testRunWithInvalidRequests() throws Exception {
     Job unregistered = Job.create("jobId", 51423L);
     Map<String, Object> config = new HashMap<>();
     config.put("script", "var test = stream|from()");
@@ -98,7 +102,7 @@ public class KapacitorEngineTest {
   }
 
   @Test
-  public void testStopWithInvalidJobs() {
+  public void testStopWithInvalidJobs() throws Exception {
     try {
       engine.stop(null);
     } catch (NullPointerException e) {
@@ -116,21 +120,33 @@ public class KapacitorEngineTest {
     prepareTestJob();
     server.off();
     Job job = Job.create(spec);
-    engine.create(job);
+    try {
+      engine.create(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
 
     server.on();
     engine.create(job);
     Assert.assertEquals(job.getState().getState(), State.CREATED);
     server.off();
-    engine.run(job);
+    try {
+      engine.run(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
 
     server.on();
     engine.run(job);
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
     server.off();
-    engine.stop(job);
+    try {
+      engine.stop(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 

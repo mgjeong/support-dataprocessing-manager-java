@@ -17,7 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
+import org.edgexfoundry.support.dataprocessing.runtime.monitor.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

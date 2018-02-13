@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 
 @JsonInclude(Include.NON_NULL)
 public class Job extends Format {
@@ -112,7 +113,12 @@ public class Job extends Format {
     }
     Job job = create(UUID.randomUUID().toString(), workflowData.getWorkflowId());
     job.setWorkflowData(workflowData);
-    job.getState().setEngineType(workflowData.getEngineType().name());
+    job.setConfig(workflowData.getConfig());
+    try {
+      job.getState().setEngineType(workflowData.getEngineType().name());
+    } catch (Exception e) {
+      job.getState().setEngineType(EngineType.UNKNOWN.name());
+    }
     return job;
   }
 }

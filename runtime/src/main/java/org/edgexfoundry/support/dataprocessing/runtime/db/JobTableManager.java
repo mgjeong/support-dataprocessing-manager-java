@@ -26,7 +26,7 @@ public class JobTableManager extends AbstractStorageManager {
     return instance;
   }
 
-  public JobState updateJobState(JobState jobState) {
+  public synchronized JobState updateJobState(JobState jobState) {
     String sql = "UPDATE job_state SET "
         + "state=?, startTime=?, finishTime=?, errorMessage=?, "
         + "engineId=?, engineType=?, engineHost=?, enginePort=? where jobId=?";
@@ -42,7 +42,7 @@ public class JobTableManager extends AbstractStorageManager {
         int affectedRows;
         affectedRows = ps.executeUpdate();
         if (affectedRows == 0) {
-          throw new RuntimeException("Failed to insert job state.");
+          throw new RuntimeException("Failed to update job state.");
         } else {
           connection.commit();
           return jobState;
@@ -60,7 +60,7 @@ public class JobTableManager extends AbstractStorageManager {
 
   public synchronized Job addJob(Job job) {
     if (job == null) {
-      throw new RuntimeException("Workflow job is null.");
+      throw new RuntimeException("Job is null.");
     }
 
     String sqlJob = "INSERT INTO job (id, workflowId, config) VALUES (?, ?, ?)";

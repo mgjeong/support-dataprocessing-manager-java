@@ -141,7 +141,11 @@ public class FlinkEngineTest {
     spec = new WorkflowData();
     spec.setWorkflowId(15423L);
     Job job = Job.create(spec);
-    engine.create(job);
+    try {
+      engine.create(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -157,7 +161,11 @@ public class FlinkEngineTest {
 
     makeSampleData();
     Job job = Job.create(spec);
-    engine.create(job);
+    try {
+      engine.create(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
 
     file.delete();
     deleteIntermediates(job.getId());
@@ -204,7 +212,11 @@ public class FlinkEngineTest {
     prepareResources();
     makeSampleData();
     Job job = Job.create(spec);
-    engine.create(job);
+    try {
+      engine.create(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     deleteIntermediates(job.getId());
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
@@ -219,7 +231,11 @@ public class FlinkEngineTest {
     deleteIntermediates(job.getId());
 
     server.shutdown();
-    engine.run(job);
+    try {
+      engine.run(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -232,11 +248,19 @@ public class FlinkEngineTest {
     Assert.assertEquals(job.getState().getState(), State.CREATED);
     deleteIntermediates(job.getId());
 
-    engine.run(job);
+    try {
+      engine.run(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
 
     server.shutdown();
-    engine.stop(job);
+    try {
+      engine.stop(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 
@@ -246,7 +270,11 @@ public class FlinkEngineTest {
     prepareResources();
     makeSampleData();
     Job job = Job.create(spec);
-    engine.create(job);
+    try {
+      engine.create(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     deleteIntermediates(job.getId());
     Assert.assertEquals(job.getState().getState(), State.ERROR);
 
@@ -256,7 +284,11 @@ public class FlinkEngineTest {
     Assert.assertEquals(job.getState().getState(), State.CREATED);
 
     server.incapable();
-    engine.run(job);
+    try {
+      engine.run(job);
+    } catch (Exception e) {
+      job.getState().setState(State.ERROR);
+    }
     Assert.assertEquals(job.getState().getState(), State.ERROR);
   }
 

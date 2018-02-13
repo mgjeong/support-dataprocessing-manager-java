@@ -47,9 +47,10 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testAddWorkflowJobState() {
+  public void testUpdateJobState() {
     Job job = Job.create(UUID.randomUUID().toString(), 2L);
     try {
+      jobTable.addJob(job);
       jobTable.updateJobState(job.getState());
     } finally {
       jobTable.removeJob(job.getId());
@@ -57,7 +58,7 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testAddInvalidWorkflowJobState() {
+  public void testAddInvalidJobState() {
     Job job = Job.create(UUID.randomUUID().toString(), 3L);
     try {
       jobTable.updateJobState(null);
@@ -68,7 +69,7 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testAddWorkflowJob() {
+  public void testAddJob() {
     Job job = Job.create(UUID.randomUUID().toString(), 4L);
     try {
       jobTable.addJob(job);
@@ -78,7 +79,7 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testAddInvalidWorkflowJob() {
+  public void testAddInvalidJob() {
     try {
       jobTable.addJob(null);
       Assert.fail("Should not reach here.");

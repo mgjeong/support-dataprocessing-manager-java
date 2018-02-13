@@ -101,6 +101,7 @@ public class FlinkEngine extends AbstractEngine {
 
     // Update job
     job.addConfig("launcherJarId", launcherJarId);
+    job.getState().setState(State.CREATED);
   }
 
   private Path prepareFlinkJobPlan(WorkflowData workflowData, String jobId) throws Exception {
@@ -247,6 +248,7 @@ public class FlinkEngine extends AbstractEngine {
 
     // Result on success is {} (According to flink documentation)
     job.getState().setState(State.STOPPED);
+    job.getState().setFinishTime(System.currentTimeMillis());
   }
 
   @Override
@@ -304,7 +306,5 @@ public class FlinkEngine extends AbstractEngine {
       this.exitValue = exitValue;
       this.stdout = stdout;
     }
-
   }
-
 }

@@ -29,42 +29,31 @@ public class KapacitorEngine extends AbstractEngine {
   public void create(Job job) throws Exception {
     WorkflowData workflowData = job.getWorkflowData();
 
-    try {
-      ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(workflowData);
-      scriptGraph.initialize();
-      String resultScript = scriptGraph.generateScript();
+    ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(workflowData);
+    scriptGraph.initialize();
+    String resultScript = scriptGraph.generateScript();
 
-      if (StringUtils.isEmpty(resultScript)) {
-        throw new RuntimeException("Failed to prepare Kapacitor script to request");
-      }
-
-      JsonObject jobInfo = getBaseJsonObject(job.getId());
-      LOGGER.info("Kapacitor script is generated as following:\n{}", resultScript);
-      jobInfo.addProperty("script", resultScript);
-
-      // Post defined task to kapacitor
-      JsonObject kapaResponse = this.httpClient.post(TASK_ROOT, jobInfo.toString())
-          .getAsJsonObject();
-
-      JobState jobState = job.getState();
-      if (kapaResponse.get("id") == null) {
-        jobState.setState(State.ERROR);
-        jobState.setErrorMessage(kapaResponse.get("error").getAsString());
-        jobState.setStartTime(System.currentTimeMillis());
-      } else {
-        jobState.setState(State.CREATED);
-        job.setConfig(workflowData.getConfig());
-        job.addConfig("script", resultScript);
-        jobState.setEngineType("KAPACITOR");
-        jobState.setStartTime(System.currentTimeMillis());
-      }
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-      job.getState().setState(State.ERROR);
-      job.getState().setErrorMessage(e.getMessage());
-      job.getState().setStartTime(System.currentTimeMillis());
+    if (StringUtils.isEmpty(resultScript)) {
+      throw new RuntimeException("Failed to prepare Kapacitor script to request");
     }
 
+    JsonObject jobInfo = getBaseJsonObject(job.getId());
+    LOGGER.info("Kapacitor script is generated as following:\n{}", resultScript);
+    jobInfo.addProperty("script", resultScript);
+
+    // Post defined task to kapacitor
+    JsonObject kapaResponse = this.httpClient.post(TASK_ROOT, jobInfo.toString())
+        .getAsJsonObject();
+
+    JobState jobState = job.getState();
+    if (kapaResponse.get("id") == null) {
+      jobState.setState(State.ERROR);
+      jobState.setErrorMessage(kapaResponse.get("error").getAsString());
+    } else {
+      jobState.setState(State.CREATED);
+      job.addConfig("script", resultScript);
+      jobState.setEngineType("KAPACITOR");
+    }
   }
 
   private JsonObject getBaseJsonObject(String jobId) {
@@ -83,7 +72,7 @@ public class KapacitorEngine extends AbstractEngine {
   }
 
   @Override
-  public void run(Job job) {
+  public void run(Job job) throws Exception {
     if (job == null) {
       throw new NullPointerException("Job is null.");
     }
@@ -100,35 +89,28 @@ public class KapacitorEngine extends AbstractEngine {
     String path = TASK_ROOT + '/' + job.getId();
     String flag = "{\"status\":\"enabled\"}";
 
-    try {
-      JsonObject kapaResponse = this.httpClient.patch(path, flag).getAsJsonObject();
-      LOGGER.info("Job {} is now running on kapacitor {}", job.getId(), job.getState().getHost());
+    JsonObject kapaResponse = this.httpClient.patch(path, flag).getAsJsonObject();
+    LOGGER.info("Job {} is now running on kapacitor {}", job.getId(), job.getState().getHost());
 
-      if (kapaResponse == null) {
-        throw new RuntimeException("Failed to run Kapacitor job; Please check out connection");
-      }
-
-      JobState jobState = job.getState();
-
-      if (kapaResponse.get("id") == null) {
-        jobState.setState(State.ERROR);
-        jobState.setStartTime(System.currentTimeMillis());
-        jobState.setErrorMessage(kapaResponse.get("error").getAsString());
-      } else {
-        jobState.setState(State.RUNNING);
-        jobState.setStartTime(System.currentTimeMillis());
-        jobState.setEngineId(kapaResponse.get("id").getAsString());
-      }
-    } catch (Exception e) {
-      job.getState().setState(State.ERROR);
-      job.getState().setStartTime(System.currentTimeMillis());
-      job.getState().setErrorMessage(e.getMessage());
+    if (kapaResponse == null) {
+      throw new RuntimeException("Failed to run Kapacitor job; Please check out connection");
     }
 
+    JobState jobState = job.getState();
+
+    if (kapaResponse.get("id") == null) {
+      jobState.setState(State.ERROR);
+      jobState.setStartTime(System.currentTimeMillis());
+      jobState.setErrorMessage(kapaResponse.get("error").getAsString());
+    } else {
+      jobState.setState(State.RUNNING);
+      jobState.setStartTime(System.currentTimeMillis());
+      jobState.setEngineId(kapaResponse.get("id").getAsString());
+    }
   }
 
   @Override
-  public void stop(Job job) {
+  public void stop(Job job) throws Exception {
     if (job == null) {
       throw new NullPointerException("Job is null.");
     } else if (job.getState().getEngineId() == null) {
@@ -138,16 +120,11 @@ public class KapacitorEngine extends AbstractEngine {
     String path = TASK_ROOT + '/' + job.getId();
     String flag = "{\"status\":\"disabled\"}";
 
-    try {
-      JsonObject kapaResponse = this.httpClient.patch(path, flag).getAsJsonObject();
-      LOGGER.debug("Job {} stop response: {}", job.getState().getEngineId(), kapaResponse);
+    JsonObject kapaResponse = this.httpClient.patch(path, flag).getAsJsonObject();
+    LOGGER.debug("Job {} stop response: {}", job.getState().getEngineId(), kapaResponse);
 
-      job.getState().setState(State.STOPPED);
-    } catch (Exception e) {
-      job.getState().setState(State.ERROR);
-      job.getState().setErrorMessage(e.getMessage());
-    }
-
+    job.getState().setState(State.STOPPED);
+    job.getState().setFinishTime(System.currentTimeMillis());
   }
 
   @Override

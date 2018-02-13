@@ -1,6 +1,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -56,7 +57,7 @@ public class JobControllerTest {
     JobController jobController = spy(createJobController());
     Workflow workflow = createSampleWorkflow();
     WorkflowData workflowData = createSampleWorkflowData(workflow);
-    Job job = createSampleJob();
+    Job job = createSampleJob(workflowData);
     FlinkEngine engine = mock(FlinkEngine.class);
 
     doReturn(engine).when(jobController).getEngine(any(), any());
@@ -64,7 +65,6 @@ public class JobControllerTest {
     doReturn(workflowData).when(workflowTableManager).doExportWorkflow(workflow);
     doReturn(job).when(jobTableManager).addJob(any());
     doReturn(job.getState()).when(jobTableManager).updateJobState(any());
-    when(EngineManager.getInstance().getEngine(anyString(), any(), any())).thenReturn(engine);
 
     ResponseEntity response = jobController.deployWorkflow(workflow.getId());
     Assert.assertNotNull(response);
@@ -75,11 +75,11 @@ public class JobControllerTest {
   public void testStopJob() throws Exception {
     JobController jobController = spy(createJobController());
     Workflow workflow = createSampleWorkflow();
-    Job job = createSampleJob();
+    WorkflowData workflowData = createSampleWorkflowData(workflow);
+    Job job = createSampleJob(workflowData);
     FlinkEngine engine = mock(FlinkEngine.class);
 
     doReturn(engine).when(jobController).getEngine(any(), any());
-    doReturn(job).when(engine).stop(any());
     doReturn(job).when(jobTableManager).getJobById(any());
     doReturn(job.getState()).when(jobTableManager).updateJobState(any());
 
@@ -88,9 +88,7 @@ public class JobControllerTest {
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
-  private Job createSampleJob() {
-    WorkflowData workflowData = new WorkflowData();
-    workflowData.setWorkflowId(1L);
+  private Job createSampleJob(WorkflowData workflowData) {
     Job job = Job.create(workflowData);
     job.getState().setState(State.RUNNING);
     job.getState().setStartTime(System.currentTimeMillis());

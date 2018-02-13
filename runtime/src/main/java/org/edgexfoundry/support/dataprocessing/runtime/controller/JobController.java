@@ -22,7 +22,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.MonitoringManager;
+import org.edgexfoundry.support.dataprocessing.runtime.monitor.MonitoringManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
