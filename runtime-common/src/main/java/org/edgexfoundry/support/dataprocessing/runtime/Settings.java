@@ -26,8 +26,8 @@ public final class Settings {
   public static final String DB_PATH = "DPFW.db";
   public static final String JDBC_PATH = "jdbc:sqlite:" + DOCKER_PATH + DB_PATH;
 
-  public static final String API_MAX_FILE_SIZE = "8MB";
-  public static final String API_MAX_REQUEST_SIZE = "16MB";
+  public static final String API_MAX_FILE_SIZE = "16MB";
+  public static final String API_MAX_REQUEST_SIZE = "32MB";
 
   public static final long JOB_MONITORING_INTERVAL = 5 * 1000L; // in milliseconds
 
