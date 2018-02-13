@@ -1,5 +1,6 @@
 package org.edgexfoundry.support.dataprocessing.runtime.monitor;
 
+import java.util.Collection;
 import java.util.Set;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.edgexfoundry.support.dataprocessing.runtime.Settings;
@@ -56,11 +57,21 @@ public class MonitoringManager implements Runnable {
 
   @Override
   public void run() {
+    // Read existing job from database
+    Collection<Job> allJobs = jobTableManager.getJobs();
+    allJobs.forEach(job -> {
+      if (job.getState().getState() == State.RUNNING) {
+        synchronized (this.runningJobs) {
+          this.runningJobs.add(job);
+        }
+      }
+    });
+
     running = true;
     while (running) {
       try {
-        synchronized (runningJobs) {
-          runningJobs.forEach(job -> {
+        synchronized (this.runningJobs) {
+          this.runningJobs.forEach(job -> {
             // get engine
             Engine engine = engineManager
                 .getEngine(job.getState().getHost(), job.getState().getPort(), EngineType
@@ -82,7 +93,7 @@ public class MonitoringManager implements Runnable {
           });
 
           // remove jobs that are no longer running
-          runningJobs.removeIf(job -> job.getState().getState() != State.RUNNING);
+          this.runningJobs.removeIf(job -> job.getState().getState() != State.RUNNING);
         }
       } finally {
         try {

@@ -121,4 +121,21 @@ public class Job extends Format {
     }
     return job;
   }
+
+  @JsonIgnore
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Job)) {
+      return false;
+    }
+
+    Job other = (Job) obj;
+    return other.getId().equals(this.getId());
+  }
+
+  @JsonIgnore
+  @Override
+  public int hashCode() {
+    return this.id == null ? 0 : this.id.hashCode();
+  }
 }

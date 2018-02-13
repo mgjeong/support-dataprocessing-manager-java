@@ -3,7 +3,9 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -84,5 +86,19 @@ public class JobTest {
   public void testCreate() {
     Job job = Job.create("jobId", 1L);
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
+  }
+
+  @Test
+  public void testEqualsTo() {
+    Job jobA = new Job("jobId", 1L);
+    Job jobB = new Job("jobId", 1L);
+    Job jobC = new Job("jobC", 1L);
+
+    Set<Job> jobs = new HashSet();
+    jobs.add(jobA);
+    jobs.add(jobB);
+    jobs.add(jobC);
+
+    Assert.assertEquals(2, jobs.size());
   }
 }
