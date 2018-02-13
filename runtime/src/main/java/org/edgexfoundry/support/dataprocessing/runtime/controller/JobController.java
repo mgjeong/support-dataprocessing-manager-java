@@ -82,16 +82,11 @@ public class JobController extends AbstractController {
       String targetHost = (String) workflowData.getConfig().get("targetHost");
       Engine engine = getEngine(targetHost, workflowData.getEngineType());
 
-      try { // create
-        engine.create(newJob);
-      } catch (Exception e) {
-        LOGGER.error(e.getMessage(), e);
-        newJob.getState().setState(State.ERROR);
-        newJob.getState().setState(e.getMessage());
-      }
-
-      // run engine job
       try {
+        // create
+        engine.create(newJob);
+
+        // run engine job
         engine.run(newJob);
       } catch (Exception e) {
         LOGGER.error(e.getMessage(), e);
