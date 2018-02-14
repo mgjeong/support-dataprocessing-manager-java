@@ -26,6 +26,12 @@ public class KapacitorEngine extends AbstractEngine {
   private String host;
   private int port;
 
+  /**
+   * Request generator for each Kapacitor REST server. The corresponding method of an instance of
+   * this class is called on each request, such as job deploying, stopping, or status monitoring
+   * @param host hostname of Kapacitor REST server
+   * @param port port number of Kapacitor REST server
+   */
   public KapacitorEngine(String host, int port) {
     this.host = host;
     this.port = port;

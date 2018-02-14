@@ -38,7 +38,7 @@ public class KapacitorEngineTest {
   private static final int PORT = 9092;
 
   @Before
-  public void setup() throws Exception {
+  public void setUp() throws Exception {
     server = new MockKapacitorRest();
     server.on();
     PowerMockito.mockStatic(HTTP.class);
