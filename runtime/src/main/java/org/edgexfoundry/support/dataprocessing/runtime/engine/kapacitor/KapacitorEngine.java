@@ -1,7 +1,10 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.time.Instant;
 import org.edgexfoundry.support.dataprocessing.runtime.connection.HTTP;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
@@ -20,14 +23,32 @@ public class KapacitorEngine extends AbstractEngine {
   private static final String TASK_ROOT = "/kapacitor/v1/tasks";
   private HTTP httpClient = null;
 
-  public KapacitorEngine(String hostname, int port) {
+  private String host;
+  private int port;
+
+  public KapacitorEngine(String host, int port) {
+    this.host = host;
+    this.port = port;
     this.httpClient = new HTTP();
-    this.httpClient.initialize(hostname, port, "http");
+    this.httpClient.initialize(host, port, "http");
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public int getPort() {
+    return port;
   }
 
   @Override
   public void create(Job job) throws Exception {
     WorkflowData workflowData = job.getWorkflowData();
+
+    JobState jobState = job.getState();
+    jobState.setEngineType("KAPACITOR");
+    jobState.setHost(host);
+    jobState.setPort(port);
 
     ScriptGraph scriptGraph = new ScriptGraphBuilder().getInstance(workflowData);
     scriptGraph.initialize();
@@ -45,7 +66,6 @@ public class KapacitorEngine extends AbstractEngine {
     JsonObject kapaResponse = this.httpClient.post(TASK_ROOT, jobInfo.toString())
         .getAsJsonObject();
 
-    JobState jobState = job.getState();
     if (kapaResponse.get("id") == null) {
       jobState.setState(State.ERROR);
       jobState.setErrorMessage(kapaResponse.get("error").getAsString());
@@ -53,6 +73,7 @@ public class KapacitorEngine extends AbstractEngine {
       jobState.setState(State.CREATED);
       job.addConfig("script", resultScript);
       jobState.setEngineType("KAPACITOR");
+      jobState.setEngineId(kapaResponse.get("id").getAsString());
     }
   }
 
@@ -86,7 +107,7 @@ public class KapacitorEngine extends AbstractEngine {
           + ") does not exist. Make sure script is generated first.");
     }
 
-    String path = TASK_ROOT + '/' + job.getId();
+    String path = TASK_ROOT + '/' + job.getState().getEngineId();
     String flag = "{\"status\":\"enabled\"}";
 
     JsonObject kapaResponse = this.httpClient.patch(path, flag).getAsJsonObject();
@@ -117,7 +138,7 @@ public class KapacitorEngine extends AbstractEngine {
       throw new IllegalStateException("Engine id for the job does not exist.");
     }
 
-    String path = TASK_ROOT + '/' + job.getId();
+    String path = TASK_ROOT + '/' + job.getState().getEngineId();
     String flag = "{\"status\":\"disabled\"}";
 
     JsonObject kapaResponse = this.httpClient.patch(path, flag).getAsJsonObject();
@@ -133,6 +154,59 @@ public class KapacitorEngine extends AbstractEngine {
 
   @Override
   public boolean updateMetrics(JobState jobState) throws Exception {
+
+    boolean isUpdated = false;
+
+    JsonElement newState = this.httpClient.get(TASK_ROOT + "/" + jobState.getEngineId());
+    State previousState = jobState.getState();
+    if (newState == null) {
+      if (!previousState.equals(State.STOPPED)) {
+        jobState.setState(State.ERROR);
+        jobState.setErrorMessage("Job " + jobState.getEngineId() + " is unreachable");
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    KapacitorJob kapaJob = new Gson().fromJson(newState.toString(), KapacitorJob.class);
+
+    long lastModified = getTimestamp(kapaJob.getModified());
+
+    // If creation is failed, there is no job information in Kapacitor. When running is invalid,
+    // Kapacitor will save error message in "error" field. At the same time, "status" is "enabled"
+    // and "executing" is false.
+    jobState.setFinishTime(lastModified);
+
+    if (!StringUtils.isEmpty(kapaJob.getError())) {
+      if (!previousState.equals(State.ERROR)) {
+        jobState.setState(State.ERROR);
+        isUpdated = true;
+      }
+      jobState.setErrorMessage(kapaJob.getError());
+      return isUpdated;
+    }
+
+    if (kapaJob.getStatus().equals("disabled") && !kapaJob.isExecuting()) {
+      if (!previousState.equals(State.STOPPED)) {
+        jobState.setState(State.STOPPED);
+        isUpdated = true;
+      }
+      return isUpdated;
+    }
+
+    if (kapaJob.getStatus().equals("enabled") && kapaJob.isExecuting()) {
+      if (!previousState.equals(State.RUNNING)) {
+        jobState.setState(State.RUNNING);
+        isUpdated = true;
+      }
+      return isUpdated;
+    }
+
     return false;
+  }
+
+  private long getTimestamp(String isoDate) {
+    return Instant.parse(isoDate).toEpochMilli();
   }
 }

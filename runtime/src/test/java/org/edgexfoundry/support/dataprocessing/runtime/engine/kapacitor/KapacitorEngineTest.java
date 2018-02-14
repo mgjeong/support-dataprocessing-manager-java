@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +34,9 @@ public class KapacitorEngineTest {
   private MockKapacitorRest server;
   private WorkflowData spec;
 
+  private static final String HOST = "localhost";
+  private static final int PORT = 9092;
+
   @Before
   public void setup() throws Exception {
     server = new MockKapacitorRest();
@@ -40,9 +44,15 @@ public class KapacitorEngineTest {
     PowerMockito.mockStatic(HTTP.class);
     PowerMockito.whenNew(HTTP.class).withNoArguments().thenReturn(server);
 
-    engine = new KapacitorEngine("localhost", 9092);
+    engine = new KapacitorEngine(HOST, PORT);
     spec = new WorkflowData();
     spec.setWorkflowId(51423L);
+  }
+
+  @Test
+  public void testGetHostAndPort() {
+    Assert.assertEquals(engine.getHost(), HOST);
+    Assert.assertEquals(engine.getPort(), PORT);
   }
 
   @Test
@@ -153,7 +163,33 @@ public class KapacitorEngineTest {
   @Test
   public void testTemporaries() throws Exception {
     engine.delete(new Job("jobId", 1L));
-    engine.updateMetrics(new JobState("jobId"));
+  }
+
+  @Test
+  public void testUpdateMetrics() throws Exception {
+    prepareTestJob();
+    Job job = Job.create(spec);
+    engine.create(job);
+    engine.run(job);
+    engine.updateMetrics(job.getState());
+
+    server.off();
+    Assert.assertEquals(engine.updateMetrics(job.getState()), true);
+
+    // Task stopped by Kapacitor, not throughout manager
+    String path = "/kapacitor/v1/tasks/" + job.getState().getEngineId();
+    String offForced = "{\"status\":\"disabled\"}";
+    server.on();
+    server.patch(path, offForced);
+    Assert.assertEquals(engine.updateMetrics(job.getState()), true);
+
+    String onForced = "{\"status\":\"enabled\"}";
+    server.patch(path, onForced);
+    Assert.assertEquals(engine.updateMetrics(job.getState()), true);
+
+    String errorForced = "{\"error\":\"let's say error occurred\"}";
+    server.patch(path, errorForced);
+    Assert.assertEquals(engine.updateMetrics(job.getState()), true);
   }
 
   private void prepareTestJob() throws Exception {
@@ -194,6 +230,26 @@ public class KapacitorEngineTest {
     }
 
     @Override
+    public JsonElement get(String path) {
+      if (!alive) {
+        return null;
+      }
+
+      if (!path.startsWith(TASK_ROOT)) {
+        return null;
+      }
+
+      String id = path.split(TASK_ROOT + '/', 2)[1];
+      if (jobs.containsKey(id)) {
+        return jobs.get(id);
+      } else {
+        JsonObject error = new JsonObject();
+        error.addProperty("error", "no task exists");
+        return error;
+      }
+    }
+
+    @Override
     public JsonElement post(String path, String dataString) {
       if (!alive) {
         return null;
@@ -218,6 +274,7 @@ public class KapacitorEngineTest {
         } else {
           id = "test" + (++count);
           job.addProperty("id", id);
+          job.addProperty("created", Instant.now().toString());
         }
 
         jobs.put(id, job);
@@ -274,13 +331,15 @@ public class KapacitorEngineTest {
 
     private void updateStatus(String id) {
       JsonObject jobInfo = jobs.get(id);
+      jobInfo.addProperty("modified", Instant.now().toString());
       if (jobInfo.has("status")) {
         if (jobInfo.get("status").getAsString().equals("enabled")) {
-          jobInfo.addProperty("executing", "true");
+          jobInfo.addProperty("executing", true);
+          jobInfo.addProperty("last-enabled", Instant.now().toString());
           return;
         }
       }
-      jobInfo.addProperty("executing", "false");
+      jobInfo.addProperty("executing", false);
     }
   }
 }
