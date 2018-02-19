@@ -41,6 +41,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.slf4j.Logger;
@@ -78,11 +79,10 @@ public class FlinkEngine extends AbstractEngine {
   public void create(Job job) throws Exception {
     WorkflowData workflowData = job.getWorkflowData();
     job.setConfig(workflowData.getConfig());
-    job.getState().setEngineType("FLINK");
+    job.getState().setEngineType(EngineType.FLINK.name());
     job.getState().setHost(this.host);
     job.getState().setPort(this.port);
 
-    String launcherJarId = null;
     List<Path> jobSpecificData = new ArrayList<>();
     jobSpecificData.addAll(getModelInfo(workflowData));
     jobSpecificData.add(prepareFlinkJobPlan(workflowData, job.getId()));
@@ -94,7 +94,7 @@ public class FlinkEngine extends AbstractEngine {
     }
 
     // Upload jar to flink
-    launcherJarId = uploadLauncherJar(jobJarFile);
+    String launcherJarId = uploadLauncherJar(jobJarFile);
     if (launcherJarId == null) {
       throw new RuntimeException("Failed to upload Flink jar; Please check out connection");
     }
