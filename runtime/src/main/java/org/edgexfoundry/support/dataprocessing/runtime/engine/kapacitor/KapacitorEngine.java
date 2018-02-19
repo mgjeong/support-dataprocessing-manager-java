@@ -10,6 +10,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.AbstractEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph.ScriptGraph;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph.ScriptGraphBuilder;
@@ -21,7 +22,7 @@ public class KapacitorEngine extends AbstractEngine {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KapacitorEngine.class);
   private static final String TASK_ROOT = "/kapacitor/v1/tasks";
-  private HTTP httpClient = null;
+  private HTTP httpClient;
 
   private String host;
   private int port;
@@ -53,7 +54,7 @@ public class KapacitorEngine extends AbstractEngine {
     WorkflowData workflowData = job.getWorkflowData();
 
     JobState jobState = job.getState();
-    jobState.setEngineType("KAPACITOR");
+    jobState.setEngineType(EngineType.KAPACITOR.name());
     jobState.setHost(host);
     jobState.setPort(port);
 
@@ -79,7 +80,6 @@ public class KapacitorEngine extends AbstractEngine {
     } else {
       jobState.setState(State.CREATED);
       job.addConfig("script", resultScript);
-      jobState.setEngineType("KAPACITOR");
       jobState.setEngineId(kapaResponse.get("id").getAsString());
     }
   }
