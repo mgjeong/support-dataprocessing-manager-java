@@ -112,9 +112,24 @@ public class JarLoaderTest {
     Assert.assertNotNull(new JarLoader());
   }
 
+  @Test
+  public void testParameterlessConstructor() throws Exception {
+    ParameterClassTest clazz = JarLoader.newInstance(testTaskModelJar,
+        JarLoaderTest.class.getCanonicalName() + "$" + ParameterClassTest.class.getSimpleName(),
+        ParameterClassTest.class);
+    Assert.assertNull(clazz);
+  }
+
   public static class SimpleClassTest {
 
     public SimpleClassTest() {
+
+    }
+  }
+
+  public static class ParameterClassTest {
+
+    public ParameterClassTest(int sample) {
 
     }
   }

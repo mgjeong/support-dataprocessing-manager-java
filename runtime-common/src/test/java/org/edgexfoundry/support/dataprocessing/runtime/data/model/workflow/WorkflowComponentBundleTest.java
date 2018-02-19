@@ -39,6 +39,8 @@ public class WorkflowComponentBundleTest {
     Assert.assertEquals(true, bundle.isBuiltin());
     Assert.assertEquals(1,
         bundle.getWorkflowComponentUISpecification().getFields().size());
+    UIField uiField = uiSpecification.getFields().get(0);
+    Assert.assertTrue(!uiField.getOptions().isEmpty());
 
     uiSpecification.setFields(new ArrayList<>());
     Assert.assertEquals(0,
@@ -105,6 +107,8 @@ public class WorkflowComponentBundleTest {
     fieldName.setUiName("Name");
     fieldName.setUserInput(true);
     fieldName.setDefaultValue("Joey");
+    fieldName.setOptions(new ArrayList<>());
+    fieldName.addOption("3");
     return fieldName;
   }
 
