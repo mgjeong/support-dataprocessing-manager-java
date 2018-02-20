@@ -86,8 +86,6 @@ public class Application extends SpringBootServletInitializer {
 
   private static void terminate() {
     MonitoringManager.getInstance().terminate();
-
-    TaskManager.getInstance().terminate();
   }
 
   public static void main(String[] args) throws Exception {
