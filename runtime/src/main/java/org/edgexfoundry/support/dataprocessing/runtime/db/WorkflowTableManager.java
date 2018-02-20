@@ -36,7 +36,7 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
   public static synchronized WorkflowTableManager getInstance() {
     if (instance == null) {
-      instance = new WorkflowTableManager(Settings.JDBC_PATH);
+      instance = new WorkflowTableManager(Settings.getInstance().getJdbcPath());
     }
     return instance;
   }

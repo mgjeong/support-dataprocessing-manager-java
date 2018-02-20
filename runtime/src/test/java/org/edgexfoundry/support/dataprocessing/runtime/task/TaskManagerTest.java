@@ -131,8 +131,6 @@ public class TaskManagerTest {
     } catch (Exception e) {
       // success
     }
-
-    taskManager.terminate();
   }
 
   @Test
@@ -166,8 +164,6 @@ public class TaskManagerTest {
     } catch (Exception e) {
       // success
     }
-
-    taskManager.terminate();
   }
 
   @Test
@@ -191,8 +187,6 @@ public class TaskManagerTest {
     } catch (Exception e) {
       // success
     }
-
-    taskManager.terminate();
   }
 
   @Test

@@ -97,7 +97,7 @@ public class MonitoringManager implements Runnable {
         }
       } finally {
         try {
-          Thread.sleep(Settings.JOB_MONITORING_INTERVAL);
+          Thread.sleep(Settings.getInstance().getJobMonitoringInterval());
         } catch (InterruptedException e) {
           running = false;
         }
