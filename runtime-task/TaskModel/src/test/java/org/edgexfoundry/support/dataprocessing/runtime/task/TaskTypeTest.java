@@ -19,7 +19,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.task;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class taskTypeTest {
+public class TaskTypeTest {
 
     @Test
     public void toIntTest() {

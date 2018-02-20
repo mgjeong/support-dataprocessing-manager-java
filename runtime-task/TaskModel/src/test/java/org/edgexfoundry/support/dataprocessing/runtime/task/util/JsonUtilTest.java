@@ -19,162 +19,162 @@ package org.edgexfoundry.support.dataprocessing.runtime.task.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.Random;
+import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Random;
-import java.util.UUID;
-
 public class JsonUtilTest {
-    private double epsilon = 1e-7;
-    private Random random = new Random();
 
-    @Test
-    public void test1DDoubleJsonArray() {
-        double[] testData = new double[10];
-        for (int i = 0; i < testData.length; i++) {
-            testData[i] = random.nextDouble();
-        }
+  private double epsilon = 1e-7;
+  private Random random = new Random();
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
-
-        // Check elements
-        for (int i = 0; i < testData.length; i++) {
-            Assert.assertEquals(array.get(i).getAsDouble(), testData[i], epsilon);
-        }
+  @Test
+  public void test1DDoubleJsonArray() {
+    double[] testData = new double[10];
+    for (int i = 0; i < testData.length; i++) {
+      testData[i] = random.nextDouble();
     }
 
-    @Test
-    public void test2DDoubleJsonArray() {
-        double[][] testData = new double[10][20];
-        for (int i = 0; i < testData.length; i++) {
-            for (int j = 0; j < testData[i].length; j++) {
-                testData[i][j] = random.nextDouble();
-            }
-        }
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
+    // Check elements
+    for (int i = 0; i < testData.length; i++) {
+      Assert.assertEquals(array.get(i).getAsDouble(), testData[i], epsilon);
+    }
+  }
 
-        // Check elements
-        JsonArray subArray;
-        for (int i = 0; i < testData.length; i++) {
-            subArray = array.get(i).getAsJsonArray();
-            Assert.assertNotNull(subArray);
-            Assert.assertEquals(subArray.size(), testData[i].length);
-
-            for (int j = 0; j < testData[i].length; j++) {
-                Assert.assertEquals(subArray.get(j).getAsDouble(), testData[i][j], epsilon);
-            }
-        }
+  @Test
+  public void test2DDoubleJsonArray() {
+    double[][] testData = new double[10][20];
+    for (int i = 0; i < testData.length; i++) {
+      for (int j = 0; j < testData[i].length; j++) {
+        testData[i][j] = random.nextDouble();
+      }
     }
 
-    @Test
-    public void test1DObjectJsonArray() {
-        String[] testData = new String[10];
-        for (int i = 0; i < testData.length; i++) {
-            testData[i] = UUID.randomUUID().toString();
-        }
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
+    // Check elements
+    JsonArray subArray;
+    for (int i = 0; i < testData.length; i++) {
+      subArray = array.get(i).getAsJsonArray();
+      Assert.assertNotNull(subArray);
+      Assert.assertEquals(subArray.size(), testData[i].length);
 
-        // Check elements
-        for (int i = 0; i < testData.length; i++) {
-            Assert.assertEquals(array.get(i).getAsString(), testData[i]);
-        }
+      for (int j = 0; j < testData[i].length; j++) {
+        Assert.assertEquals(subArray.get(j).getAsDouble(), testData[i][j], epsilon);
+      }
+    }
+  }
+
+  @Test
+  public void test1DObjectJsonArray() {
+    String[] testData = new String[10];
+    for (int i = 0; i < testData.length; i++) {
+      testData[i] = UUID.randomUUID().toString();
     }
 
-    @Test
-    public void test2DObjectJsonArray() {
-        String[][] testData = new String[10][20];
-        for (int i = 0; i < testData.length; i++) {
-            for (int j = 0; j < testData[i].length; j++) {
-                testData[i][j] = UUID.randomUUID().toString();
-            }
-        }
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
+    // Check elements
+    for (int i = 0; i < testData.length; i++) {
+      Assert.assertEquals(array.get(i).getAsString(), testData[i]);
+    }
+  }
 
-        // Check elements
-        JsonArray subArray;
-        for (int i = 0; i < testData.length; i++) {
-            subArray = array.get(i).getAsJsonArray();
-            Assert.assertNotNull(subArray);
-            Assert.assertEquals(subArray.size(), testData[i].length);
-
-            for (int j = 0; j < testData[i].length; j++) {
-                Assert.assertEquals(subArray.get(j).getAsString(), testData[i][j]);
-            }
-        }
+  @Test
+  public void test2DObjectJsonArray() {
+    String[][] testData = new String[10][20];
+    for (int i = 0; i < testData.length; i++) {
+      for (int j = 0; j < testData[i].length; j++) {
+        testData[i][j] = UUID.randomUUID().toString();
+      }
     }
 
-    @Test
-    public void test1DObjectNumJsonArray() {
-        Number[] testData = new Number[10];
-        for (int i = 0; i < testData.length; i++) {
-            testData[i] = (Number) random.nextInt();
-        }
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
+    // Check elements
+    JsonArray subArray;
+    for (int i = 0; i < testData.length; i++) {
+      subArray = array.get(i).getAsJsonArray();
+      Assert.assertNotNull(subArray);
+      Assert.assertEquals(subArray.size(), testData[i].length);
 
-        // Check elements
-        for (int i = 0; i < testData.length; i++) {
-            Assert.assertEquals(array.get(i).getAsInt(), testData[i]);
-        }
+      for (int j = 0; j < testData[i].length; j++) {
+        Assert.assertEquals(subArray.get(j).getAsString(), testData[i][j]);
+      }
+    }
+  }
+
+  @Test
+  public void test1DObjectNumJsonArray() {
+    Number[] testData = new Number[10];
+    for (int i = 0; i < testData.length; i++) {
+      testData[i] = (Number) random.nextInt();
     }
 
-    @Test
-    public void test1DObjectChaJsonArray() {
-        Character[] testData = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
+    // Check elements
+    for (int i = 0; i < testData.length; i++) {
+      Assert.assertEquals(array.get(i).getAsInt(), testData[i]);
+    }
+  }
 
-        // Check elements
-        for (int i = 0; i < testData.length; i++) {
-            Assert.assertEquals((Character) array.get(i).getAsCharacter(), testData[i]);
-        }
+  @Test
+  public void test1DObjectChaJsonArray() {
+    Character[] testData = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
+
+    // Check elements
+    for (int i = 0; i < testData.length; i++) {
+      Assert.assertEquals((Character) array.get(i).getAsCharacter(), testData[i]);
+    }
+  }
+
+  @Test
+  public void test1DObjectBoolJsonArray() {
+    Boolean[] testData = new Boolean[10];
+    for (int i = 0; i < testData.length; i++) {
+      testData[i] = random.nextBoolean();
     }
 
-    @Test
-    public void test1DObjectBoolJsonArray() {
-        Boolean[] testData = new Boolean[10];
-        for (int i = 0; i < testData.length; i++) {
-            testData[i] = random.nextBoolean();
-        }
+    JsonArray array = JsonUtil.makeArray(testData);
+    Assert.assertNotNull(array);
+    Assert.assertEquals(array.size(), testData.length);
 
-        JsonArray array = JsonUtil.makeArray(testData);
-        Assert.assertNotNull(array);
-        Assert.assertEquals(array.size(), testData.length);
-
-        // Check elements
-        for (int i = 0; i < testData.length; i++) {
-            Assert.assertEquals(array.get(i).getAsBoolean(), testData[i]);
-        }
+    // Check elements
+    for (int i = 0; i < testData.length; i++) {
+      Assert.assertEquals(array.get(i).getAsBoolean(), testData[i]);
     }
+  }
 
 
-    @Test
-    public void test1DObjectJsonEleJsonArray() {
-        JsonElement jsonElement = new JsonObject();
-        ((JsonObject) jsonElement).addProperty("foo", "bar");
-        ((JsonObject) jsonElement).addProperty("foo2", 42);
+  @Test
+  public void test1DObjectJsonEleJsonArray() {
+    JsonElement jsonElement = new JsonObject();
+    ((JsonObject) jsonElement).addProperty("foo", "bar");
+    ((JsonObject) jsonElement).addProperty("foo2", 42);
 
-        System.out.println(jsonElement.toString());
+    System.out.println(jsonElement.toString());
 
-        JsonElement jsonElement1 = JsonUtil.parse("{\"foo\":\"bar\",\"foo2\":42}");
-        System.out.println(jsonElement1.toString());
+    JsonElement jsonElement1 = JsonUtil.parse("{\"foo\":\"bar\",\"foo2\":42}");
+    System.out.println(jsonElement1.toString());
 
-        Assert.assertEquals(jsonElement, jsonElement1);
-    }
+    Assert.assertEquals(jsonElement, jsonElement1);
+  }
 }
