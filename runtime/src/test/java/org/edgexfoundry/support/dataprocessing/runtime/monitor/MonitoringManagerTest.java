@@ -8,6 +8,8 @@ import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
@@ -27,6 +29,7 @@ public class MonitoringManagerTest {
 
   private static MonitoringManager monitoringManager;
   private static Engine flinkEngine;
+  private static JobTableManager jobTableManager;
 
   @BeforeClass
   public static void initialize() {
@@ -35,8 +38,14 @@ public class MonitoringManagerTest {
     EngineManager engineManager = spy(EngineManager.getInstance());
     doReturn(flinkEngine).when(engineManager).getEngine(anyString(), anyInt(), any());
 
-    WhiteboxImpl
-        .setInternalState(monitoringManager, "jobTableManager", mock(JobTableManager.class));
+    jobTableManager = mock(JobTableManager.class);
+    List<Job> jobs = new ArrayList<>();
+    Job job = new Job("jobId", 1L);
+    job.getState().setState(State.RUNNING);
+    jobs.add(job);
+    doReturn(jobs).when(jobTableManager).getJobs();
+
+    WhiteboxImpl.setInternalState(monitoringManager, "jobTableManager", jobTableManager);
     WhiteboxImpl.setInternalState(monitoringManager, "engineManager", engineManager);
   }
 
