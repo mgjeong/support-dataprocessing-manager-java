@@ -20,3 +20,5 @@ runtime/resource/engine-flink.jar
 ### VIM ###
 *.swp
 
+### svace ###
+.svace-dir/*
