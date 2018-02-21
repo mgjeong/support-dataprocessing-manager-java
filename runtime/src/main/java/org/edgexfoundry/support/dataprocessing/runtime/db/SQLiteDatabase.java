@@ -18,15 +18,19 @@ public final class SQLiteDatabase {
     dataSource.setUrl(host);
   }
 
-  public synchronized Connection getConnection() {
+  public synchronized Connection getConnection() throws SQLException {
     if (dataSource == null) {
-      throw new RuntimeException(SQLiteDatabase.class.getSimpleName() + " is not initialized.");
+      throw new SQLException(SQLiteDatabase.class.getSimpleName() + " is not initialized.");
     }
 
     try {
-      return dataSource.getConnection();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
+      Connection connection = dataSource.getConnection();
+      if (connection == null) {
+        throw new SQLException("Failed to retrieve connection from data source.");
+      }
+      return connection;
+    } catch (Exception e) {
+      throw new SQLException(e);
     }
   }
 }
