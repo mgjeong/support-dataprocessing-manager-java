@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -6,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -15,12 +32,16 @@ public class JobTest {
 
   @Test
   public void testSetterAndGetter() {
-    Job job = new Job("jobid", 1L);
+    Job job = Job.create("jobid", 1L);
     job.setConfigStr("{}");
+    WorkflowData workflowData = new WorkflowData();
+    job.setWorkflowData(workflowData);
 
     Assert.assertEquals("jobid", job.getId());
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
     Assert.assertEquals("{}", job.getConfigStr());
+    Assert.assertNotNull(job.getState());
+    Assert.assertNotNull(job.getWorkflowData());
 
     Map<String, Object> config = new HashMap<>();
     config.put("sample", 1);
@@ -86,6 +107,23 @@ public class JobTest {
   public void testCreate() {
     Job job = Job.create("jobId", 1L);
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
+
+    try {
+      Job.create(null);
+      Assert.fail("Should not reach here");
+    } catch (Exception e) {
+    }
+
+    try {
+      Job.create(null, 3L);
+      Assert.fail("Should not reach here");
+    } catch (Exception e) {
+    }
+
+    WorkflowData workflowData = new WorkflowData();
+    workflowData.setWorkflowId(5L);
+    job = Job.create(workflowData);
+    Assert.assertEquals(5L, job.getWorkflowId(), 0);
   }
 
   @Test
@@ -100,5 +138,8 @@ public class JobTest {
     jobs.add(jobC);
 
     Assert.assertEquals(2, jobs.size());
+    Assert.assertTrue(jobA.equals(jobB));
+    Assert.assertFalse(jobA.equals(jobC));
+    Assert.assertFalse(jobA.equals("hello"));
   }
 }

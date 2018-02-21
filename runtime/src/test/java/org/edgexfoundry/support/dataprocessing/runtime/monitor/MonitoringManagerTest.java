@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.monitor;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -8,6 +24,8 @@ import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
@@ -27,6 +45,7 @@ public class MonitoringManagerTest {
 
   private static MonitoringManager monitoringManager;
   private static Engine flinkEngine;
+  private static JobTableManager jobTableManager;
 
   @BeforeClass
   public static void initialize() {
@@ -35,8 +54,14 @@ public class MonitoringManagerTest {
     EngineManager engineManager = spy(EngineManager.getInstance());
     doReturn(flinkEngine).when(engineManager).getEngine(anyString(), anyInt(), any());
 
-    WhiteboxImpl
-        .setInternalState(monitoringManager, "jobTableManager", mock(JobTableManager.class));
+    jobTableManager = mock(JobTableManager.class);
+    List<Job> jobs = new ArrayList<>();
+    Job job = new Job("jobId", 1L);
+    job.getState().setState(State.RUNNING);
+    jobs.add(job);
+    doReturn(jobs).when(jobTableManager).getJobs();
+
+    WhiteboxImpl.setInternalState(monitoringManager, "jobTableManager", jobTableManager);
     WhiteboxImpl.setInternalState(monitoringManager, "engineManager", engineManager);
   }
 

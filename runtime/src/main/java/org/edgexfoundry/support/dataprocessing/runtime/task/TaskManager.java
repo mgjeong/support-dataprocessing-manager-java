@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,10 +73,6 @@ public final class TaskManager {
     if (!this.customJarDirectory.exists() || !this.customJarDirectory.isDirectory()) {
       throw new InvalidParameterException("Directory not found: " + customJarPath);
     }
-  }
-
-  public void terminate() {
-    LOGGER.info("TaskManager terminated.");
   }
 
   private List<String> getClassNames(File taskModelFile) throws Exception {
