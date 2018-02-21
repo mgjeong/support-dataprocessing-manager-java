@@ -50,9 +50,9 @@ import org.slf4j.LoggerFactory;
 public class FlinkEngine extends AbstractEngine {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FlinkEngine.class);
-  private String defaultJobJarLocation = Settings.RESOURCE_PATH;
+  private String defaultJobJarLocation = Settings.getInstance().getResourcePath();
 
-  private String defaultLauncherJarLocation = Settings.RESOURCE_PATH
+  private String defaultLauncherJarLocation = Settings.getInstance().getResourcePath()
       + "engine-flink.jar";
 
   private HTTP httpClient = null;

@@ -56,11 +56,13 @@ public class JobController extends AbstractController {
   private WorkflowTableManager workflowTableManager = null;
   private JobTableManager jobTableManager = null;
   private MonitoringManager monitoringManager = null;
+  private EngineManager engineManager = null;
 
   public JobController() {
     this.workflowTableManager = WorkflowTableManager.getInstance();
     this.jobTableManager = JobTableManager.getInstance();
     this.monitoringManager = MonitoringManager.getInstance();
+    this.engineManager = EngineManager.getInstance();
   }
 
   @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")
@@ -126,8 +128,7 @@ public class JobController extends AbstractController {
   protected Engine getEngine(String targetHost, WorkflowData.EngineType engineType) {
     String[] splits = targetHost.split(":");
 
-    return EngineManager.getInstance()
-        .getEngine(splits[0], Integer.parseInt(splits[1]), engineType);
+    return this.engineManager.getEngine(splits[0], Integer.parseInt(splits[1]), engineType);
   }
 
   @ApiOperation(value = "Stop job", notes = "Stop job")

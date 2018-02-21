@@ -22,12 +22,17 @@ import org.junit.BeforeClass;
 
 public abstract class DatabaseTest {
 
-  protected static File testDB = new File("./test.db");
-  protected static File testDBwal = new File("./test.db-wal");
-  protected static File testDBshm = new File("./test.db-shm");
+  protected static File testDB = null;
+  protected static File testDBwal = null;
+  protected static File testDBshm = null;
 
   @BeforeClass
   public static void createFiles() {
+    String randomDatabaseFile = "./test_" + System.currentTimeMillis();
+    testDB = new File(randomDatabaseFile + ".db");
+    testDBwal = new File(randomDatabaseFile + ".db-wal");
+    testDBshm = new File(randomDatabaseFile + ".db-shm");
+
     if (testDB.exists() && !testDB.delete()) {
       throw new RuntimeException(testDB.getAbsolutePath() + " already exists.");
     } else if (testDBwal.exists() && !testDBwal.delete()) {

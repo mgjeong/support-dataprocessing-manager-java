@@ -37,7 +37,7 @@ public class JobTableManager extends AbstractStorageManager {
 
   public static synchronized JobTableManager getInstance() {
     if (instance == null) {
-      instance = new JobTableManager(Settings.JDBC_PATH);
+      instance = new JobTableManager(Settings.getInstance().getJdbcPath());
     }
     return instance;
   }

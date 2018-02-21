@@ -16,78 +16,79 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task.util;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class StringSerializerTest {
-    @Test
-    public void testSerializableObject() throws IOException, ClassNotFoundException {
-        SimpleObject ross = SimpleObject.create("Ross Geller", 30, 80.3, true);
-        SimpleObject rachel = SimpleObject.create("Rachel Green", 28, 56.4, false);
 
-        // encode
-        String strRoss = StringSerializer.encode(ross);
-        String strRachel = StringSerializer.encode(rachel);
+  @Test
+  public void testSerializableObject() throws IOException, ClassNotFoundException {
+    SimpleObject ross = SimpleObject.create("Ross Geller", 30, 80.3, true);
+    SimpleObject rachel = SimpleObject.create("Rachel Green", 28, 56.4, false);
 
-        Assert.assertNotNull(strRoss);
-        Assert.assertNotNull(strRachel);
+    // encode
+    String strRoss = StringSerializer.encode(ross);
+    String strRachel = StringSerializer.encode(rachel);
 
-        System.out.println("Ross: " + strRoss);
-        System.out.println("Rachel: " + strRachel);
+    Assert.assertNotNull(strRoss);
+    Assert.assertNotNull(strRachel);
 
-        // decode
-        SimpleObject newRoss = StringSerializer.decode(strRoss, SimpleObject.class);
-        SimpleObject newRachel = StringSerializer.decode(strRachel, SimpleObject.class);
+    System.out.println("Ross: " + strRoss);
+    System.out.println("Rachel: " + strRachel);
 
-        Assert.assertNotNull(newRoss);
-        Assert.assertNotNull(newRachel);
+    // decode
+    SimpleObject newRoss = StringSerializer.decode(strRoss, SimpleObject.class);
+    SimpleObject newRachel = StringSerializer.decode(strRachel, SimpleObject.class);
 
-        Assert.assertTrue(ross.equals(newRoss));
-        Assert.assertTrue(rachel.equals(newRachel));
+    Assert.assertNotNull(newRoss);
+    Assert.assertNotNull(newRachel);
+
+    Assert.assertTrue(ross.equals(newRoss));
+    Assert.assertTrue(rachel.equals(newRachel));
+  }
+
+  @Test
+  public void testBase64() {
+    String randomUUID = UUID.randomUUID().toString();
+    String encoded = StringSerializer.encodeBase64(randomUUID);
+    Assert.assertNotNull(encoded);
+    String decoded = StringSerializer.decodeBase64(encoded);
+    Assert.assertEquals(randomUUID, decoded);
+  }
+
+  private static class SimpleObject implements Serializable {
+
+    String name;
+    int age;
+    double weight;
+    boolean valid;
+
+    private SimpleObject(String name, int age, double weight, boolean valid) {
+      this.name = name;
+      this.age = age;
+      this.weight = weight;
+      this.valid = valid;
     }
 
-    @Test
-    public void testBase64() {
-        String randomUUID = UUID.randomUUID().toString();
-        String encoded = StringSerializer.encodeBase64(randomUUID);
-        Assert.assertNotNull(encoded);
-        String decoded = StringSerializer.decodeBase64(encoded);
-        Assert.assertEquals(randomUUID, decoded);
+    @Override
+    public boolean equals(Object obj) {
+      if (!(obj instanceof SimpleObject)) {
+        return false;
+      } else if (obj == this) {
+        return true;
+      }
+
+      SimpleObject other = (SimpleObject) obj;
+
+      return this.name.equals(other.name) && this.age == other.age
+          && this.weight == other.weight && this.valid == other.valid;
     }
 
-    private static class SimpleObject implements Serializable {
-        String name;
-        int age;
-        double weight;
-        boolean valid;
-
-        private SimpleObject(String name, int age, double weight, boolean valid) {
-            this.name = name;
-            this.age = age;
-            this.weight = weight;
-            this.valid = valid;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof SimpleObject)) {
-                return false;
-            } else if (obj == this) {
-                return true;
-            }
-
-            SimpleObject other = (SimpleObject) obj;
-
-            return this.name.equals(other.name) && this.age == other.age
-                    && this.weight == other.weight && this.valid == other.valid;
-        }
-
-        public static SimpleObject create(String name, int age, double weight, boolean valid) {
-            return new SimpleObject(name, age, weight, valid);
-        }
+    public static SimpleObject create(String name, int age, double weight, boolean valid) {
+      return new SimpleObject(name, age, weight, valid);
     }
+  }
 }

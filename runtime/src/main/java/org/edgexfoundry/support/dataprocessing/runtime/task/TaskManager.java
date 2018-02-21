@@ -75,10 +75,6 @@ public final class TaskManager {
     }
   }
 
-  public void terminate() {
-    LOGGER.info("TaskManager terminated.");
-  }
-
   private List<String> getClassNames(File taskModelFile) throws Exception {
     if (taskModelFile == null || !taskModelFile.isFile()) {
       LOGGER.error("Invalid task model file received.");

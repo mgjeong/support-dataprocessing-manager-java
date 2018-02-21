@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -31,12 +32,16 @@ public class JobTest {
 
   @Test
   public void testSetterAndGetter() {
-    Job job = new Job("jobid", 1L);
+    Job job = Job.create("jobid", 1L);
     job.setConfigStr("{}");
+    WorkflowData workflowData = new WorkflowData();
+    job.setWorkflowData(workflowData);
 
     Assert.assertEquals("jobid", job.getId());
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
     Assert.assertEquals("{}", job.getConfigStr());
+    Assert.assertNotNull(job.getState());
+    Assert.assertNotNull(job.getWorkflowData());
 
     Map<String, Object> config = new HashMap<>();
     config.put("sample", 1);
@@ -102,6 +107,23 @@ public class JobTest {
   public void testCreate() {
     Job job = Job.create("jobId", 1L);
     Assert.assertEquals(1L, job.getWorkflowId().longValue());
+
+    try {
+      Job.create(null);
+      Assert.fail("Should not reach here");
+    } catch (Exception e) {
+    }
+
+    try {
+      Job.create(null, 3L);
+      Assert.fail("Should not reach here");
+    } catch (Exception e) {
+    }
+
+    WorkflowData workflowData = new WorkflowData();
+    workflowData.setWorkflowId(5L);
+    job = Job.create(workflowData);
+    Assert.assertEquals(5L, job.getWorkflowId(), 0);
   }
 
   @Test
@@ -116,5 +138,8 @@ public class JobTest {
     jobs.add(jobC);
 
     Assert.assertEquals(2, jobs.size());
+    Assert.assertTrue(jobA.equals(jobB));
+    Assert.assertFalse(jobA.equals(jobC));
+    Assert.assertFalse(jobA.equals("hello"));
   }
 }
