@@ -52,7 +52,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
    */
   public Collection<Workflow> listWorkflows() {
     String sql = "SELECT id, name, config FROM workflow";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql);
         ResultSet rs = ps.executeQuery()) {
       Collection<Workflow> topologies = new ArrayList<>();
       while (rs.next()) {
@@ -72,7 +73,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
   public Collection<WorkflowComponentBundle> listWorkflowComponentBundles() {
     Collection<WorkflowComponentBundle> bundles = new ArrayList<>();
     String sql = "SELECT * FROM workflow_component_bundle";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         bundles.add(mapToWorkflowComponentBundle(rs));
@@ -182,7 +184,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "SELECT id, name, config FROM workflow WHERE id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
 
       if (!rs.next()) {
@@ -208,8 +211,7 @@ public class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "INSERT INTO workflow_editor_metadata (workflowId, data) VALUES (?, ?)";
-    try (
-        Connection connection = getConnection();
+    try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
             editorMetadata.getWorkflowId(), editorMetadata.getData())) {
       boolean oldState = connection.getAutoCommit();
@@ -250,8 +252,7 @@ public class WorkflowTableManager extends AbstractStorageManager {
     editorMetadata.setWorkflowId(workflowId);
 
     String sql = "INSERT OR REPLACE INTO workflow_editor_metadata (workflowId, data) VALUES(?, ?)";
-    try (
-        Connection connection = getConnection();
+    try (Connection connection = getConnection();
         PreparedStatement ps = createPreparedStatement(connection, sql,
             editorMetadata.getWorkflowId(), editorMetadata.getData())) {
       boolean oldState = connection.getAutoCommit();
@@ -329,7 +330,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "SELECT workflowId, data FROM workflow_editor_metadata WHERE workflowId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
 
       if (!rs.next()) {
@@ -393,7 +395,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
     Collection<WorkflowComponentBundle> bundles = new ArrayList<>();
     String sql = "SELECT * FROM workflow_component_bundle WHERE type = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, type.name());
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, type.name());
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         bundles.add(mapToWorkflowComponentBundle(rs));
@@ -416,7 +419,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
     Collection<WorkflowComponentBundle> bundles = new ArrayList<>();
     String sql = "SELECT * FROM workflow_component_bundle WHERE path = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, bundleJar);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, bundleJar);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         bundles.add(mapToWorkflowComponentBundle(rs));
@@ -534,8 +538,9 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "SELECT * FROM workflow_component_bundle WHERE " +
         "name = ? AND subType = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, componentName,
-        componentSubType);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, componentName,
+            componentSubType);
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         return null;
@@ -556,8 +561,9 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
     String sql = "SELECT * FROM workflow_component_bundle WHERE " +
         "name = ? AND type = ? AND subType = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, componentName,
-        componentType.name(), componentSubType);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, componentName,
+            componentType.name(), componentSubType);
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         return null;
@@ -618,8 +624,9 @@ public class WorkflowTableManager extends AbstractStorageManager {
     sqlBuilder.append("FROM workflow_component WHERE componentBundleId = ?");
 
     List<Long> workflowIds = new ArrayList<>();
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sqlBuilder.toString(),
-        existingBundleId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sqlBuilder.toString(),
+            existingBundleId);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         workflowIds.add(rs.getLong("workflowId"));
@@ -644,7 +651,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
     Collection<WorkflowStream> streams = new ArrayList<>();
     String sql = "SELECT * FROM workflow_stream WHERE workflowId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         streams.add(mapToWorkflowStream(rs));
@@ -662,7 +670,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "SELECT * FROM workflow_stream WHERE workflowId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId, streamId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId, streamId);
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         throw new RuntimeException("Workflow stream does not exist.");
@@ -829,7 +838,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
 
     Collection<WorkflowEdge> edges = new ArrayList<>();
     String sql = "SELECT * FROM workflow_edge WHERE workflowId = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         edges.add(mapToWorkflowEdge(rs));
@@ -853,7 +863,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
     }
 
     String sql = "SELECT * FROM workflow_edge WHERE workflowId = ? AND id = ?";
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId, edgeId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId, edgeId);
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         throw new RuntimeException(
@@ -1092,7 +1103,8 @@ public class WorkflowTableManager extends AbstractStorageManager {
         .append("WHERE workflow_component.workflowId = ? ")
         .append("AND workflow_component.componentBundleId = workflow_component_bundle.id");
     String sql = sqlBuilder.toString();
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         WorkflowComponent component = mapToWorkflowComponent(rs);
@@ -1443,8 +1455,9 @@ public class WorkflowTableManager extends AbstractStorageManager {
         .append("AND workflow_component.id = ? ")
         .append("AND workflow_component.componentBundleId = workflow_component_bundle.id");
     String sql = sqlBuilder.toString();
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId,
-        componentId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId,
+            componentId);
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         return null;
@@ -1508,7 +1521,7 @@ public class WorkflowTableManager extends AbstractStorageManager {
   }
 
   public WorkflowData doExportWorkflow(Workflow workflow) {
-    if(workflow == null){
+    if (workflow == null) {
       throw new RuntimeException("Workflow is null.");
     }
     WorkflowData workflowData = new WorkflowData();
