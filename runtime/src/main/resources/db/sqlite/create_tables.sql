@@ -78,8 +78,12 @@ CREATE TABLE IF NOT EXISTS `job_state` (
   `jobId` TEXT NOT NULL,
   `state` TEXT,
   `startTime` LONG,
+  `finishTime` LONG,
+  `errorMessage` TEXT,
   `engineId` TEXT,
   `engineType` TEXT,
+  `engineHost` TEXT,
+  `enginePort` LONG,
   PRIMARY KEY (`jobId`),
   FOREIGN KEY (`jobId`) REFERENCES `job` (`id`)
 );

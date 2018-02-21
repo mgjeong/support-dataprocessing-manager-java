@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ public enum ErrorType implements Serializable {
   DPFW_ERROR_ENGINE_FLINK,
   DPFW_ERROR_FULL_JOB,
   DPFW_ERROR_CONNECTION_ERROR,
-  DPFW_ERROR_ENGINE_TYPE
+  DPFW_ERROR_ENGINE_TYPE,
+  DPFW_ERROR_INTERNAL_ERROR
 }
 

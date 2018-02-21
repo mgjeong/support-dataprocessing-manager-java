@@ -1,10 +1,28 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +36,7 @@ public class WorkflowDataTest {
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(1L);
     workflowData.setWorkflowName("sample");
-    workflowData.setConfig("{}");
+    workflowData.setConfig(new HashMap<>());
 
     WorkflowEditorMetadata metadata = makeWorkflowEditorMetadata();
     workflowData.setWorkflowEditorMetadata(metadata);
@@ -40,7 +58,9 @@ public class WorkflowDataTest {
     Assert.assertEquals(0, workflowData.getEdges().size());
     Assert.assertEquals(null, workflowData.getEngineType());
 
-    workflowData.setConfig("{\"targetHost\": \"localhost\"}");
+    Map<String, Object> config = new HashMap<>();
+    config.put("targetHost", "localhost");
+    workflowData.setConfig(config);
     Assert.assertEquals(1, workflowData.getConfig().size());
     Assert.assertTrue(!workflowData.getConfigStr().isEmpty());
   }
@@ -139,7 +159,9 @@ public class WorkflowDataTest {
         });
     Whitebox.setInternalState(workflowData, "mapper", objectMapper);
     try {
-      workflowData.setConfig("{\"targetHost\":\"localhost\"}");
+      Map<String, Object> config = new HashMap<>();
+      config.put("targetHost", "localhost");
+      workflowData.setConfig(config);
       workflowData.getConfigStr();
       Assert.fail("Should not reach here.");
     } catch (RuntimeException e) {
@@ -152,8 +174,7 @@ public class WorkflowDataTest {
     WorkflowData workflowData = new WorkflowData();
     workflowData.setWorkflowId(1L);
     workflowData.setWorkflowName("sample");
-    workflowData.setConfig("{}");
-
+    workflowData.setConfig(new HashMap<>());
     String json = new Gson().toJson(workflowData);
     Assert.assertNotNull(json);
   }

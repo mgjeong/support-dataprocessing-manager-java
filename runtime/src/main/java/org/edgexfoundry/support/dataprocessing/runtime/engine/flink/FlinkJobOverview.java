@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,28 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.task;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
+import java.util.ArrayList;
 
-public interface DirectoryChangeEventListener {
+public class FlinkJobOverview {
 
-  ErrorFormat fileCreatedEventReceiver(String fileName);
+  private ArrayList<FlinkJob> running;
+  private ArrayList<FlinkJob> finished;
 
-  ErrorFormat fileRemovedEventReceiver(String fileName);
+  public ArrayList<FlinkJob> getRunning() {
+    return running;
+  }
+
+  public void setRunning(ArrayList<FlinkJob> running) {
+    this.running = running;
+  }
+
+  public ArrayList<FlinkJob> getFinished() {
+    return finished;
+  }
+
+  public void setFinished(ArrayList<FlinkJob> finished) {
+    this.finished = finished;
+  }
 }

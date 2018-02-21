@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.configuration;
 
-import org.edgexfoundry.support.dataprocessing.runtime.configuration.SwaggerConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class SwaggerConfTest {
-    private SwaggerConfiguration conf = new SwaggerConfiguration();
 
-    @Test
-    public void getDocket() {
-        Assert.assertNotNull(conf.api());
-    }
+  private SwaggerConfiguration conf = new SwaggerConfiguration();
 
-    @Test
-    public void getMultipartConfigElement() {
-        Assert.assertNotNull(conf.multipartConfigElement());
-    }
+  @Test
+  public void getDocket() {
+    Assert.assertNotNull(conf.api());
+  }
 
-    @Test
-    public void getMultipartResolver() {
-        Assert.assertNotNull(conf.multipartResolver());
-    }
- }
+  @Test
+  public void getMultipartConfigElement() {
+    Assert.assertNotNull(conf.multipartConfigElement());
+  }
+
+  @Test
+  public void getMultipartResolver() {
+    Assert.assertNotNull(conf.multipartResolver());
+  }
+}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,18 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
-import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import java.net.URL;
+import java.net.URLClassLoader;
 
-import java.lang.reflect.Modifier;
+public class TaskClassLoader extends URLClassLoader {
 
-public class TaskModelLoader extends JarLoader {
-
-  public TaskModelLoader(String jarPath, ClassLoader classLoader) throws Exception {
-    super(jarPath, classLoader);
+  public TaskClassLoader(URL[] urls) {
+    super(urls);
   }
 
-  public TaskModel newInstance(String modelName) throws Exception {
-    TaskModel model = null;
-    Class<TaskModel> cls = getClassInstance(modelName);
-
-    if (Modifier.isAbstract(cls.getModifiers())) {
-      // if abstract class, we cannot instantiate
-      return null;
-    } else {
-      Object obj = cls.newInstance();
-      if (obj instanceof TaskModel) {
-        return (TaskModel) obj;
-      } else {
-        return null;
-      }
+  public void addURL(URL url) {
+    if (url != null) {
+      super.addURL(url);
     }
   }
 }

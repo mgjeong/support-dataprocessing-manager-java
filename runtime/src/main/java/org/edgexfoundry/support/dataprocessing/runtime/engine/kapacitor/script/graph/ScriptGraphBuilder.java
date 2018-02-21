@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph;
 
 import java.util.ArrayList;
@@ -9,26 +25,37 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ScriptGraphBuilder {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ScriptGraphBuilder.class);
+
   private WorkflowData jobConfig;
 
   private Map<ScriptVertex, List<ScriptVertex>> edges;
 
-  public ScriptGraph getInstance(WorkflowData workflowData) throws Exception {
+  /**
+   * Builds a graph corresponding to the given workflow.
+   * From {@link WorkflowData}, this builder will generate the connection between vertices,
+   * which consists of sources, sinks, and processors.
+   *
+   * @param workflowData Composition of sources, sinks, processors, and their connections
+   * @return Script graph to decide reading sequence and to prepare Kapacitor script
+   */
+  public ScriptGraph getInstance(WorkflowData workflowData) {
     this.jobConfig = workflowData;
     initConfig();
 
     return new ScriptGraph(jobConfig.getWorkflowName(), edges);
   }
 
-  private void initConfig() throws Exception{
-    if (this.jobConfig == null) {
-      throw new RuntimeException("Job configuration is null");
+  private void initConfig() {
+    if (jobConfig == null) {
+      throw new NullPointerException("Job configuration is null");
     }
+
+    if (isEmpty(jobConfig.getSources()) || isEmpty(jobConfig.getSinks())) {
+      throw new NullPointerException("Source and sink must be specified");
+    }
+
     Map<Long, ScriptVertex> map = new HashMap<>();
     for (WorkflowSource injectInfo : jobConfig.getSources()) {
       InjectVertex injector = new InjectVertex(injectInfo);
@@ -41,7 +68,7 @@ public class ScriptGraphBuilder {
     }
 
     for (WorkflowProcessor queryInfo : jobConfig.getProcessors()) {
-       QueryVertex query = new QueryVertex(queryInfo);
+      QueryVertex query = new QueryVertex(queryInfo);
       map.put(queryInfo.getId(), query);
     }
 
@@ -59,9 +86,14 @@ public class ScriptGraphBuilder {
         } else {
           edges.get(fromVertex).add(toVertex);
         }
+      } else {
+        throw new IllegalStateException("Unavailable vertex included when " + from + "->" + to);
       }
     }
+  }
 
+  private <T> boolean isEmpty(List<T> list) {
+    return list == null || list.isEmpty();
   }
 
 }

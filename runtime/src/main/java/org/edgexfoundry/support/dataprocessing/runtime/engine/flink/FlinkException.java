@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,21 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.edgexfoundry.support.dataprocessing.runtime.engine;
+package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
-public enum EngineType {
-    None,
-    Flink,
-    Spark,
-    Kapacitor
+import com.google.gson.annotations.SerializedName;
+
+public class FlinkException {
+
+  @SerializedName("root-exception")
+  private String rootException;
+
+
+  public String getRootException() {
+    return rootException;
+  }
+
+  public void setRootException(String rootException) {
+    this.rootException = rootException;
+  }
 }

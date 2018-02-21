@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,25 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.powermock.api.mockito.PowerMockito.doReturn;
+import static org.powermock.api.mockito.PowerMockito.doThrow;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.spy;
+
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.internal.WhiteboxImpl;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
-/*
-@WebAppConfiguration
-@PrepareForTest(TaskManager.class)
-@PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @RunWith(PowerMockRunner.class)
-*/
+@PrepareForTest(value = {TaskManager.class})
 public class TaskControllerTest {
 
   @Test
@@ -33,125 +43,78 @@ public class TaskControllerTest {
     Assert.assertNotNull(taskController);
   }
 
-/*
-    private static MockMvc mockMvc;
+  @Test
+  public void testAddCustomTask() throws Exception {
+    TaskController taskController = spy(new TaskController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(taskController, "taskManager", taskManager);
+    // test successful validation
+    MultipartFile mocked = mock(MultipartFile.class);
+    doReturn(false).when(mocked).isEmpty();
+    doReturn("sample.jar").when(mocked).getOriginalFilename();
+    doReturn("sample.jar").when(mocked).getName();
+    doReturn("hello".getBytes()).when(mocked).getBytes();
 
-    @InjectMocks
-    private static TaskController taskController;
+    ResponseEntity responseEntity = taskController.addCustomTask(mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains(mocked.getOriginalFilename()));
 
-    @Mock
-    private static TaskManager taskManager;
+    // test exception
+    doThrow(new Exception("Mocked")).when(taskManager).addCustomTask(any(), any());
+    responseEntity = taskController.addCustomTask(mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+    // test invalid param
+    responseEntity = taskController.addCustomTask(null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+  }
 
-    @BeforeClass
-    public static void setUp() {
-        mockStatic(TaskManager.class);
-        taskManager = mock(TaskManager.class);
-        when(TaskManager.getInstance()).thenReturn(taskManager);
-        taskManager = TaskManager.getInstance();
-    }
+  @Test
+  public void testUpdateCustomTask() throws Exception {
+    TaskController taskController = spy(new TaskController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(taskController, "taskManager", taskManager);
+    // test successful validation
+    MultipartFile mocked = mock(MultipartFile.class);
+    doReturn(false).when(mocked).isEmpty();
+    doReturn("sample.jar").when(mocked).getOriginalFilename();
+    doReturn("sample.jar").when(mocked).getName();
+    doReturn("hello".getBytes()).when(mocked).getBytes();
 
-    @Before
-    public void setUpMvc() {
-        MockitoAnnotations.initMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(taskController).build();
-    }
+    ResponseEntity responseEntity = taskController.updateCustomTask("A", TaskType.INVALID, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("Success"));
 
-    @Test
-    public void getTasksTest() throws Exception {
-        ResultActions result;
-        String content;
-        TaskResponseFormat response;
-        List<TaskFormat> mockResponse = makeMockResponse();
+    // test exception
+    doThrow(new Exception("Mocked")).when(taskManager).updateCustomTask(any(), any(), any(), any());
+    responseEntity = taskController.updateCustomTask("A", TaskType.INVALID, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
 
-        when(taskManager.getTaskModelList()).thenReturn(mockResponse);
+    // test invalid param
+    responseEntity = taskController.updateCustomTask(null, null, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
 
-        result = mockMvc.perform(get("/v1/task").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+    // test invalid param
+    responseEntity = taskController.updateCustomTask("A", TaskType.INVALID, null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+  }
 
-        content = result.andReturn().getResponse().getContentAsString();
-        Assert.assertNotNull(content);
-        response = Format.create(content, TaskResponseFormat.class);
-        Assert.assertNotNull(response);
-        Assert.assertEquals(response.getTask().size(), 1);
+  @Test
+  public void testRemoveCustomTask() throws Exception {
+    TaskController taskController = spy(new TaskController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(taskController, "taskManager", taskManager);
+    // test successful validation
 
-        when(taskManager.getTaskModel((TaskType) notNull())).thenReturn(mockResponse);
+    ResponseEntity responseEntity = taskController.removeCustomTask("A", TaskType.INVALID);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("Success"));
 
-        result = mockMvc.perform(get("/v1/task/type/REGRESSION")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+    // test exception
+    doThrow(new RuntimeException("Mocked")).when(taskManager).removeCustomTask(any(), any());
+    responseEntity = taskController.removeCustomTask("A", TaskType.INVALID);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
 
-        content = result.andReturn().getResponse().getContentAsString();
-        Assert.assertNotNull(content);
-        response = Format.create(content, TaskResponseFormat.class);
-        Assert.assertNotNull(response);
-        Assert.assertEquals(response.getTask().size(), 1);
+    // test invalid param
+    responseEntity = taskController.removeCustomTask(null, null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
 
-        when(taskManager.getTaskModel(anyString())).thenReturn(mockResponse);
-
-        result = mockMvc.perform(get("/v1/task/name/LinearRegression")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        content = result.andReturn().getResponse().getContentAsString();
-        Assert.assertNotNull(content);
-        response = Format.create(content, TaskResponseFormat.class);
-        Assert.assertNotNull(response);
-        Assert.assertEquals(response.getTask().size(), 1);
-    }
-
-    @Test
-    public void addTaskTest() throws Exception {
-        FileInputStream fis = getFileInputStreamFromFile("test-model.jar");
-
-        MockMultipartFile multipartFile = new MockMultipartFile("file",
-                "test-model.jar",
-                "text/plain", fis);
-
-        when(taskManager.addTask(anyString(), (byte[]) notNull())).thenReturn(new ErrorFormat());
-
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.fileUpload("/v1/task")
-                .file(multipartFile)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        String content = result.andReturn().getResponse().getContentAsString();
-        Assert.assertNotNull(content);
-        JobResponseFormat response = Format.create(content, JobResponseFormat.class);
-        Assert.assertNotNull(response);
-    }
-
-    @Test
-    public void deleteTaskTest() throws Exception {
-        when(taskManager.deleteTask((TaskType) notNull(), anyString())).thenReturn(new ErrorFormat());
-
-        ResultActions result = mockMvc.perform(post("/v1/task/delete")
-                .param("type", "TREND")
-                .param("name", "sma")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        String content = result.andReturn().getResponse().getContentAsString();
-        Assert.assertNotNull(content);
-        ResponseFormat response = Format.create(content, ResponseFormat.class);
-        Assert.assertNotNull(response);
-
-    }
-
-    private List<TaskFormat> makeMockResponse() {
-        List<TaskFormat> response = new ArrayList<>();
-        TaskFormat task = null;
-        task = new TaskFormat(TaskType.REGRESSION, "LinearRegression", "{\"weights\":\"0.228758\"}");
-        response.add(task);
-        return response;
-    }
-
-    private FileInputStream getFileInputStreamFromFile(String path) throws Exception {
-        URL resource = this.getClass().getClassLoader().getResource(path);
-        File file = new File(resource.toURI());
-        return new FileInputStream(file);
-    }
-    */
+  }
 }

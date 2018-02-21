@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,21 +37,26 @@ public class ErrorModel extends AbstractTaskModel {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorModel.class);
 
-  public enum WindowBy {
-    Time, Count
-  }
+  @TaskParam(key = "algorithmType", uiName = "Algorithm Type",
+      uiType = UiFieldType.ENUMSTRING, defaultValue = "MAE")
+  private ErrorFunction.MEASURE algorithmType;
 
-  @TaskParam(key = "param", uiName = "Algorithm type", uiType = UiFieldType.STRING, tooltip = "Enter algorithm type")
-  private String algorithmType = null;
-  @TaskParam(key = "observation", uiName = "Observation", uiType = UiFieldType.STRING, tooltip = "Enter observation")
+  @TaskParam(key = "observation", uiName = "Observation", uiType = UiFieldType.STRING)
   private String observation = null;
-  @TaskParam(key = "windowBy", uiName = "Window by", uiType = UiFieldType.ENUMSTRING, tooltip = "Select window strategy")
-  private WindowBy windowBy = WindowBy.Count;
-  @TaskParam(key = "windowSize", uiName = "Window size", uiType = UiFieldType.NUMBER, tooltip = "Enter window size")
-  private int windowSize = 2;
+
+  @TaskParam(key = "windowOption", uiName = "Window Option",
+      uiType = UiFieldType.ENUMSTRING, defaultValue = "TIME")
+  private WindowOption windowOption;
+
+  @TaskParam(key = "windowSize", uiName = "Window Size", uiType = UiFieldType.NUMBER, defaultValue = "2")
+  private int mWindowSize = 2;
 
   private HashMap<String, LinkedList<Number>> targetList = null;
   private LinkedList<Number> observationList = null;
+
+  public enum WindowOption {
+    TIME, COUNT
+  }
 
   /**
    * @desc Construtor of thismodel
@@ -86,26 +91,17 @@ public class ErrorModel extends AbstractTaskModel {
   public void setParam(TaskModelParam params) {
 
     if (params.containsKey("type")) {
-      this.algorithmType = params.get("type").toString();
+      this.algorithmType = ErrorFunction.MEASURE.valueOf(params.get("type").toString().toUpperCase());
     }
     if (params.containsKey("observation")) {
       this.observation = params.get("observation").toString();
     }
-    if (params.containsKey("windowBy") && params.containsKey("windowSize")) {
-      this.windowBy = WindowBy.valueOf(params.get("windowBy").toString());
-      this.windowSize = (Integer) params.get("windowSize");
+    if (params.containsKey("windowOption")) {
+      this.windowOption = WindowOption.valueOf(params.get("windowOption").toString().toUpperCase());
     }
-  }
-
-  /**
-   * @return TaskModelParam
-   * @desc Get default parameters for the reference
-   */
-  public TaskModelParam getDefaultParam() {
-    TaskModelParam params = new TaskModelParam();
-    params.put("type", new String("mse"));
-    params.put("observation", new String("/x1"));
-    return params;
+    if (params.containsKey("windowSize")) {
+      this.mWindowSize = Integer.parseInt(params.get("windowSize").toString());
+    }
   }
 
   private double getAverageError(Double[] targets, Double[] observe) {
@@ -120,17 +116,8 @@ public class ErrorModel extends AbstractTaskModel {
         obsv[index] = observe[index].doubleValue();
       }
 
-      if (this.algorithmType.equals("me")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.ME);
-      } else if (this.algorithmType.equals("mae")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.MAE);
-      } else if (this.algorithmType.equals("mse")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.MSE);
-      } else if (this.algorithmType.equals("rmse")) {
-        error = ErrorFunction.calculate(pred, obsv, ErrorFunction.MEASURE.RMSE);
-      } else {
-        LOGGER.error("Not Supporting Type : {}", this.algorithmType);
-      }
+      error = ErrorFunction.calculate(pred, obsv, this.algorithmType);
+
     } else {
       LOGGER.error("Length Not Match - Target {}, Observe {}", targets.length, observe.length);
     }
@@ -151,7 +138,7 @@ public class ErrorModel extends AbstractTaskModel {
       LinkedList<Number> value = null;
       Double observe = in.getValue(this.observation, Double.class);
       if (observe != null) {
-        if (observationList.size() >= this.windowSize) {
+        if (observationList.size() >= this.mWindowSize) {
           observationList.removeFirst();
         }
         observationList.addLast(observe.doubleValue());
@@ -170,7 +157,7 @@ public class ErrorModel extends AbstractTaskModel {
           }
 
           if (value != null) {
-            if (value.size() >= this.windowSize) {
+            if (value.size() >= this.mWindowSize) {
               value.removeFirst();
             }
             value.addLast(predict);

@@ -8,6 +8,8 @@ A data workflow can be designed using [Data Processing Designer](https://github.
   - Deploy data workflow to data processing engines as one or more workflow jobs
   - Execute/Stop/Update/Delete workflow jobs
   - Monitor workflow job status
+  - Create and upload custom task model [More...](./runtime-task/TaskModel/README.md)
+  - Export/Import workflow in json format
  
 ## Prerequisites ##
 - Remember, you must configure proxies if necessary.
@@ -147,3 +149,32 @@ A list of available APIs can be found at http://localhost:8082/swagger-ui.html.
   - Data Processing Manager : 8082 (default)
   - Flink : 8081 (default)
   - Kapacitor : 9092 (default)
+  
+  
+## How to export/import a workflow ##
+A workflow can be exported to, and imported from, JSON.
+
+### Exporting workflow ###
+There are three ways to make a workflow JSON.
+1. Using [Data Processing Designer](https://github.sec.samsung.net/RS7-EdgeComputing/support-dataprocessing-designer)
+  <br/>From 'My Workflows' page, select `Export` from upper right corner menu of a workflow.
+  
+2. Using REST API
+  <br/>Refer to `Export workflow` REST API guide in [Swagger UI page](http://localhost:8082/swagger-ui.html).
+  
+3. Making JSON from scratch
+  <br/>You could create your own JSON from scratch by referencing samples available in `tools/sample_request`.
+
+The recommended way to export a workflow is to use Data Processing Designer.
+
+### Importing workflow ###
+There are two ways to import workflow from JSON.
+1. Using [Data Processing Designer](https://github.sec.samsung.net/RS7-EdgeComputing/support-dataprocessing-designer)
+  <br/>From 'My Workflows' page, select `Import Workflow` from upper right corner of the page.
+
+2. Using REST API
+  <br/>Refer to `Import workflow` REST API guide in [Swagger UI page](http://localhost:8082/swagger-ui.html).
+
+### Sample workflow JSON ###
+Sample workflow JSON files are available in `tools/sample_request`.
+ 

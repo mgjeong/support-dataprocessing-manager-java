@@ -1,88 +1,144 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.util;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
-
 import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({JarLoader.class, Class.class, URLClassLoader.class, File.class, URL.class})
 public class JarLoaderTest {
 
-  @Test
-  public void jarLoaderTest() throws Exception {
+  private static final File testDir = new File("./testDir/");
+  private static final File testTaskModelJar = new File(testDir, "test.jar");
 
-    mockStatic(URL.class, Mockito.RETURNS_DEEP_STUBS);
-    mockStatic(File.class);
-    mockStatic(URLClassLoader.class, Mockito.RETURNS_DEEP_STUBS);
+  @BeforeClass
+  public static void initialize() throws Exception {
+    if (testDir.exists() && !testDir.delete() || !testDir.mkdirs()) {
+      throw new Exception("Failed to initialize test directory: " + testDir.getAbsolutePath());
+    }
 
-    URL url = mock(URL.class);
-    URI uri = mock(URI.class);
-    File file = mock(File.class);
-    Method method = mock(Method.class);
-    URLClassLoader classLoader = mock(URLClassLoader.class, Mockito.RETURNS_DEEP_STUBS);
+    testTaskModelJar.deleteOnExit();
+    try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(testTaskModelJar),
+        new Manifest())) {
+      String entry = SimpleClassTest.class.getName().replace('.', '/') + ".class";
+      jos.putNextEntry(new JarEntry(entry));
 
-    whenNew(URL.class).withAnyArguments().thenReturn(url);
-    whenNew(File.class).withAnyArguments().thenReturn(file);
-    whenNew(URLClassLoader.class).withAnyArguments().thenReturn(classLoader);
+      Class<?> testClass = Class.forName(SimpleClassTest.class.getName());
+      writeClass(jos, testClass);
+      Class<?> abstractClass = Class.forName(AbstractSimpleClassTest.class.getName());
+      writeClass(jos, abstractClass);
 
-    when(file.exists()).thenReturn(true);
-    when(file.length()).thenReturn((long) 1);
-    when(file.toURI()).thenReturn(uri);
-    when(uri.toURL()).thenReturn(url);
-    when(URLClassLoader.class.getDeclaredMethod(anyString(), any())).thenReturn(method);
+      jos.closeEntry();
+      jos.close();
+    }
+  }
 
-    try {
-      JarLoader jarloader = new JarLoader("Test.jar", classLoader);
-      Assert.assertNotNull(jarloader);
-    } catch (Exception e) {
-      e.printStackTrace();
+  private static void writeClass(JarOutputStream jos, Class<?> clazz) throws IOException {
+    final byte[] buf = new byte[128];
+    try (InputStream classInputStream = clazz
+        .getResourceAsStream(
+            JarLoaderTest.class.getSimpleName() + "$" + clazz.getSimpleName() + ".class")) {
+      int readLength = classInputStream.read(buf);
+      while (readLength != -1) {
+        jos.write(buf, 0, readLength);
+        readLength = classInputStream.read(buf);
+      }
+    }
+  }
+
+  @AfterClass
+  public static void cleanUp() throws Exception {
+    if (testDir.exists()) {
+      String[] entries = testDir.list();
+      for (String s : entries) {
+        File currentFile = new File(testDir.getPath(), s);
+        currentFile.delete();
+      }
+      testDir.delete();
     }
   }
 
   @Test
-  public void unloadJarTest() throws Exception {
+  public void testJarLoader() throws Exception {
+    SimpleClassTest test = JarLoader
+        .newInstance(testTaskModelJar,
+            JarLoaderTest.class.getCanonicalName() + "$" + SimpleClassTest.class.getSimpleName(),
+            SimpleClassTest.class);
+    Assert.assertNotNull(test);
+  }
 
-    mockStatic(URL.class, Mockito.RETURNS_DEEP_STUBS);
-    mockStatic(File.class);
-    mockStatic(URLClassLoader.class, Mockito.RETURNS_DEEP_STUBS);
+  @Test
+  public void testInvalidJarLoader() throws Exception {
+    String obj = JarLoader.newInstance(testTaskModelJar,
+        JarLoaderTest.class.getCanonicalName() + "$" + SimpleClassTest.class.getSimpleName(),
+        String.class);
+    Assert.assertNull(obj);
+  }
 
-    URL url = mock(URL.class);
-    URI uri = mock(URI.class);
-    File file = mock(File.class);
-    Method method = mock(Method.class);
-    URLClassLoader classLoader = mock(URLClassLoader.class, Mockito.RETURNS_DEEP_STUBS);
+  @Test
+  public void testAbstractJarLoader() throws Exception {
+    AbstractSimpleClassTest obj = JarLoader.newInstance(testTaskModelJar,
+        JarLoaderTest.class.getCanonicalName() + "$" + AbstractSimpleClassTest.class
+            .getSimpleName(),
+        AbstractSimpleClassTest.class);
+    Assert.assertNull(obj);
+  }
 
-    whenNew(URL.class).withAnyArguments().thenReturn(url);
-    whenNew(File.class).withAnyArguments().thenReturn(file);
-    whenNew(URLClassLoader.class).withAnyArguments().thenReturn(classLoader);
-
-    when(file.exists()).thenReturn(true);
-    when(file.length()).thenReturn((long) 1);
-    when(file.toURI()).thenReturn(uri);
-    when(uri.toURL()).thenReturn(url);
-    when(URLClassLoader.class.getDeclaredMethod(anyString(), any())).thenReturn(method);
+  @Test
+  public void testInvalidParam() throws Exception {
+    try {
+      JarLoader.newInstance(null, "", null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+      // success
+    }
 
     try {
-      JarLoader jarloader = new JarLoader("Test.jar", classLoader);
-      Assert.assertNotNull(jarloader);
-      jarloader.unloadJar();
+      JarLoader.newInstance(testTaskModelJar, "", null);
+      Assert.fail("Should not reach here.");
     } catch (Exception e) {
-      e.printStackTrace();
+      // success
+    }
+  }
+
+  @Test
+  public void testConstructor() {
+    Assert.assertNotNull(new JarLoader());
+  }
+
+  public static class SimpleClassTest {
+
+    public SimpleClassTest() {
+
+    }
+  }
+
+  public static abstract class AbstractSimpleClassTest {
+
+    public AbstractSimpleClassTest() {
+
     }
   }
 }
