@@ -1379,6 +1379,10 @@ public class WorkflowTableManager extends AbstractStorageManager {
   private WorkflowComponent mapToWorkflowComponent(ResultSet rs) throws SQLException {
     WorkflowComponentBundleType type = WorkflowComponentBundleType
         .toWorkflowComponentBundleType(rs.getString("type"));
+    if (type == null) {
+      return null;
+    }
+
     WorkflowComponent component = null;
     switch (type) {
       case SOURCE:
@@ -1463,10 +1467,14 @@ public class WorkflowTableManager extends AbstractStorageManager {
         return null;
       } else {
         WorkflowComponent component = mapToWorkflowComponent(rs);
+        if (component == null) {
+          return null;
+        }
+
         // Get output streams
         Collection<WorkflowStream> streams = listWorkflowStreams(workflowId);
         for (WorkflowStream stream : streams) {
-          if (stream.getComponentId() == component.getId()) {
+          if (stream.getComponentId().equals(component.getId())) {
             if (component instanceof WorkflowSource) {
               ((WorkflowSource) component).addOutputStream(stream);
             } else if (component instanceof WorkflowProcessor) {

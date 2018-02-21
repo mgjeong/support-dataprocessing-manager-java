@@ -6,6 +6,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -453,7 +454,7 @@ public class WorkflowController extends AbstractController {
       Workflow workflow = this.workflowTableManager.getWorkflow(workflowId);
       String exportedWorkflow = this.workflowTableManager.exportWorkflow(workflow);
 
-      byte[] bExportedWorkflow = exportedWorkflow.getBytes();
+      byte[] bExportedWorkflow = exportedWorkflow.getBytes(Charset.defaultCharset());
       try (InputStream inputStream = new ByteArrayInputStream(bExportedWorkflow)) {
         InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
         HttpHeaders headers = new HttpHeaders();

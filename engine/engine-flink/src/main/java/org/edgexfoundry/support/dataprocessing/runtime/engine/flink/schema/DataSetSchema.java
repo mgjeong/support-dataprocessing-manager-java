@@ -17,6 +17,7 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema;
 
+import java.nio.charset.Charset;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.streaming.util.serialization.DeserializationSchema;
@@ -30,7 +31,7 @@ public class DataSetSchema implements SerializationSchema<DataSet>, Deserializat
     if (bytes == null || bytes.length == 0) {
       return null;
     } else {
-      return DataSet.create(new String(bytes));
+      return DataSet.create(new String(bytes, Charset.defaultCharset()));
     }
   }
 
@@ -55,7 +56,7 @@ public class DataSetSchema implements SerializationSchema<DataSet>, Deserializat
     //if (str == null || str.isEmpty()) {
     //  throw new IllegalStateException("DataSet in string is null.");
     //} else {
-    return str.getBytes();
+    return str.getBytes(Charset.defaultCharset());
     //}
   }
 }

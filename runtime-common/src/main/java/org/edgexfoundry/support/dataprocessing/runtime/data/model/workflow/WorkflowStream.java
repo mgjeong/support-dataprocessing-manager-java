@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +15,14 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowStream extends Format {
 
+  private static final long serialVersionUID = 1L;
+
   private Long id;
   private Long componentId;
   private String streamId;
   private String description;
   private Long workflowId;
-  private List<Field> fields = new ArrayList<>();
+  private transient List<Field> fields = new ArrayList<>();
 
   public WorkflowStream() {
 

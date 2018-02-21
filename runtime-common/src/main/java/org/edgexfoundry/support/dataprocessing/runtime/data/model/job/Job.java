@@ -17,12 +17,14 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 @JsonInclude(Include.NON_NULL)
 public class Job extends Format {
 
+  private static final long serialVersionUID = 1L;
+
   private final String id;
   private final Long workflowId;
   private final JobState state;
 
   private Map<String, Object> config;
-  private WorkflowData workflowData = null;
+  private transient WorkflowData workflowData = null;
 
   public Job(String id, Long workflowId) {
     this.id = id;

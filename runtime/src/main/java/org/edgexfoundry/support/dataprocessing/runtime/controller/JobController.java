@@ -51,8 +51,12 @@ public class JobController extends AbstractController {
   @RequestMapping(value = "/workflows/{workflowId}/actions/validate", method = RequestMethod.POST)
   public ResponseEntity validateWorkflow(@PathVariable("workflowId") Long workflowId) {
     Workflow result = this.workflowTableManager.getWorkflow(workflowId);
-
-    return respond(result, HttpStatus.OK);
+    if (result != null) {
+      return respond(result, HttpStatus.OK);
+    } else {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INTERNAL_ERROR,
+          "Workflow id " + workflowId + " does not exist."), HttpStatus.OK);
+    }
   }
 
   @ApiOperation(value = "Deploy workflow", notes = "Deploys a workflow")

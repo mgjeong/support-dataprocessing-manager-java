@@ -31,16 +31,10 @@ public class JobTableManager extends AbstractStorageManager {
         + "state=?, startTime=?, finishTime=?, errorMessage=?, "
         + "engineId=?, engineType=?, engineHost=?, enginePort=? where jobId=?";
     try (Connection connection = getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql)) {
-      ps.setString(1, jobState.getState().name());
-      ps.setLong(2, jobState.getStartTime());
-      ps.setLong(3, jobState.getFinishTime());
-      ps.setString(4, jobState.getErrorMessage());
-      ps.setString(5, jobState.getEngineId());
-      ps.setString(6, jobState.getEngineType());
-      ps.setString(7, jobState.getHost());
-      ps.setInt(8, jobState.getPort());
-      ps.setString(9, jobState.getJobId());
+        PreparedStatement ps = createPreparedStatement(connection, sql, jobState.getState().name(),
+            jobState.getStartTime(), jobState.getFinishTime(), jobState.getErrorMessage(),
+            jobState.getEngineId(), jobState.getEngineType(), jobState.getHost(),
+            jobState.getPort(), jobState.getJobId())) {
 
       boolean oldState = connection.getAutoCommit();
       connection.setAutoCommit(false);
@@ -71,11 +65,8 @@ public class JobTableManager extends AbstractStorageManager {
 
     String sqlJob = "INSERT INTO job (id, workflowId, config) VALUES (?, ?, ?)";
     try (Connection connection = getConnection();
-        PreparedStatement psJob = connection.prepareStatement(sqlJob)) {
-      psJob.setString(1, job.getId());
-      psJob.setLong(2, job.getWorkflowId());
-      psJob.setString(3, job.getConfigStr());
-
+        PreparedStatement psJob = createPreparedStatement(connection, sqlJob, job.getId(),
+            job.getWorkflowId(), job.getConfigStr())) {
       boolean oldState = connection.getAutoCommit();
       connection.setAutoCommit(false);
       try {
@@ -90,16 +81,11 @@ public class JobTableManager extends AbstractStorageManager {
             "INSERT INTO job_state "
                 + "(jobId, state, startTime, finishTime, errorMessage, engineId, engineType, engineHost, enginePort) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement psJobState = connection.prepareStatement(sqlJobState)) {
-          psJobState.setString(1, job.getId());
-          psJobState.setString(2, job.getState().getState().name());
-          psJobState.setLong(3, job.getState().getStartTime());
-          psJobState.setLong(4, job.getState().getFinishTime());
-          psJobState.setString(5, job.getState().getErrorMessage());
-          psJobState.setString(6, job.getState().getEngineId());
-          psJobState.setString(7, job.getState().getEngineType());
-          psJobState.setString(8, job.getState().getHost());
-          psJobState.setInt(9, job.getState().getPort());
+        try (PreparedStatement psJobState = createPreparedStatement(connection, sqlJobState,
+            job.getId(), job.getState().getState().name(), job.getState().getStartTime(),
+            job.getState().getFinishTime(), job.getState().getErrorMessage(),
+            job.getState().getEngineId(), job.getState().getEngineType(), job.getState().getHost(),
+            job.getState().getPort())) {
           affectedRows = psJobState.executeUpdate();
           if (affectedRows == 0) {
             throw new SQLException("Failed to insert job state.");
@@ -156,7 +142,7 @@ public class JobTableManager extends AbstractStorageManager {
     String sql = sb.toString();
 
     try (Connection connection = getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql);
+        PreparedStatement ps = createPreparedStatement(connection, sql);
         ResultSet rs = ps.executeQuery()) {
       List<Job> jobs = new ArrayList<>();
       while (rs.next()) {
@@ -192,15 +178,13 @@ public class JobTableManager extends AbstractStorageManager {
     String sql = sb.toString();
 
     try (Connection connection = getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql)) {
-      ps.setLong(1, workflowId);
-      try (ResultSet rs = ps.executeQuery()) {
-        List<Job> jobs = new ArrayList<>();
-        while (rs.next()) {
-          jobs.add(mapToJob(rs));
-        }
-        return jobs;
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
+        ResultSet rs = ps.executeQuery()) {
+      List<Job> jobs = new ArrayList<>();
+      while (rs.next()) {
+        jobs.add(mapToJob(rs));
       }
+      return jobs;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -230,14 +214,12 @@ public class JobTableManager extends AbstractStorageManager {
     String sql = sb.toString();
 
     try (Connection connection = getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql)) {
-      ps.setString(1, jobId);
-      try (ResultSet rs = ps.executeQuery()) {
-        if (rs.next()) {
-          return mapToJob(rs);
-        } else {
-          throw new SQLException("Workflow job not found.");
-        }
+        PreparedStatement ps = createPreparedStatement(connection, sql, jobId);
+        ResultSet rs = ps.executeQuery()) {
+      if (rs.next()) {
+        return mapToJob(rs);
+      } else {
+        throw new SQLException("Workflow job not found.");
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -252,11 +234,8 @@ public class JobTableManager extends AbstractStorageManager {
     String sql = "DELETE FROM job WHERE id = ?";
     String sqlState = "DELETE FROM job_state WHERE jobId = ?";
     try (Connection connection = getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql);
-        PreparedStatement psState = connection.prepareStatement(sqlState)) {
-      ps.setString(1, jobId);
-      psState.setString(1, jobId);
-
+        PreparedStatement ps = createPreparedStatement(connection, sql, jobId);
+        PreparedStatement psState = createPreparedStatement(connection, sqlState, jobId)) {
       boolean oldState = connection.getAutoCommit();
       connection.setAutoCommit(false);
       try {
