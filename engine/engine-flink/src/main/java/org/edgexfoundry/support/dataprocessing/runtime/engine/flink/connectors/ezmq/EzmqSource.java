@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 public class EzmqSource extends RichSourceFunction<DataSet> implements
     EZMQSubscriber.EZMQSubCallback {
 
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(EzmqSource.class);
 
   private final String host;

@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
@@ -23,11 +26,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
 public class FileInputSource extends RichSourceFunction<DataSet> {
+  private static final long serialVersionUID = 1L;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileInputSource.class);
 
@@ -92,6 +92,10 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
 
         if (this.mType.equals("csv") || this.mType.equals("tsv")) {
           String line = mBR.readLine();
+          if (line == null) {
+            LOGGER.error("No header found.");
+            break;
+          }
           // first line is array of keys
           String[] keys = null;
           if (this.mFirstLineIsKeys) {
