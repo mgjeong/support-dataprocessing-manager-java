@@ -18,8 +18,10 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileInputSource extends RichSourceFunction<DataSet> {
+
   private static final long serialVersionUID = 1L;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileInputSource.class);
@@ -45,11 +48,11 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
     this.mType = type;
 
     if (this.mType.equals("csv")) {
-      this.mDelimiter = new String(",");
+      this.mDelimiter = ",";
     } else if (this.mType.equals("tsv")) {
-      this.mDelimiter = new String("\t");
+      this.mDelimiter = "\t";
     } else {
-      this.mDelimiter = new String(",");
+      this.mDelimiter = ",";
     }
     LOGGER.debug("Path {}, Type {}", path, type);
   }
@@ -86,7 +89,8 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
 
     BufferedReader mBR = null;
     try {
-      mBR = new BufferedReader(new FileReader(this.mPath));
+      mBR = new BufferedReader(
+          new InputStreamReader(new FileInputStream(this.mPath), Charset.defaultCharset()));
 
       while (this.running) {
 
