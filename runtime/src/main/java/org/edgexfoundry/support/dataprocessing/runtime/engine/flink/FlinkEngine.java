@@ -130,7 +130,13 @@ public class FlinkEngine extends AbstractEngine {
       String jarPath = processor.getPath();
 
       Path artifact = Paths.get(jarPath);
-      processor.getConfig().getProperties().put("jar", artifact.getFileName().toString());
+      Path fileName = artifact.getFileName();
+      if(fileName != null) {
+        processor.getConfig().getProperties().put("jar", fileName.toString());
+      }
+      else {
+        LOGGER.warn("fileName is null");
+      }
       artifacts.add(artifact);
     }
 
@@ -146,7 +152,9 @@ public class FlinkEngine extends AbstractEngine {
 
     if (targetJar.toFile().exists()) {
       LOGGER.info("Delete old version of Job Jar file {}", targetJar.toAbsolutePath().toString());
-      targetJar.toFile().delete();
+      if(targetJar.toFile().delete() == false) {
+        LOGGER.warn("Failed in attempt to delete old version of Job Jar file");
+      }
     }
     Path newJar = Files.copy(referenceJar, targetJar);
     List<String> commands = new ArrayList<>();
@@ -155,8 +163,21 @@ public class FlinkEngine extends AbstractEngine {
     commands.add(newJar.toString());
     for (Path inputFile : jobData) {
       commands.add("-C");
-      commands.add(inputFile.getParent().toString());
-      commands.add(inputFile.getFileName().toString());
+
+      Path parent = inputFile.getParent();
+      if(parent != null) {
+        commands.add(parent.toString());
+      } else {
+        LOGGER.warn("getParent is null");
+      }
+
+      Path fileName = inputFile.getFileName();
+      if(fileName != null) {
+        commands.add(fileName.toString());
+      } else {
+        LOGGER.warn("getFileName is null");
+      }
+
     }
 
     Process process = executeShellProcess(commands);
@@ -223,11 +244,15 @@ public class FlinkEngine extends AbstractEngine {
     JobState jobState = job.getState();
     jobState.setStartTime(System.currentTimeMillis());
 
-    if (flinkResponse.get("jobid") == null) {
-      throw new RuntimeException(flinkResponse.get("error").getAsString());
+    JsonElement jobId = flinkResponse.get("jobid");
+    if (jobId == null) {
+      JsonElement error = flinkResponse.get("error");
+      if(error != null) {
+        throw new RuntimeException(error.getAsString());
+      }
     } else {
       jobState.setState(State.RUNNING);
-      jobState.setEngineId(flinkResponse.get("jobid").getAsString());
+      jobState.setEngineId(jobId.getAsString());
     }
   }
 
@@ -293,8 +318,14 @@ public class FlinkEngine extends AbstractEngine {
       return null;
     }
     JsonObject jsonResponse = jsonString.getAsJsonObject();
-    String jarId = jsonResponse.get("filename").getAsString(); // TODO: Exception handling
-    return jarId;
+    JsonElement fileName = jsonResponse.get("filename");
+    if(fileName != null) {
+      String jarId = fileName.getAsString(); // TODO: Exception handling
+      return jarId;
+    } else {
+      LOGGER.warn("file name is null");
+      return null;
+    }
   }
 
   private static class ShellProcessResult {

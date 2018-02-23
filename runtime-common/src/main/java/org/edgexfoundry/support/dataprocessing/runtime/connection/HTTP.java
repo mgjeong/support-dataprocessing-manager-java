@@ -187,9 +187,9 @@ public class HTTP implements Serializable {
 
       HttpEntity entity = response.getEntity();
       if (entity != null) {
-        FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName));
-        entity.writeTo(fos);
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName))) {
+          entity.writeTo(fos);
+        }
       }
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);

@@ -55,13 +55,22 @@ public class PharosRestClient {
     }
 
     JsonArray groups = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_GROUPS);
+    if (groups == null) {
+      LOGGER.warn("group list is empty");
+      return groupList;
+    }
+
     Iterator<JsonElement> iter = groups.iterator();
 
     while (iter.hasNext()) {
       JsonObject group = iter.next().getAsJsonObject();
-      String id = group.get(PharosConstants.PHAROS_JSON_SCHEMA_GROUP_ID).getAsString();
-
-      groupList.add(id);
+      JsonElement groupId = group.get(PharosConstants.PHAROS_JSON_SCHEMA_GROUP_ID);
+      if(groupId != null) {
+        String id = groupId.getAsString();
+        groupList.add(id);
+      } else {
+        LOGGER.warn("groupId is null");
+      }
     }
 
     return groupList;
@@ -79,6 +88,11 @@ public class PharosRestClient {
     }
 
     JsonArray members = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_GROUP_MEMBERS);
+
+    if (members == null) {
+      return edgeList;
+    }
+
     Iterator<JsonElement> iter = members.iterator();
 
     while (iter.hasNext()) {
@@ -101,10 +115,22 @@ public class PharosRestClient {
       return null;
     }
 
+
     edgeInfo.put("id", edgeId);
-    edgeInfo.put("host", response.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME).getAsString());
+
+    JsonElement hostname = response.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME);
+    if(hostname != null) {
+      edgeInfo.put("host", hostname.getAsString());
+    } else {
+      LOGGER.warn("host name is null");
+    }
 
     JsonArray apps = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_APPS);
+    if(apps == null) {
+      LOGGER.warn("app list is empty");
+      return null;
+    }
+
     Iterator<JsonElement> iter = apps.iterator();
 
     List<String> appIdList = new ArrayList<String>();
@@ -134,17 +160,30 @@ public class PharosRestClient {
 
     JsonArray services = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_SERVICES);
 
+    if(services == null){
+      LOGGER.warn("service list is empty");
+      return serviceList;
+    }
+
     Iterator<JsonElement> iter = services.iterator();
 
     while (iter.hasNext()) {
       JsonObject tmp = iter.next().getAsJsonObject();
+      JsonObject appState = tmp.getAsJsonObject(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE);
+      JsonElement appStateStatus = null;
+      if(appState != null) {
+        appStateStatus = appState.get(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE_STATUS);
+      }
 
-      if (tmp.getAsJsonObject(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE)
-          .get(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE_STATUS).getAsString()
+      if (appStateStatus != null && appStateStatus.getAsString()
           .equals(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE_RUNNING)) {
-        String name = tmp.get(PharosConstants.PHAROS_JSON_SCHEMA_APP_NAME).getAsString();
-
-        serviceList.add(name);
+        JsonElement appName = tmp.get(PharosConstants.PHAROS_JSON_SCHEMA_APP_NAME);
+        if(appName != null) {
+          String name = appName.getAsString();
+          serviceList.add(name);
+        } else {
+          LOGGER.warn("app name is null");
+        }
       }
 
     }
