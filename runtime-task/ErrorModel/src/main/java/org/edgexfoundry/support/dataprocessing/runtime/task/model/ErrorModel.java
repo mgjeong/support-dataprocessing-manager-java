@@ -151,11 +151,8 @@ public class ErrorModel extends AbstractTaskModel {
           if (temp == null) {
             value = new LinkedList<Number>();
             LOGGER.info("Instantiate new Linked List for : {}", inRecordKeys.get(index));
-          } else if (temp instanceof LinkedList) {
-            value = (LinkedList<Number>) temp;
           } else {
-            value = new LinkedList<Number>();
-            LOGGER.info("Instantiate new Linked List for : {}", inRecordKeys.get(index));
+            value = (LinkedList<Number>) temp;
           }
 
           if (value != null) {

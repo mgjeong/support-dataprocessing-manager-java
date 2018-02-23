@@ -45,7 +45,7 @@ public class EzmqSource extends RichSourceFunction<DataSet> implements
   private transient EZMQAPI ezmqApi = null;
   private transient EZMQSubscriber ezmqSubscriber = null;
 
-  private SourceContext<DataSet> sourceContext = null;
+  private transient SourceContext<DataSet> sourceContext = null;
 
   private transient Object waitLock;
   private transient boolean running = false;

@@ -65,7 +65,7 @@ public class PharosRestClient {
     while (iter.hasNext()) {
       JsonObject group = iter.next().getAsJsonObject();
       JsonElement groupId = group.get(PharosConstants.PHAROS_JSON_SCHEMA_GROUP_ID);
-      if(groupId != null) {
+      if (groupId != null) {
         String id = groupId.getAsString();
         groupList.add(id);
       } else {
@@ -115,18 +115,17 @@ public class PharosRestClient {
       return null;
     }
 
-
     edgeInfo.put("id", edgeId);
 
     JsonElement hostname = response.get(PharosConstants.PHAROS_JSON_SCHEMA_HOST_NAME);
-    if(hostname != null) {
+    if (hostname != null) {
       edgeInfo.put("host", hostname.getAsString());
     } else {
       LOGGER.warn("host name is null");
     }
 
     JsonArray apps = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_APPS);
-    if(apps == null) {
+    if (apps == null) {
       LOGGER.warn("app list is empty");
       return null;
     }
@@ -160,7 +159,7 @@ public class PharosRestClient {
 
     JsonArray services = response.getAsJsonArray(PharosConstants.PHAROS_JSON_SCHEMA_SERVICES);
 
-    if(services == null){
+    if (services == null) {
       LOGGER.warn("service list is empty");
       return serviceList;
     }
@@ -171,14 +170,14 @@ public class PharosRestClient {
       JsonObject tmp = iter.next().getAsJsonObject();
       JsonObject appState = tmp.getAsJsonObject(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE);
       JsonElement appStateStatus = null;
-      if(appState != null) {
+      if (appState != null) {
         appStateStatus = appState.get(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE_STATUS);
       }
 
       if (appStateStatus != null && appStateStatus.getAsString()
           .equals(PharosConstants.PHAROS_JSON_SCHEMA_APP_STATE_RUNNING)) {
         JsonElement appName = tmp.get(PharosConstants.PHAROS_JSON_SCHEMA_APP_NAME);
-        if(appName != null) {
+        if (appName != null) {
           String name = appName.getAsString();
           serviceList.add(name);
         } else {
@@ -192,12 +191,11 @@ public class PharosRestClient {
   }
 
   private JsonObject httpGet(String url) {
-    JsonElement jsonElem = this.httpClient.get(url);
-
-    if (jsonElem == null) {
+    try {
+      return this.httpClient.get(url).getAsJsonObject();
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
       return null;
-    } else {
-      return jsonElem.getAsJsonObject();
     }
   }
 }

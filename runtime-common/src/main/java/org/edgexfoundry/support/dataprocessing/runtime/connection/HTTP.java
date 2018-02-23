@@ -19,15 +19,12 @@ package org.edgexfoundry.support.dataprocessing.runtime.connection;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -48,16 +45,12 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class HTTP implements Serializable {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(HTTP.class);
+public class HTTP {
 
   private HttpClient client = null;
   private HttpHost proxy = null;
-  private transient URIBuilder uriBuilder = null;
+  private URIBuilder uriBuilder = null;
 
   private boolean initialized = false;
 
@@ -138,11 +131,11 @@ public class HTTP implements Serializable {
     return this.client;
   }
 
-  public JsonElement get(String path) {
+  public JsonElement get(String path) throws Exception {
     return get(path, null);
   }
 
-  public JsonElement get(String path, Map<String, String> args) {
+  public JsonElement get(String path, Map<String, String> args) throws Exception {
     throwExceptionIfNotInitialized();
 
     HttpGet request = null;
@@ -161,46 +154,11 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
-  }
-
-  public boolean get(String path, Map<String, String> args, String dstPath, String fName) {
-    HttpGet request = null;
-    try {
-      URI uri = createUri(path, args);
-      request = new HttpGet(uri);
-      HttpResponse response = executeRequest(request);
-
-      int httpStatusCode = response.getStatusLine().getStatusCode();
-      if (httpStatusCode != HttpStatus.SC_OK) {
-        throw new HttpResponseException(httpStatusCode,
-            String.format("Bad HTTP status: %d", httpStatusCode));
-      }
-
-      HttpEntity entity = response.getEntity();
-      if (entity != null) {
-        try (FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName))) {
-          entity.writeTo(fos);
-        }
-      }
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-      return false;   // Fail.
-    } finally {
-      if (request != null) {
-        request.releaseConnection();
-      }
-    }
-
-    return true;        // Success.
   }
 
   public JsonElement delete(String path) throws Exception {
@@ -222,8 +180,6 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      throw e;
     } finally {
       if (request != null) {
         request.releaseConnection();
@@ -231,7 +187,7 @@ public class HTTP implements Serializable {
     }
   }
 
-  public JsonElement post(String path, File fileToUpload) {
+  public JsonElement post(String path, File fileToUpload) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPost request = null;
     try {
@@ -257,22 +213,19 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public JsonElement post(String path, Map<String, String> args) {
+  public JsonElement post(String path, Map<String, String> args) throws Exception {
     return post(path, args, false);
   }
 
-  public JsonElement post(String path, Map<String, String> args, boolean useArgAsParam) {
+  public JsonElement post(String path, Map<String, String> args, boolean useArgAsParam)
+      throws Exception {
     throwExceptionIfNotInitialized();
 
     HttpPost request = null;
@@ -308,18 +261,14 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public JsonElement post(String path, String dataString) {
+  public JsonElement post(String path, String dataString) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPost request = null;
     try {
@@ -338,18 +287,14 @@ public class HTTP implements Serializable {
 
       String rawJson = EntityUtils.toString(response.getEntity());
       return this.jsonParser.parse(rawJson);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public JsonElement patch(String path, String dataString) {
+  public JsonElement patch(String path, String dataString) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPatch request = null;
     try {
@@ -368,15 +313,12 @@ public class HTTP implements Serializable {
 
       String rawJson = EntityUtils.toString(response.getEntity());
       return this.jsonParser.parse(rawJson);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
 
-    return null;
   }
 
   private void throwExceptionIfNotInitialized() {

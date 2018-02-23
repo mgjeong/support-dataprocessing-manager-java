@@ -42,7 +42,7 @@ public class EdgeInfoTest {
   private static HTTP mockedHttp;
 
   @BeforeClass
-  public static void initialize() throws Exception{
+  public static void initialize() throws Exception {
     mockedHttp = mock(HTTP.class);
     whenNew(HTTP.class).withNoArguments().thenReturn(mockedHttp);
     when(mockedHttp.initialize(PharosConstants.PHAROS_HOST, PharosConstants.PHAROS_PORT, "http"))
@@ -52,7 +52,7 @@ public class EdgeInfoTest {
   }
 
   @Test
-  public void getGroupListTest() {
+  public void getGroupListTest() throws Exception {
     String testJsonString = "{\n"
         + "\"groups\": \n"
         + "[\n"
@@ -81,7 +81,7 @@ public class EdgeInfoTest {
   }
 
   @Test
-  public void getEngineListTest() {
+  public void getEngineListTest() throws Exception {
     String edgeListString = "{\n"
         + "\"id\":\"id1111\",\n"
         + "\"members\": [\"edge1\", \"edge2\", \"edge3\"]\n"

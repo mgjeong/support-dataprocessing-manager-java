@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 public class MongoDbSink extends RichSinkFunction<DataSet> {
 
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSink.class);
 
   private final String ip;

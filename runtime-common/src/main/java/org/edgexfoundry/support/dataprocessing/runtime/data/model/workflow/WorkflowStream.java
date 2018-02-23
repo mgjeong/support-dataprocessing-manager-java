@@ -141,11 +141,11 @@ public class WorkflowStream extends Format {
   }
 
   @JsonInclude(Include.NON_NULL)
-  public static class Field {
+  public static class Field extends Format {
 
     private String name;
     private SchemaType type;
-    boolean optional;
+    private boolean optional;
 
     public Field() {
 

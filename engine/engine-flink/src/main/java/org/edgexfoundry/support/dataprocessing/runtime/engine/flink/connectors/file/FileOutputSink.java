@@ -20,11 +20,12 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class FileOutputSink extends RichSinkFunction<DataSet> {
+
+  private static final long serialVersionUID = 1L;
 
   private File outputFile = null;
 

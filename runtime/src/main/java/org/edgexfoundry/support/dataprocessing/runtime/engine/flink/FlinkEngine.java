@@ -131,10 +131,9 @@ public class FlinkEngine extends AbstractEngine {
 
       Path artifact = Paths.get(jarPath);
       Path fileName = artifact.getFileName();
-      if(fileName != null) {
+      if (fileName != null) {
         processor.getConfig().getProperties().put("jar", fileName.toString());
-      }
-      else {
+      } else {
         LOGGER.warn("fileName is null");
       }
       artifacts.add(artifact);
@@ -152,7 +151,7 @@ public class FlinkEngine extends AbstractEngine {
 
     if (targetJar.toFile().exists()) {
       LOGGER.info("Delete old version of Job Jar file {}", targetJar.toAbsolutePath().toString());
-      if(targetJar.toFile().delete() == false) {
+      if (targetJar.toFile().delete() == false) {
         LOGGER.warn("Failed in attempt to delete old version of Job Jar file");
       }
     }
@@ -165,14 +164,14 @@ public class FlinkEngine extends AbstractEngine {
       commands.add("-C");
 
       Path parent = inputFile.getParent();
-      if(parent != null) {
+      if (parent != null) {
         commands.add(parent.toString());
       } else {
         LOGGER.warn("getParent is null");
       }
 
       Path fileName = inputFile.getFileName();
-      if(fileName != null) {
+      if (fileName != null) {
         commands.add(fileName.toString());
       } else {
         LOGGER.warn("getFileName is null");
@@ -247,7 +246,7 @@ public class FlinkEngine extends AbstractEngine {
     JsonElement jobId = flinkResponse.get("jobid");
     if (jobId == null) {
       JsonElement error = flinkResponse.get("error");
-      if(error != null) {
+      if (error != null) {
         throw new RuntimeException(error.getAsString());
       }
     } else {
@@ -311,7 +310,7 @@ public class FlinkEngine extends AbstractEngine {
     return isUpdated;
   }
 
-  private String uploadLauncherJar(Path path) {
+  private String uploadLauncherJar(Path path) throws Exception {
     File jarFile = path.toFile();
     JsonElement jsonString = this.httpClient.post("/jars/upload", jarFile);
     if (jsonString == null) {
@@ -319,7 +318,7 @@ public class FlinkEngine extends AbstractEngine {
     }
     JsonObject jsonResponse = jsonString.getAsJsonObject();
     JsonElement fileName = jsonResponse.get("filename");
-    if(fileName != null) {
+    if (fileName != null) {
       String jarId = fileName.getAsString(); // TODO: Exception handling
       return jarId;
     } else {

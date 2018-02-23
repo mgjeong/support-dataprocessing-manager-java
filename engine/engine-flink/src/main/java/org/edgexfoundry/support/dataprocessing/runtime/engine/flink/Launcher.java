@@ -18,10 +18,11 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 import com.google.gson.Gson;
-
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
-
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
@@ -47,14 +48,13 @@ public class Launcher {
 
     String jsonId = params.get("json");
     Reader jsonReader = null;
+    InputStream stream = null;
     try {
       if (params.has("internal")) {
         String inJarPath = "/" + jsonId + ".json";
         LOGGER.debug("{}", getClass().getResource(inJarPath));
-        try(InputStream input = getClass().getResourceAsStream(inJarPath)) {
-          jsonReader = new InputStreamReader(input, Charset.defaultCharset());
-        }
-
+        stream = getClass().getResourceAsStream(inJarPath);
+        jsonReader = new InputStreamReader(stream, Charset.defaultCharset());
       } else {
         jsonReader = new InputStreamReader(new FileInputStream(jsonId), Charset.defaultCharset());
       }
@@ -69,6 +69,9 @@ public class Launcher {
     } catch (NullPointerException e) {
       throw new RuntimeException("Invalid job configuration file", e);
     } finally {
+      if (stream != null) {
+        stream.close();
+      }
       if (jsonReader != null) {
         jsonReader.close();
       }
