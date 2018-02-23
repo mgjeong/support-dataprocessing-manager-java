@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,9 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.Kapacito
 public class EngineFactory {
 
   /**
-   * Create an request generator depending on engine type
-   * Generally, it will make a job/request which is runnable on actual engines respectively.
+   * Create an request generator depending on engine type Generally, it will make a job/request
+   * which is runnable on actual engines respectively.
+   *
    * @param engineType Type of the engine to use
    * @param host hostname of the engine
    * @param port port number of the engine

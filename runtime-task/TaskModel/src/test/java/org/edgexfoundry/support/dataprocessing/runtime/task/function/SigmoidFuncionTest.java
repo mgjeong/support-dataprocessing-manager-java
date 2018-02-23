@@ -20,15 +20,15 @@ import org.junit.Test;
 
 public class SigmoidFuncionTest {
 
-    @Test
-    public void calculateTest() {
+  @Test
+  public void calculateTest() {
 
-        double val = 1.0;
+    double val = 1.0;
 
-        SigmoidFunction.calculate(val, SigmoidFunction.TYPESIGMOID.LOGISTIC);
+    SigmoidFunction.calculate(val, SigmoidFunction.TYPESIGMOID.LOGISTIC);
 
-        SigmoidFunction.calculate(val, SigmoidFunction.TYPESIGMOID.TANH);
+    SigmoidFunction.calculate(val, SigmoidFunction.TYPESIGMOID.TANH);
 
-        SigmoidFunction.calculate(val, SigmoidFunction.TYPESIGMOID.INVALID);
-    }
+    SigmoidFunction.calculate(val, SigmoidFunction.TYPESIGMOID.INVALID);
+  }
 }

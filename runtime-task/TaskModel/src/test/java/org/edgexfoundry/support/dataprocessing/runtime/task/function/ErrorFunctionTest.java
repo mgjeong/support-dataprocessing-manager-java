@@ -21,34 +21,34 @@ import org.junit.Test;
 
 public class ErrorFunctionTest {
 
-    @Test
-    public void calculateTest() {
-        double[] prediction = {1.0, 2.0, 3.0};
-        double[] observation = {1.1, 2.1, 2.9};
+  @Test
+  public void calculateTest() {
+    double[] prediction = {1.0, 2.0, 3.0};
+    double[] observation = {1.1, 2.1, 2.9};
 
-        double[] predictionErr = {1.0, 2.0, 3.0};
-        double[] observationErr = {1.1, 2.1, 3.1};
+    double[] predictionErr = {1.0, 2.0, 3.0};
+    double[] observationErr = {1.1, 2.1, 3.1};
 
-        double error = 0.0;
+    double error = 0.0;
 
-        error = ErrorFunction.calculate(prediction, observation, ErrorFunction.MEASURE.INVALID);
+    error = ErrorFunction.calculate(prediction, observation, ErrorFunction.MEASURE.INVALID);
 
-        Assert.assertEquals(error, -1, 0);
+    Assert.assertEquals(error, -1, 0);
 
-        error = ErrorFunction.calculate(prediction, observation, ErrorFunction.MEASURE.MSE);
+    error = ErrorFunction.calculate(prediction, observation, ErrorFunction.MEASURE.MSE);
 
-        Assert.assertEquals(error, 0.010000000000000018, 0);
+    Assert.assertEquals(error, 0.010000000000000018, 0);
 
-        error = ErrorFunction.calculate(prediction, observation, ErrorFunction.MEASURE.RMSE);
+    error = ErrorFunction.calculate(prediction, observation, ErrorFunction.MEASURE.RMSE);
 
-        Assert.assertEquals(error, 0.10000000000000009, 0);
+    Assert.assertEquals(error, 0.10000000000000009, 0);
 
-        error = ErrorFunction.calculate(prediction, observationErr, ErrorFunction.MEASURE.ME);
+    error = ErrorFunction.calculate(prediction, observationErr, ErrorFunction.MEASURE.ME);
 
-        Assert.assertEquals(error, 0.10000000000000009, 0);
+    Assert.assertEquals(error, 0.10000000000000009, 0);
 
-        error = ErrorFunction.calculate(predictionErr, observation, ErrorFunction.MEASURE.MAE);
+    error = ErrorFunction.calculate(predictionErr, observation, ErrorFunction.MEASURE.MAE);
 
-        Assert.assertEquals(error, 0.10000000000000009, 0);
-    }
+    Assert.assertEquals(error, 0.10000000000000009, 0);
+  }
 }
