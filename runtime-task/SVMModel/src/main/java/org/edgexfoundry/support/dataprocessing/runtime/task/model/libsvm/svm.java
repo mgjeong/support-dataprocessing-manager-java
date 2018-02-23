@@ -39,7 +39,7 @@ abstract class Kernel extends QMatrix {
 
 		for(int t=times; t>0; t/=2)
 		{
-			if(t%2==1) ret*=tmp;
+			if(t%2!=0) ret*=tmp;
 			tmp = tmp * tmp;
 		}
 		return ret;

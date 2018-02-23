@@ -19,6 +19,8 @@ package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
@@ -35,7 +37,7 @@ public class FileOutputSink extends RichSinkFunction<DataSet> {
   @Override
   public void invoke(DataSet dataSet) throws Exception {
     if (this.writer == null) {
-      this.writer = new PrintWriter(this.outputFile);
+      this.writer = new PrintWriter(this.outputFile, Charset.defaultCharset().name());
     }
 
     this.writer.println(dataSet.toString());

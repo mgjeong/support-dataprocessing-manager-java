@@ -219,6 +219,6 @@ public class TaskModelParam extends HashMap<String, Object> implements Serializa
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return null;
+        return "";
     }
 }

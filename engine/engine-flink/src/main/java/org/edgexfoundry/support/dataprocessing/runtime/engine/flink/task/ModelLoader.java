@@ -71,8 +71,9 @@ public class ModelLoader {
     LOGGER.info("HH {}", targetJar.getAbsolutePath());
     if (!targetJar.exists()) {
       LOGGER.info("HH {}", getClass().getResource("/" + jarPath));
-      InputStream jarStream = getClass().getResourceAsStream(inJarPath);
-      Files.copy(jarStream, targetJar.getAbsoluteFile().toPath());
+      try (InputStream jarStream = getClass().getResourceAsStream(inJarPath)) {
+        Files.copy(jarStream, targetJar.getAbsoluteFile().toPath());
+      }
     }
 
     this.urlClassLoader = new URLClassLoader(new URL[]{targetJar.toURI().toURL()},
