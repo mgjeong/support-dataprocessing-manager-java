@@ -34,6 +34,11 @@ public class Launcher {
   private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
   private StreamExecutionEnvironment env;
 
+  public static void main(String[] args) throws Exception {
+    Launcher launcher = new Launcher();
+    launcher.execute(args);
+  }
+
   private void execute(String[] args) throws Exception {
     ParameterTool params = ParameterTool.fromArgs(args);
 
@@ -66,10 +71,5 @@ public class Launcher {
     jobGraph.initialize();
 
     env.execute(jobGraph.getJobId());
-  }
-
-  public static void main(String[] args) throws Exception {
-    Launcher launcher = new Launcher();
-    launcher.execute(args);
   }
 }

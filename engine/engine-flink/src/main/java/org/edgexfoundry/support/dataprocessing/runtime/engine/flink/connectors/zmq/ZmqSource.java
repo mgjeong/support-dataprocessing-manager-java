@@ -26,6 +26,13 @@ public class ZmqSource<OUT> extends RichSourceFunction<OUT> implements ResultTyp
 
   private transient volatile boolean running;
 
+  /**
+   * Class constructor specifying ZeroMQ connection with data schema.
+   *
+   * @param zmqConnectionConfig ZeroMQ connection configuration including ip, port, parallelism
+   * @param topic ZeroMQ topic name
+   * @param deserializationSchema Deserialization schema when writing the entity on ZeroMQ
+   */
   public ZmqSource(ZmqConnectionConfig zmqConnectionConfig, String topic,
       DeserializationSchema<OUT> deserializationSchema) {
     this.zmqConnectionConfig = zmqConnectionConfig;

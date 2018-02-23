@@ -70,9 +70,9 @@ public class ZmqSourceTest {
 
   private static class SourceThread extends Thread {
 
-    private ZmqSource source = null;
     private final ZmqConnectionConfig config;
     private final SourceFunction.SourceContext sourceContext;
+    private ZmqSource source = null;
 
     public SourceThread(ZmqConnectionConfig config, SourceFunction.SourceContext sourceContext) {
       this.config = config;
@@ -106,8 +106,8 @@ public class ZmqSourceTest {
 
   private static class SinkThread extends Thread {
 
-    private ZmqSink sink = null;
     private final ZmqConnectionConfig config;
+    private ZmqSink sink = null;
     private boolean running = false;
 
     public SinkThread(ZmqConnectionConfig config) {

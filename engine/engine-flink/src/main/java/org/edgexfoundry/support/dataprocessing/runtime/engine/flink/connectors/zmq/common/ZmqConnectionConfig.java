@@ -8,6 +8,13 @@ public class ZmqConnectionConfig implements Serializable {
   private int port;
   private int ioThreads;
 
+  /**
+   * Class constructor specifying ZeroMQ configurations.
+   *
+   * @param host hostname or IP address of target ZeroMQ
+   * @param port port number of target ZeroMQ
+   * @param ioThreads the number of IO threads to read from/write to ZeroMQ
+   */
   public ZmqConnectionConfig(String host, int port, int ioThreads) {
     this.host = host;
     this.port = port;

@@ -16,9 +16,15 @@ public class ModelLoader {
   private static final Logger LOGGER = LoggerFactory.getLogger(ModelLoader.class);
   private URLClassLoader urlClassLoader = null;
   private ClassLoader classLoader = null;
-  private String jarPath = null;
+  private String jarPath;
 
-  public ModelLoader(String jarPath, ClassLoader classLoader) throws Exception {
+  /**
+   * Class constructor specifying model jar path and classloader.
+   *
+   * @param jarPath Task model jar path in the job jar file
+   * @param classLoader Classloader to use for task model
+   */
+  public ModelLoader(String jarPath, ClassLoader classLoader) {
     if (null == jarPath) {
       throw new NullPointerException("Jar path should be specified");
     }
@@ -27,6 +33,13 @@ public class ModelLoader {
     this.classLoader = classLoader;
   }
 
+  /**
+   * Returns TaskModel object that is loaded from a jar for task model.
+   *
+   * @param modelName Class name of task model to load
+   * @return TaskModel object dynamically loaded from the given model
+   * @throws Exception If loading the class named model name is failed.
+   */
   public TaskModel newInstance(String modelName) throws Exception {
     loadJar(jarPath);
     Class<TaskModel> cls = getClassInstance(modelName);

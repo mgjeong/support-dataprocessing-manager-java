@@ -18,6 +18,8 @@ import org.mockito.Mockito;
 public class SinkVertexTest {
 
   private static final Long TEST_ID = 1234L;
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   private SinkVertex initialize(Map<String, String> info) throws Exception {
     WorkflowSink sink = new WorkflowSink();
@@ -106,9 +108,6 @@ public class SinkVertexTest {
     SinkVertex testSink = initialize(properties);
     testSink.serve();
   }
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void testServeWithShortProperties() throws Exception {

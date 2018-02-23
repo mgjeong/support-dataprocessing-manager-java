@@ -4,13 +4,13 @@ import java.util.Map;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
-import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file.FileInputSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.ezmq.EzmqSource;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file.FileInputSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.ZmqSource;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.zmq.common.ZmqConnectionConfig.Builder;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.graph.Vertex;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.schema.DataSetSchema;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class SourceVertex implements Vertex {

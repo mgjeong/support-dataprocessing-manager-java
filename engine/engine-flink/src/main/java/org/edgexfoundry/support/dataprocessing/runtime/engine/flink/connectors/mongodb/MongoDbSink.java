@@ -42,6 +42,14 @@ public class MongoDbSink extends RichSinkFunction<DataSet> {
   private MongoDatabase db = null;
   private MongoCollection<Document> table = null;
 
+  /**
+   * Class constructor specifying target DB.   *
+   *
+   * @param ip IP address or hostname of target MongoDB
+   * @param port port number of target MongoDB
+   * @param dbName Target database name
+   * @param tableName Target table name
+   */
   public MongoDbSink(String ip, int port, String dbName, String tableName) {
     this.ip = ip;
     this.port = port;

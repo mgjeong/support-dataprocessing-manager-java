@@ -48,12 +48,29 @@ public class EzmqSource extends RichSourceFunction<DataSet> implements
   private transient Object waitLock;
   private transient boolean running = false;
 
+  /**
+   * Constructs an EzmqSource object that contains host, port.
+   * The host argument must specify an IP address or a hostname. The port argument must describe
+   * port number to subscribe.
+   *
+   * @param host hostname or IP address where EZMQ source publisher is located
+   * @param port port number where EZMQ source publisher is using
+   */
   public EzmqSource(String host, int port) {
     this.host = host;
     this.port = port;
     this.topics = null;
   }
 
+  /**
+   * Constructs  an EzmqSource object that contains host, port, and topic information.
+   * The host/port argument must specify an IP address or a hostname, and a port number.
+   * The topic argument must be formatted with [a-Z0-9].
+   *
+   * @param host hostname or IP address where EZMQ source publisher is located
+   * @param port port number where EZMQ source publisher is using
+   * @param topics topic name
+   */
   public EzmqSource(String host, int port, String topics) {
     this.host = host;
     this.port = port;

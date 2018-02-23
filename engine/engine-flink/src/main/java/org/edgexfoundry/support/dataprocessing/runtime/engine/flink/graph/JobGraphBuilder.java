@@ -20,6 +20,20 @@ public class JobGraphBuilder {
 
   private Map<Vertex, List<Vertex>> edges;
 
+  /**
+   * Returns JobGraph objects that corresponds to the workflow
+   * The env argument must specify Flink execution environment on the machine, and the workflowData
+   * argument contains sources, sinks, processors and their connections.
+   * This method returns JobGraph object only when the given workflow is valid. When the workflow is
+   * not suitable for drawing the job graph from source to sink and at least one processor, this
+   * method throws an exception.
+   *
+   * @param env Flink execution environment
+   * @param workflowData Workflow
+   * @return JobGraph object that can initiate Flink job
+   * @throws Exception If Flink execution environment is missing, source/sink/processor is missing,
+   *        or unreachable edge exists.
+   */
   public JobGraph getInstance(StreamExecutionEnvironment env,
       WorkflowData workflowData) throws Exception {
 
@@ -37,7 +51,7 @@ public class JobGraphBuilder {
     return new JobGraph(jobConfig.getWorkflowName(), edges);
   }
 
-  private void initConfig(StreamExecutionEnvironment env) throws Exception {
+  private void initConfig(StreamExecutionEnvironment env) {
     if (isEmpty(jobConfig.getSources())) {
       throw new NullPointerException("Empty source information");
     }
