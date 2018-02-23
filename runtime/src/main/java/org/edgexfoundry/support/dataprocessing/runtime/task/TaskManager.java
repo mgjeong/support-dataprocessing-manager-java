@@ -334,7 +334,7 @@ public final class TaskManager {
         continue;
       }
 
-      if (tm == null || !(tm instanceof TaskModel)) {
+      if (tm == null) {
         continue;
       } else if (tm.getName().equalsIgnoreCase(existingBundle.getName())
           && tm.getType().name().equalsIgnoreCase(existingBundle.getSubType())) {
@@ -390,7 +390,7 @@ public final class TaskManager {
         continue;
       }
 
-      if (tm == null || !(tm instanceof TaskModel)) {
+      if (tm == null) {
         continue;
       }
 

@@ -57,7 +57,7 @@ public class HTTP implements Serializable {
 
   private HttpClient client = null;
   private HttpHost proxy = null;
-  private URIBuilder uriBuilder = null;
+  private transient URIBuilder uriBuilder = null;
 
   private boolean initialized = false;
 

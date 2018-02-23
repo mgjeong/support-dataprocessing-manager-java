@@ -148,7 +148,10 @@ public class ErrorModel extends AbstractTaskModel {
           Number predict = in.getValue(inRecordKeys.get(index), Number.class);
 
           Object temp = targetList.get(inRecordKeys.get(index));
-          if (temp instanceof LinkedList) {
+          if (temp == null) {
+            value = new LinkedList<Number>();
+            LOGGER.info("Instantiate new Linked List for : {}", inRecordKeys.get(index));
+          } else if (temp instanceof LinkedList) {
             value = (LinkedList<Number>) temp;
           } else {
             value = new LinkedList<Number>();

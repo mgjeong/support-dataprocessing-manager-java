@@ -26,7 +26,7 @@ public class FileOutputSink extends RichSinkFunction<DataSet> {
 
   private File outputFile = null;
 
-  private PrintWriter writer = null;
+  private transient PrintWriter writer = null;
 
   public FileOutputSink(String outputFilePath) {
     this.outputFile = new File(outputFilePath);

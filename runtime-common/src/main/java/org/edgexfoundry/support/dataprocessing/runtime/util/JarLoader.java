@@ -29,8 +29,12 @@ public final class JarLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
-  private static TaskClassLoader taskClassLoader = new TaskClassLoader(
-      ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs());
+  private static TaskClassLoader taskClassLoader;
+
+  static {
+    taskClassLoader = new TaskClassLoader(
+        ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs());
+  }
 
   public static <T> T newInstance(File jarFile, String className, Class<T> clazz)
       throws Exception {

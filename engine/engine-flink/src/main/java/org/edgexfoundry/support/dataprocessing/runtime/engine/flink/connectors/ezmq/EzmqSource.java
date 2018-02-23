@@ -42,8 +42,8 @@ public class EzmqSource extends RichSourceFunction<DataSet> implements
   private final int port;
   private final String topics;
 
-  private EZMQAPI ezmqApi = null;
-  private EZMQSubscriber ezmqSubscriber = null;
+  private transient EZMQAPI ezmqApi = null;
+  private transient EZMQSubscriber ezmqSubscriber = null;
 
   private SourceContext<DataSet> sourceContext = null;
 

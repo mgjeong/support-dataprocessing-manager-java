@@ -37,8 +37,8 @@ public class EzmqSink extends RichSinkFunction<DataSet> implements EZMQCallback 
 
   private final int port;
 
-  private EZMQAPI ezmqApi = null;
-  private EZMQPublisher ezmqPublisher = null;
+  private transient EZMQAPI ezmqApi = null;
+  private transient EZMQPublisher ezmqPublisher = null;
 
   public EzmqSink(int port) {
     this.port = port;

@@ -38,9 +38,9 @@ public class MongoDbSink extends RichSinkFunction<DataSet> {
   private final String dbName;
   private final String tableName;
 
-  private MongoClient client = null;
-  private MongoDatabase db = null;
-  private MongoCollection<Document> table = null;
+  private transient MongoClient client = null;
+  private transient MongoDatabase db = null;
+  private transient MongoCollection<Document> table = null;
 
   public MongoDbSink(String ip, int port, String dbName, String tableName) {
     this.ip = ip;

@@ -34,8 +34,8 @@ public class ZmqSink<DataT> extends RichSinkFunction<DataT> {
   private final String topic;
   private SerializationSchema<DataT> schema;
 
-  private ZMQ.Context zmqContext;
-  private ZMQ.Socket zmqSocket;
+  private transient ZMQ.Context zmqContext;
+  private transient ZMQ.Socket zmqSocket;
 
   public ZmqSink(ZmqConnectionConfig zmqConnectionConfig, String topic,
       SerializationSchema<DataT> schema) {

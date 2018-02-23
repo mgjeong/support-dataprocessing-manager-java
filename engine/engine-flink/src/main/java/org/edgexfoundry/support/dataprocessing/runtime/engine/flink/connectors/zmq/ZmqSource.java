@@ -37,8 +37,8 @@ public class ZmqSource<OUT> extends RichSourceFunction<OUT> implements ResultTyp
 
   private DeserializationSchema<OUT> schema;
 
-  private ZMQ.Context zmqContext = null;
-  private ZMQ.Socket zmqSocket = null;
+  private transient ZMQ.Context zmqContext = null;
+  private transient ZMQ.Socket zmqSocket = null;
 
   private transient volatile boolean running;
 

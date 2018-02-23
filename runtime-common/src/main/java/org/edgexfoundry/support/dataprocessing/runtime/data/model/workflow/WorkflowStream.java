@@ -38,7 +38,7 @@ public class WorkflowStream extends Format {
   private String streamId;
   private String description;
   private Long workflowId;
-  private transient List<Field> fields = new ArrayList<>();
+  private List<Field> fields = new ArrayList<>();
 
   public WorkflowStream() {
 
