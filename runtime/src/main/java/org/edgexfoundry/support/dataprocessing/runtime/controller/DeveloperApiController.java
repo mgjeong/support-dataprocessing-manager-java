@@ -22,12 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class DeveloperApiController extends AbstractController {
 
   private final WorkflowController workflowController;
-  private final JobController jobController;
   private final TaskController taskController;
 
   public DeveloperApiController() {
     this.workflowController = new WorkflowController();
-    this.jobController = new JobController();
     this.taskController = new TaskController();
   }
 
@@ -45,14 +43,14 @@ public class DeveloperApiController extends AbstractController {
       notes = "Deploys workflow to an edge device for processing. A newly generated job id is returned on success.")
   @RequestMapping(value = "/workflows/{workflowId}/run", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity runWorkflow(@PathVariable("workflowId") Long workflowId) {
-    return this.jobController.deployWorkflow(workflowId);
+    return this.workflowController.deployWorkflow(workflowId);
   }
 
   @ApiOperation(value = "Stop job", notes = "Stops a running job instance.")
   @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
       @PathVariable("jobId") String jobId) {
-    return this.jobController.stopJob(workflowId, jobId);
+    return this.workflowController.stopJob(workflowId, jobId);
   }
 
   @ApiOperation(value = "Remove workflow", notes = "Removes a workflow completely.")
@@ -70,7 +68,7 @@ public class DeveloperApiController extends AbstractController {
   @ApiOperation(value = "Get workflow job details", notes = "Returns detailed monitoring states of workflow jobs.")
   @RequestMapping(value = "/workflows/{workflowId}/details", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity monitorWorkflow(@PathVariable("workflowId") Long workflowId) {
-    return this.jobController.monitorJobDetails(workflowId);
+    return this.workflowController.monitorJobDetails(workflowId);
   }
 
   @ApiOperation(value = "Add custom task", notes = "Adds a new custom task jar.")

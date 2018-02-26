@@ -17,19 +17,29 @@
 package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.spy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.controller.WorkflowController.ImportType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponent;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEditorToolbar;
@@ -37,7 +47,11 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
+import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,10 +63,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(value = {WorkflowTableManager.class})
+@PrepareForTest(value = {WorkflowTableManager.class, JobTableManager.class, EngineManager.class})
 public class WorkflowControllerTest {
 
+  private static final Gson gson = new Gson();
+
   private WorkflowTableManager workflowTableManager = mock(WorkflowTableManager.class);
+  private JobTableManager jobTableManager = mock(JobTableManager.class);
+  private EngineManager engineManager = mock(EngineManager.class);
 
   @Test
   public void testListWorkflows() throws Exception {
@@ -586,6 +604,184 @@ public class WorkflowControllerTest {
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
+  @Test
+  public void testValidateWorkflow() throws Exception {
+    WorkflowController workflowController = createWorkflowController();
+    Workflow sampleWorkflow = createSampleWorkflow();
+    doReturn(sampleWorkflow).when(workflowTableManager).getWorkflow(sampleWorkflow.getId());
+    ResponseEntity response = workflowController.validateWorkflow(sampleWorkflow.getId());
+
+    Assert.assertNotNull(response);
+    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  @Test
+  public void testDeployWorkflow() throws Exception {
+    WorkflowController workflowController = spy(createWorkflowController());
+    Workflow workflow = createSampleWorkflow();
+    WorkflowData workflowData = createSampleWorkflowData(workflow);
+    Job job = createSampleJob(workflowData);
+    Engine engine = mock(FlinkEngine.class);
+
+    doReturn(engine).when(engineManager).getEngine(anyString(), anyInt(), any());
+    doReturn(workflow).when(workflowTableManager).getWorkflow(workflow.getId());
+    doReturn(workflowData).when(workflowTableManager).doExportWorkflow(workflow);
+    doReturn(job).when(jobTableManager).addJob(any());
+    doReturn(job.getState()).when(jobTableManager).updateJobState(any());
+
+    ResponseEntity response = workflowController.deployWorkflow(workflow.getId());
+    Assert.assertNotNull(response);
+    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    // Test exceptions
+    doThrow(new RuntimeException("mocked")).when(engine).run(any());
+    response = workflowController.deployWorkflow(workflow.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    doThrow(new RuntimeException("mocked")).when(workflowTableManager).getWorkflow(any());
+    response = workflowController.deployWorkflow(workflow.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+  }
+
+  @Test
+  public void testStopJob() throws Exception {
+    WorkflowController workflowController = spy(createWorkflowController());
+    Workflow workflow = createSampleWorkflow();
+    WorkflowData workflowData = createSampleWorkflowData(workflow);
+    Job job = createSampleJob(workflowData);
+    Engine engine = mock(FlinkEngine.class);
+
+    doReturn(engine).when(engineManager).getEngine(anyString(), anyInt(), any());
+    doReturn(job).when(jobTableManager).getJobById(any());
+    doReturn(job.getState()).when(jobTableManager).updateJobState(any());
+
+    ResponseEntity response = workflowController.stopJob(workflow.getId(), job.getId());
+    Assert.assertNotNull(response);
+    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    // test exception
+    doThrow(new RuntimeException("mocked")).when(engine).stop(any());
+    response = workflowController.stopJob(workflow.getId(), job.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    doThrow(new RuntimeException("mocked")).when(jobTableManager).getJobById(any());
+    response = workflowController.stopJob(workflow.getId(), job.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+  }
+
+  @Test
+  public void testMonitorJobs() throws Exception {
+    WorkflowController workflowController = spy(createWorkflowController());
+    Collection<Job> jobs = new ArrayList<>();
+    Workflow workflowA = createSampleWorkflow();
+    workflowA.setId(1L);
+    Job jobA = createSampleJob(createSampleWorkflowData(workflowA));
+    jobA.getState().setState(State.RUNNING);
+    jobs.add(jobA);
+    Job jobB = createSampleJob(createSampleWorkflowData(workflowA));
+    jobB.getState().setState(State.STOPPED);
+    jobs.add(jobB);
+    doReturn(jobs).when(jobTableManager).getJobs();
+
+    ResponseEntity response = workflowController.monitorJobs();
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    doThrow(new RuntimeException("Mocked")).when(jobTableManager).getJobs();
+    response = workflowController.monitorJobs();
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+  }
+
+  @Test
+  public void testMonitorJob() throws Exception {
+    WorkflowController workflowController = spy(createWorkflowController());
+    Collection<Job> jobs = new ArrayList<>();
+    Workflow workflowA = createSampleWorkflow();
+    workflowA.setId(1L);
+    Job jobA = createSampleJob(createSampleWorkflowData(workflowA));
+    jobA.getState().setState(State.RUNNING);
+    jobs.add(jobA);
+    Job jobB = createSampleJob(createSampleWorkflowData(workflowA));
+    jobB.getState().setState(State.STOPPED);
+    jobs.add(jobB);
+    doReturn(jobs).when(jobTableManager).getJobsByWorkflow(any());
+
+    ResponseEntity response = workflowController.monitorJob(workflowA.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    doThrow(new RuntimeException("Mocked")).when(jobTableManager).getJobsByWorkflow(any());
+    response = workflowController.monitorJob(workflowA.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+  }
+
+  @Test
+  public void testMonitorJobDetails() throws Exception {
+    WorkflowController workflowController = spy(createWorkflowController());
+    Collection<Job> jobs = new ArrayList<>();
+    Workflow workflowA = createSampleWorkflow();
+    workflowA.setId(1L);
+    Job jobA = createSampleJob(createSampleWorkflowData(workflowA));
+    jobA.getState().setState(State.RUNNING);
+    jobs.add(jobA);
+    Job jobB = createSampleJob(createSampleWorkflowData(workflowA));
+    jobB.getState().setState(State.STOPPED);
+    jobs.add(jobB);
+    doReturn(jobs).when(jobTableManager).getJobsByWorkflow(any());
+
+    ResponseEntity response = workflowController.monitorJobDetails(workflowA.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    doThrow(new RuntimeException("Mocked")).when(jobTableManager).getJobsByWorkflow(any());
+    response = workflowController.monitorJobDetails(workflowA.getId());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+  }
+
+  private boolean isValidJson(String s) {
+    if (StringUtils.isEmpty(s)) {
+      return false;
+    }
+
+    try {
+      gson.fromJson(s, Object.class);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private Job createSampleJob(WorkflowData workflowData) {
+    Job job = Job.create(workflowData);
+    job.getState().setState(State.RUNNING);
+    job.getState().setStartTime(System.currentTimeMillis());
+    return job;
+  }
+
+  private WorkflowData createSampleWorkflowData(Workflow workflow) {
+
+    WorkflowData data = new WorkflowData();
+    data.setWorkflowId(workflow.getId());
+    data.getConfig().put("targetHost", "localhost:5555");
+
+    WorkflowProcessor workflowProcessor = new WorkflowProcessor();
+    workflowProcessor.setEngineType(EngineType.FLINK.name());
+
+    List<WorkflowProcessor> list = new ArrayList<>();
+    list.add(workflowProcessor);
+
+    data.setProcessors(list);
+
+    return data;
+  }
+
+  private Workflow createSampleWorkflow() {
+    Workflow workflow = new Workflow();
+    workflow.setId(1L);
+    workflow.setName("sample workflow");
+
+    return workflow;
+  }
+
   private WorkflowStream createSampleWorkflowStream() {
     WorkflowStream stream = new WorkflowStream();
     stream.setWorkflowId(1L);
@@ -611,10 +807,6 @@ public class WorkflowControllerTest {
     return editorMetadata;
   }
 
-  private Workflow createSampleWorkflow() {
-    return createSampleWorkflow(1L, "sample workflow");
-  }
-
   private Workflow createSampleWorkflow(long id, String name) {
     Workflow workflow = new Workflow();
     workflow.setId(id);
@@ -627,6 +819,12 @@ public class WorkflowControllerTest {
     Field wtm = workflowController.getClass().getDeclaredField("workflowTableManager");
     wtm.setAccessible(true);
     wtm.set(workflowController, workflowTableManager);
+    Field jtm = workflowController.getClass().getDeclaredField("jobTableManager");
+    jtm.setAccessible(true);
+    jtm.set(workflowController, jobTableManager);
+    Field em = workflowController.getClass().getDeclaredField("engineManager");
+    em.setAccessible(true);
+    em.set(workflowController, engineManager);
     return workflowController;
   }
 
