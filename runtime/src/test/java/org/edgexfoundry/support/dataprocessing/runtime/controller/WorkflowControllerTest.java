@@ -133,8 +133,12 @@ public class WorkflowControllerTest {
   public void testRemoveWorkflow() throws Exception {
     WorkflowController workflowController = createWorkflowController();
     Workflow sampleWorkflow = createSampleWorkflow();
-    doReturn(sampleWorkflow).when(workflowTableManager)
-        .removeWorkflow(sampleWorkflow.getId());
+    WorkflowData sampleWorkflowData = createSampleWorkflowData(sampleWorkflow);
+    Job sampleJob = createSampleJob(sampleWorkflowData);
+    List<Job> sampleJobs = new ArrayList<>();
+    sampleJobs.add(sampleJob);
+    doReturn(sampleJobs).when(jobTableManager).getJobsByWorkflow(any());
+    doReturn(sampleWorkflow).when(workflowTableManager).removeWorkflow(sampleWorkflow.getId());
 
     ResponseEntity response = workflowController.removeWorkflow(sampleWorkflow.getId(), true, true);
     Assert.assertNotNull(response);
@@ -661,6 +665,12 @@ public class WorkflowControllerTest {
     doReturn(job.getState()).when(jobTableManager).updateJobState(any());
 
     ResponseEntity response = workflowController.stopJob(workflow.getId(), job.getId());
+    Assert.assertNotNull(response);
+    Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assert.assertTrue(isValidJson(response.getBody().toString()));
+
+    job.getState().setState(State.STOPPED);
+    response = workflowController.stopJob(workflow.getId(), job.getId());
     Assert.assertNotNull(response);
     Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assert.assertTrue(isValidJson(response.getBody().toString()));

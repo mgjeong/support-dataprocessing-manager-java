@@ -19,11 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @Api(tags = "Developer APIs", description = "API List for developers")
 @RequestMapping("/api/v1/")
-public class DeveloperApiController extends AbstractController {
+public class DeveloperController extends AbstractController {
 
-  private final WorkflowController workflowController;
+  private WorkflowController workflowController;
 
-  public DeveloperApiController() {
+  public DeveloperController() {
     this.workflowController = new WorkflowController();
   }
 
