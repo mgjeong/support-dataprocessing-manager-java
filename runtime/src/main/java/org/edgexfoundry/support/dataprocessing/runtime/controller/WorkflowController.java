@@ -105,7 +105,7 @@ public class WorkflowController extends AbstractController {
     for (Workflow workflow : workflows) {
       WorkflowDetailed detailed = new WorkflowDetailed();
       detailed.setWorkflow(workflow);
-      detailed.setRunning(RunningStatus.NOT_RUNNING);
+      //detailed.setRunning(RunningStatus.NOT_RUNNING);
       workflowDetailedList.add(detailed);
     }
     return respondEntity(workflowDetailedList, HttpStatus.OK);
