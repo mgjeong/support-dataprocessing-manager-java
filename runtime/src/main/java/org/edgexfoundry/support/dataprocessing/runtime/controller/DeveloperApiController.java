@@ -18,15 +18,13 @@ import org.springframework.web.multipart.MultipartFile;
 @CrossOrigin(origins = "*")
 @RestController
 @Api(tags = "Developer APIs", description = "API List for developers")
-@RequestMapping("/api/v1/developer/")
+@RequestMapping("/api/v1/")
 public class DeveloperApiController extends AbstractController {
 
   private final WorkflowController workflowController;
-  private final TaskController taskController;
 
   public DeveloperApiController() {
     this.workflowController = new WorkflowController();
-    this.taskController = new TaskController();
   }
 
   @ApiOperation(value = "Create workflow", notes = "Creates a new workflow from Json file or string.")
@@ -74,7 +72,7 @@ public class DeveloperApiController extends AbstractController {
   @ApiOperation(value = "Add custom task", notes = "Adds a new custom task jar.")
   @RequestMapping(value = "/tasks/upload", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity uploadCustomTask(@RequestParam("file") MultipartFile file) {
-    return this.taskController.addCustomTask(file);
+    return this.workflowController.addCustomTask(file);
   }
 
   @ApiOperation(value = "Update custom task", notes = "Updates an existing custom task jar.")
@@ -82,14 +80,14 @@ public class DeveloperApiController extends AbstractController {
   public ResponseEntity updateCustomTask(@RequestParam("name") String taskName,
       @RequestParam("type") TaskType taskType,
       @RequestParam("file") MultipartFile file) {
-    return this.taskController.updateCustomTask(taskName, taskType, file);
+    return this.workflowController.updateCustomTask(taskName, taskType, file);
   }
 
   @ApiOperation(value = "Remove custom task", notes = "Removes an existing custom task.")
   @RequestMapping(value = "/tasks/remove", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity removeCustomTask(@RequestParam("name") String taskName,
       @RequestParam("type") TaskType taskType) {
-    return this.taskController.removeCustomTask(taskName, taskType);
+    return this.workflowController.removeCustomTask(taskName, taskType);
   }
 
   @ApiOperation(value = "Lists available tasks", notes = "Returns a list of available tasks.")

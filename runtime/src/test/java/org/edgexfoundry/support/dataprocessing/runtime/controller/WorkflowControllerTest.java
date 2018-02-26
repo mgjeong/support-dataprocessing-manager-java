@@ -53,17 +53,21 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.internal.WhiteboxImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(value = {WorkflowTableManager.class, JobTableManager.class, EngineManager.class})
+@PrepareForTest(value = {WorkflowTableManager.class, JobTableManager.class, EngineManager.class,
+    TaskManager.class})
 public class WorkflowControllerTest {
 
   private static final Gson gson = new Gson();
@@ -828,4 +832,79 @@ public class WorkflowControllerTest {
     return workflowController;
   }
 
+  @Test
+  public void testAddCustomTask() throws Exception {
+    WorkflowController workflowController = spy(new WorkflowController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(workflowController, "taskManager", taskManager);
+    // test successful validation
+    MultipartFile mocked = mock(MultipartFile.class);
+    doReturn(false).when(mocked).isEmpty();
+    doReturn("sample.jar").when(mocked).getOriginalFilename();
+    doReturn("sample.jar").when(mocked).getName();
+    doReturn("hello".getBytes()).when(mocked).getBytes();
+
+    ResponseEntity responseEntity = workflowController.addCustomTask(mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains(mocked.getOriginalFilename()));
+
+    // test exception
+    doThrow(new Exception("Mocked")).when(taskManager).addCustomTask(any(), any());
+    responseEntity = workflowController.addCustomTask(mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = workflowController.addCustomTask(null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+  }
+
+  @Test
+  public void testUpdateCustomTask() throws Exception {
+    WorkflowController workflowController = spy(new WorkflowController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(workflowController, "taskManager", taskManager);
+    // test successful validation
+    MultipartFile mocked = mock(MultipartFile.class);
+    doReturn(false).when(mocked).isEmpty();
+    doReturn("sample.jar").when(mocked).getOriginalFilename();
+    doReturn("sample.jar").when(mocked).getName();
+    doReturn("hello".getBytes()).when(mocked).getBytes();
+
+    ResponseEntity responseEntity = workflowController
+        .updateCustomTask("A", TaskType.INVALID, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("Success"));
+
+    // test exception
+    doThrow(new Exception("Mocked")).when(taskManager).updateCustomTask(any(), any(), any(), any());
+    responseEntity = workflowController.updateCustomTask("A", TaskType.INVALID, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = workflowController.updateCustomTask(null, null, mocked);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = workflowController.updateCustomTask("A", TaskType.INVALID, null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+  }
+
+  @Test
+  public void testRemoveCustomTask() throws Exception {
+    WorkflowController workflowController = spy(new WorkflowController());
+    TaskManager taskManager = mock(TaskManager.class);
+    WhiteboxImpl.setInternalState(workflowController, "taskManager", taskManager);
+    // test successful validation
+
+    ResponseEntity responseEntity = workflowController.removeCustomTask("A", TaskType.INVALID);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("Success"));
+
+    // test exception
+    doThrow(new RuntimeException("Mocked")).when(taskManager).removeCustomTask(any(), any());
+    responseEntity = workflowController.removeCustomTask("A", TaskType.INVALID);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+    // test invalid param
+    responseEntity = workflowController.removeCustomTask(null, null);
+    Assert.assertTrue(responseEntity.getBody().toString().contains("error"));
+
+  }
 }

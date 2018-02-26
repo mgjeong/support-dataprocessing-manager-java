@@ -18,6 +18,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.ByteArrayInputStream;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
@@ -57,6 +59,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
 import org.edgexfoundry.support.dataprocessing.runtime.monitor.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -73,8 +77,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "*")
 @RestController
-@Api(tags = "Workflow UI", description = "API List for Workflow UI")
-@RequestMapping("/api/v1/catalog")
+@Api(tags = "UI APIs", description = "API List for Workflow Designer UI")
+@RequestMapping("/api/v1/ui")
 public class WorkflowController extends AbstractController {
 
   private final transient ObjectMapper mapper = new ObjectMapper();
@@ -83,6 +87,7 @@ public class WorkflowController extends AbstractController {
   private JobTableManager jobTableManager = null;
   private EngineManager engineManager = null;
   private MonitoringManager monitoringManager = null;
+  private TaskManager taskManager = null;
 
   /**
    * Use getter to access edge info, as it is initialized lazily.
@@ -102,6 +107,7 @@ public class WorkflowController extends AbstractController {
     this.jobTableManager = JobTableManager.getInstance();
     this.engineManager = EngineManager.getInstance();
     this.monitoringManager = MonitoringManager.getInstance();
+    this.taskManager = TaskManager.getInstance();
   }
 
   // Lazy edge info initialization
@@ -704,8 +710,8 @@ public class WorkflowController extends AbstractController {
   }
 
   @ApiOperation(value = "Monitor Job", notes = "Monitor job")
-  @RequestMapping(value = "/workflows/monitor/{groupId}", method = RequestMethod.GET)
-  public ResponseEntity monitorJob(@PathVariable("groupId") Long workflowId) {
+  @RequestMapping(value = "/workflows/monitor/{workflowId}", method = RequestMethod.GET)
+  public ResponseEntity monitorJob(@PathVariable("workflowId") Long workflowId) {
     try {
       Collection<Job> jobs = jobTableManager.getJobsByWorkflow(workflowId);
       WorkflowMetric.GroupInfo groupInfo = new GroupInfo();
@@ -727,8 +733,8 @@ public class WorkflowController extends AbstractController {
   }
 
   @ApiOperation(value = "Monitor Job", notes = "Monitor job")
-  @RequestMapping(value = "/workflows/monitor/{groupId}/details", method = RequestMethod.GET)
-  public ResponseEntity monitorJobDetails(@PathVariable("groupId") Long workflowId) {
+  @RequestMapping(value = "/workflows/monitor/{workflowId}/details", method = RequestMethod.GET)
+  public ResponseEntity monitorJobDetails(@PathVariable("workflowId") Long workflowId) {
     try {
       Collection<Job> jobs = this.jobTableManager.getJobsByWorkflow(workflowId);
 
@@ -742,6 +748,80 @@ public class WorkflowController extends AbstractController {
       return respond(workflowJobMetric, HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Add custom task", notes = "Adds a new custom task jar")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.POST)
+  public ResponseEntity addCustomTask(@RequestParam("file") MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Uploaded file is empty."),
+          HttpStatus.OK);
+    }
+
+    try {
+      // make file
+      int added = this.taskManager.addCustomTask(file.getOriginalFilename(), file.getInputStream());
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      response.addProperty("filename", file.getOriginalFilename());
+      response.addProperty("added", added);
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Update custom task", notes = "Updates an existing custom task jar")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.PUT)
+  public ResponseEntity updateCustomTask(@RequestParam("name") String taskName,
+      @RequestParam("type") TaskType taskType,
+      @RequestParam("file") MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Uploaded file is empty."),
+          HttpStatus.OK);
+    } else if (StringUtils.isEmpty(taskName) || taskType == null) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Invalid task name or type."),
+          HttpStatus.OK);
+    }
+
+    try {
+      // make file
+      int updated = this.taskManager
+          .updateCustomTask(taskName, taskType, file.getOriginalFilename(), file.getInputStream());
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      response.addProperty("filename", file.getOriginalFilename());
+      response.addProperty("updated", updated);
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Remove custom task", notes = "Removes an existing custom task")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.DELETE)
+  public ResponseEntity removeCustomTask(@RequestParam("name") String taskName,
+      @RequestParam("type") TaskType taskType) {
+    try {
+      this.taskManager.removeCustomTask(taskName, taskType);
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
     }
   }
 
