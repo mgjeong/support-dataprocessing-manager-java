@@ -47,8 +47,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEditorToolbar;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowJobMetric;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.GroupInfo;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.Work;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.Count;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.WorkflowInfo;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
@@ -684,24 +684,24 @@ public class WorkflowController extends AbstractController {
     try {
       Collection<Job> allJobs = jobTableManager.getJobs();
 
-      Map<Long, GroupInfo> groupInfoMap = new HashMap<>();
+      Map<Long, WorkflowInfo> workflowInfoMap = new HashMap<>();
       for (Job job : allJobs) {
-        GroupInfo groupInfo = groupInfoMap.get(job.getWorkflowId());
-        if (groupInfo == null) {
-          groupInfo = new GroupInfo();
-          groupInfo.setGroupId(String.valueOf(job.getWorkflowId()));
-          groupInfo.setWorks(new Work());
-          groupInfoMap.put(job.getWorkflowId(), groupInfo);
+        WorkflowInfo workflowInfo = workflowInfoMap.get(job.getWorkflowId());
+        if (workflowInfo == null) {
+          workflowInfo = new WorkflowInfo();
+          workflowInfo.setWorkflowId(job.getWorkflowId());
+          workflowInfo.setCount(new Count());
+          workflowInfoMap.put(job.getWorkflowId(), workflowInfo);
         }
         if (job.getState().getState() == State.RUNNING) {
-          groupInfo.getWorks().setRunning(groupInfo.getWorks().getRunning() + 1);
+          workflowInfo.getCount().setRunning(workflowInfo.getCount().getRunning() + 1);
         } else {
-          groupInfo.getWorks().setStop(groupInfo.getWorks().getStop() + 1);
+          workflowInfo.getCount().setStop(workflowInfo.getCount().getStop() + 1);
         }
       }
 
       WorkflowMetric workflowMetric = new WorkflowMetric();
-      workflowMetric.setGroups(new ArrayList<>(groupInfoMap.values()));
+      workflowMetric.setWorkflowInfos(new ArrayList<>(workflowInfoMap.values()));
 
       return respond(workflowMetric, HttpStatus.OK);
     } catch (Exception e) {
@@ -714,19 +714,19 @@ public class WorkflowController extends AbstractController {
   public ResponseEntity monitorJob(@PathVariable("workflowId") Long workflowId) {
     try {
       Collection<Job> jobs = jobTableManager.getJobsByWorkflow(workflowId);
-      WorkflowMetric.GroupInfo groupInfo = new GroupInfo();
-      groupInfo.setGroupId(String.valueOf(workflowId));
-      groupInfo.setWorks(new Work());
+      WorkflowMetric.WorkflowInfo workflowInfo = new WorkflowInfo();
+      workflowInfo.setWorkflowId(workflowId);
+      workflowInfo.setCount(new Count());
 
       jobs.forEach(job -> {
         if (job.getState().getState() == State.RUNNING) {
-          groupInfo.getWorks().setRunning(groupInfo.getWorks().getRunning() + 1);
+          workflowInfo.getCount().setRunning(workflowInfo.getCount().getRunning() + 1);
         } else {
-          groupInfo.getWorks().setStop(groupInfo.getWorks().getStop() + 1);
+          workflowInfo.getCount().setStop(workflowInfo.getCount().getStop() + 1);
         }
       });
 
-      return respond(groupInfo, HttpStatus.OK);
+      return respond(workflowInfo, HttpStatus.OK);
     } catch (Exception e) {
       return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
     }
