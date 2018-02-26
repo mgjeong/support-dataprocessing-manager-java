@@ -648,8 +648,8 @@ public class WorkflowController extends AbstractController {
   }
 
   private void stopJob(Job job) {
-    if (job.getState().getState() == State.STOPPED) {
-      LOGGER.error("Job is already stopped. jobId=" + job.getId() + "/finishTime=" + job.getState()
+    if (job.getState().getState() != State.RUNNING) {
+      LOGGER.error("Job is not running. jobId=" + job.getId() + "/finishTime=" + job.getState()
           .getFinishTime());
       return;
     }
