@@ -61,12 +61,13 @@ public class InjectVertex implements ScriptVertex {
       }
     }
 
-    String script = "";
-    for (String header : scriptHeaders.keySet()) {
-      script += scriptHeaders.get(header) + '\n';
+
+    StringBuffer script = new StringBuffer();
+    for (Map.Entry<String, String> header : scriptHeaders.entrySet()) {
+      script.append(header.getValue() + '\n');
     }
 
-    return script;
+    return script.toString();
   }
 
   private String generateScriptHeaderByTopic(String table, String sourceAddress, String topic) {

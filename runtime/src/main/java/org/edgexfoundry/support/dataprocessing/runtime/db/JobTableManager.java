@@ -157,7 +157,8 @@ public class JobTableManager extends AbstractStorageManager {
     sb.append("job_state.jobId = job.id ");
     String sql = sb.toString();
 
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql);
         ResultSet rs = ps.executeQuery()) {
       List<Job> jobs = new ArrayList<>();
       while (rs.next()) {
@@ -192,7 +193,8 @@ public class JobTableManager extends AbstractStorageManager {
     sb.append("job.workflowId = ?");
     String sql = sb.toString();
 
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, workflowId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, workflowId);
         ResultSet rs = ps.executeQuery()) {
       List<Job> jobs = new ArrayList<>();
       while (rs.next()) {
@@ -227,7 +229,8 @@ public class JobTableManager extends AbstractStorageManager {
     sb.append("job.id = ?");
     String sql = sb.toString();
 
-    try (PreparedStatement ps = createPreparedStatement(getConnection(), sql, jobId);
+    try (Connection connection = getConnection();
+        PreparedStatement ps = createPreparedStatement(connection, sql, jobId);
         ResultSet rs = ps.executeQuery()) {
       if (rs.next()) {
         return mapToJob(rs);

@@ -31,6 +31,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowStream extends Format {
 
+  private static final long serialVersionUID = 1L;
+
   private Long id;
   private Long componentId;
   private String streamId;
@@ -139,11 +141,11 @@ public class WorkflowStream extends Format {
   }
 
   @JsonInclude(Include.NON_NULL)
-  public static class Field {
+  public static class Field extends Format {
 
     private String name;
     private SchemaType type;
-    boolean optional;
+    private boolean optional;
 
     public Field() {
 

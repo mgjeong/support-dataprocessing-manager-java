@@ -34,16 +34,18 @@ import org.slf4j.LoggerFactory;
 public class EzmqSource extends RichSourceFunction<DataSet> implements
     EZMQSubscriber.EZMQSubCallback {
 
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(EzmqSource.class);
 
   private final String host;
   private final int port;
   private final String topics;
 
-  private EZMQAPI ezmqApi = null;
-  private EZMQSubscriber ezmqSubscriber = null;
+  private transient EZMQAPI ezmqApi = null;
+  private transient EZMQSubscriber ezmqSubscriber = null;
 
-  private SourceContext<DataSet> sourceContext = null;
+  private transient SourceContext<DataSet> sourceContext = null;
 
   private transient Object waitLock;
   private transient boolean running = false;

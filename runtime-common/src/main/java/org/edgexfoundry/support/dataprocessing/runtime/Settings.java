@@ -18,18 +18,18 @@ package org.edgexfoundry.support.dataprocessing.runtime;
 
 public final class Settings {
 
-  public final String DOCKER_PATH = "/runtime/ha/";
-  public final String FW_JAR_PATH = DOCKER_PATH + "jar/task/";
-  public final String CUSTOM_JAR_PATH = DOCKER_PATH + "jar/task_user/";
-  public final String RESOURCE_PATH = DOCKER_PATH + "resource/";
+  public static final String DOCKER_PATH = "/runtime/ha/";
+  public static final String FW_JAR_PATH = DOCKER_PATH + "jar/task/";
+  public static final String CUSTOM_JAR_PATH = DOCKER_PATH + "jar/task_user/";
+  public static final String RESOURCE_PATH = DOCKER_PATH + "resource/";
 
-  public final String DB_PATH = "DPFW.db";
-  public final String JDBC_PATH = "jdbc:sqlite:" + DOCKER_PATH + DB_PATH;
+  public static final String DB_PATH = "DPFW.db";
+  public static final String JDBC_PATH = "jdbc:sqlite:" + DOCKER_PATH + DB_PATH;
 
-  public final String API_MAX_FILE_SIZE = "16MB";
-  public final String API_MAX_REQUEST_SIZE = "32MB";
+  public static final String API_MAX_FILE_SIZE = "16MB";
+  public static final String API_MAX_REQUEST_SIZE = "32MB";
 
-  public final long JOB_MONITORING_INTERVAL = 5 * 1000L; // in milliseconds
+  public static final long JOB_MONITORING_INTERVAL = 5 * 1000L; // in milliseconds
 
   private static Settings instance = null;
 

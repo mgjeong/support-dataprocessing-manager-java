@@ -52,7 +52,7 @@ public class SQLiteDatabaseTest extends DatabaseTest {
     try {
       temp.getConnection();
       Assert.fail("Should not reach here.");
-    } catch (RuntimeException e) {
+    } catch (SQLException e) {
       // success
     }
 
@@ -65,7 +65,7 @@ public class SQLiteDatabaseTest extends DatabaseTest {
     try {
       temp.getConnection();
       Assert.fail("Should not reach here");
-    } catch (RuntimeException e) {
+    } catch (SQLException e) {
       Assert.assertTrue(e.getMessage().contains("Mocked exception"));
       // success
     }

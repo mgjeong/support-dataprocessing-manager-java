@@ -21,6 +21,8 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +31,14 @@ public final class JarLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JarLoader.class);
 
-  private static TaskClassLoader taskClassLoader = new TaskClassLoader(
-      ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs());
+  private static TaskClassLoader taskClassLoader;
+
+  static {
+    AccessController.doPrivileged(
+        (PrivilegedAction<Object>) () -> taskClassLoader = new TaskClassLoader(
+            ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs())
+    );
+  }
 
   public static <T> T newInstance(File jarFile, String className, Class<T> clazz)
       throws Exception {

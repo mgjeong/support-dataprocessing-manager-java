@@ -17,8 +17,10 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Paths;
@@ -130,6 +132,9 @@ public class FlinkEngineTest {
     Assert.assertEquals(job.getState().getState(), State.CREATED);
 
     engine.run(job);
+    Assert.assertEquals(job.getState().getState(), State.RUNNING);
+
+    engine.updateMetrics(job.getState());
     Assert.assertEquals(job.getState().getState(), State.RUNNING);
 
     engine.stop(job);
@@ -388,6 +393,19 @@ public class FlinkEngineTest {
 
     public void shutdown() {
       alive = false;
+    }
+
+    @Override
+    public JsonElement get(String path) throws Exception {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonParser parser = new JsonParser();
+      if (path.startsWith("/jobs/")) {
+        FlinkJob flinkJob = new FlinkJob();
+        flinkJob.setState("RUNNING");
+        return parser.parse(mapper.writeValueAsString(flinkJob));
+      } else {
+        return new JsonObject();
+      }
     }
 
     @Override
