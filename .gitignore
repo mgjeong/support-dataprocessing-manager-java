@@ -11,10 +11,7 @@ target/*
 docker_files/resources/*
 **/docker_files/resources/*
 
-
 ### Binary Executables after builds ###
-engine/engine-kapacitor/inject
-engine/engine-kapacitor/deliver
 runtime/resource/engine-flink.jar
 
 ### VIM ###
