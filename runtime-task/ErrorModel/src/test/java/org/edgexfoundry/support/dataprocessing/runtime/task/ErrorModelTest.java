@@ -90,6 +90,7 @@ public class ErrorModelTest {
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     model.setParam(params);
   }
@@ -109,6 +110,7 @@ public class ErrorModelTest {
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -143,6 +145,7 @@ public class ErrorModelTest {
     params.put("type", "rmse");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -176,6 +179,7 @@ public class ErrorModelTest {
     params.put("type", "mae");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -209,6 +213,7 @@ public class ErrorModelTest {
     params.put("type", "me");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -242,6 +247,7 @@ public class ErrorModelTest {
     params.put("type", "me");
     params.put("observation", "/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -278,6 +284,7 @@ public class ErrorModelTest {
     params.put("type", "mse");
     params.put("observation", "/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -314,6 +321,7 @@ public class ErrorModelTest {
     params.put("type", "rmse");
     params.put("observation", "/FIELD10");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -350,6 +358,7 @@ public class ErrorModelTest {
     params.put("type", "me");
     params.put("observation", "/FIELD10");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);

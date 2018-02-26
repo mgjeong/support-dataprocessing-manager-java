@@ -92,15 +92,8 @@ public class Application extends SpringBootServletInitializer {
   }
 
   public static void main(String[] args) throws Exception {
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> terminate()));
     initialize();
-
     SpringApplication.run(Application.class, args);
-
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        terminate();
-      }
-    });
   }
 }

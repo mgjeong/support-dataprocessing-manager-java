@@ -16,21 +16,17 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.task.AbstractTaskModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.libsvm.svm;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.libsvm.svm_model;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.libsvm.svm_node;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.libsvm.svm_parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import libsvm.*;
 
 public class SVMModel extends AbstractTaskModel {
 
