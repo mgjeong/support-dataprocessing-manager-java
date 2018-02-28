@@ -3,8 +3,8 @@ package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.GroupInfo;
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.Work;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.Count;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.WorkflowInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,30 +13,30 @@ public class WorkflowMetricTest {
   @Test
   public void testGetterAndSetter() {
     WorkflowMetric workflowMetric = new WorkflowMetric();
-    workflowMetric.setGroups(Collections.emptyList());
-    Assert.assertEquals(0, workflowMetric.getGroups().size());
+    workflowMetric.setWorkflowInfos(Collections.emptyList());
+    Assert.assertEquals(0, workflowMetric.getWorkflowInfos().size());
 
-    // work
-    WorkflowMetric.Work work = new Work();
-    work.setRunning(12);
-    work.setStop(3);
-    Assert.assertEquals(12, work.getRunning());
-    Assert.assertEquals(3, work.getStop());
+    // count
+    WorkflowMetric.Count count = new Count();
+    count.setRunning(12);
+    count.setStop(3);
+    Assert.assertEquals(12, count.getRunning());
+    Assert.assertEquals(3, count.getStop());
 
-    work = new Work(12, 3);
-    Assert.assertEquals(12, work.getRunning());
-    Assert.assertEquals(3, work.getStop());
+    count = new Count(12, 3);
+    Assert.assertEquals(12, count.getRunning());
+    Assert.assertEquals(3, count.getStop());
 
     // group info
-    List<GroupInfo> groupInfoList = new ArrayList<>();
-    GroupInfo groupInfo = new GroupInfo();
-    groupInfo.setGroupId("1");
-    groupInfo.setWorks(work);
-    Assert.assertEquals("1", groupInfo.getGroupId());
-    Assert.assertEquals(work, groupInfo.getWorks());
+    List<WorkflowInfo> workflowInfos = new ArrayList<>();
+    WorkflowInfo workflowInfo = new WorkflowInfo();
+    workflowInfo.setWorkflowId(1L);
+    workflowInfo.setCount(count);
+    Assert.assertEquals(1, workflowInfo.getWorkflowId(), 0);
+    Assert.assertEquals(count, workflowInfo.getCount());
 
-    groupInfoList.add(groupInfo);
-    workflowMetric.setGroups(groupInfoList);
-    Assert.assertEquals(1, workflowMetric.getGroups().size());
+    workflowInfos.add(workflowInfo);
+    workflowMetric.setWorkflowInfos(workflowInfos);
+    Assert.assertEquals(1, workflowMetric.getWorkflowInfos().size());
   }
 }

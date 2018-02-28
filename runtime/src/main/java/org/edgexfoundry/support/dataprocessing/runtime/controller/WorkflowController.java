@@ -18,6 +18,7 @@ package org.edgexfoundry.support.dataprocessing.runtime.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.ByteArrayInputStream;
@@ -25,25 +26,41 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorFormat;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.error.ErrorType;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workflow;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowDetailed;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowDetailed.RunningStatus;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEdge;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEditorMetadata;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowEditorToolbar;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowJobMetric;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.Count;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowMetric.WorkflowInfo;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowProcessor;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSource;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowStream;
+import org.edgexfoundry.support.dataprocessing.runtime.db.JobTableManager;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.Engine;
+import org.edgexfoundry.support.dataprocessing.runtime.engine.EngineManager;
+import org.edgexfoundry.support.dataprocessing.runtime.monitor.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.pharos.EdgeInfo;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -60,13 +77,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "*")
 @RestController
-@Api(tags = "Workflow UI", description = "API List for Workflow UI")
-@RequestMapping("/api/v1/catalog")
+@Api(tags = "UI APIs", description = "API List for Workflow Designer UI")
+@RequestMapping("/api/v1/ui")
 public class WorkflowController extends AbstractController {
 
   private final transient ObjectMapper mapper = new ObjectMapper();
 
   private WorkflowTableManager workflowTableManager = null;
+  private JobTableManager jobTableManager = null;
+  private EngineManager engineManager = null;
+  private MonitoringManager monitoringManager = null;
+  private TaskManager taskManager = null;
 
   /**
    * Use getter to access edge info, as it is initialized lazily.
@@ -83,6 +104,10 @@ public class WorkflowController extends AbstractController {
 
   public WorkflowController() {
     this.workflowTableManager = WorkflowTableManager.getInstance();
+    this.jobTableManager = JobTableManager.getInstance();
+    this.engineManager = EngineManager.getInstance();
+    this.monitoringManager = MonitoringManager.getInstance();
+    this.taskManager = TaskManager.getInstance();
   }
 
   // Lazy edge info initialization
@@ -105,7 +130,7 @@ public class WorkflowController extends AbstractController {
     for (Workflow workflow : workflows) {
       WorkflowDetailed detailed = new WorkflowDetailed();
       detailed.setWorkflow(workflow);
-      detailed.setRunning(RunningStatus.NOT_RUNNING);
+      //detailed.setRunning(RunningStatus.NOT_RUNNING);
       workflowDetailedList.add(detailed);
     }
     return respondEntity(workflowDetailedList, HttpStatus.OK);
@@ -147,6 +172,13 @@ public class WorkflowController extends AbstractController {
       @RequestParam(value = "onlyCurrent", required = false) boolean onlyCurrent,
       @RequestParam(value = "force", required = false) boolean force) {
     Workflow workflow = this.workflowTableManager.removeWorkflow(workflowId);
+    Collection<Job> jobs = this.jobTableManager.getJobsByWorkflow(workflow.getId());
+    jobs.stream().forEach(job -> {
+      if (job.getState().getState() == State.RUNNING) {
+        stopJob(job);
+      }
+      this.jobTableManager.removeJob(job.getId());
+    });
     return respond(workflow, HttpStatus.OK);
   }
 
@@ -535,6 +567,262 @@ public class WorkflowController extends AbstractController {
     }
 
     return respondEntity(response, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Validate workflow", notes = "Validates a workflow")
+  @RequestMapping(value = "/workflows/{workflowId}/actions/validate", method = RequestMethod.POST)
+  public ResponseEntity validateWorkflow(@PathVariable("workflowId") Long workflowId) {
+    Workflow result = this.workflowTableManager.getWorkflow(workflowId);
+    if (result != null) {
+      return respond(result, HttpStatus.OK);
+    } else {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INTERNAL_ERROR,
+          "Workflow id " + workflowId + " does not exist."), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Deploy workflow", notes = "Deploys a workflow")
+  @RequestMapping(value = "/workflows/{workflowId}/actions/deploy", method = RequestMethod.POST)
+  public ResponseEntity deployWorkflow(@PathVariable("workflowId") Long workflowId) {
+    WorkflowData workflowData;
+    Job newJob;
+
+    // create job instance from workflow data
+    try {
+      Workflow result = this.workflowTableManager.getWorkflow(workflowId);
+      workflowData = this.workflowTableManager.doExportWorkflow(result);
+
+      LOGGER.debug("Workflow data: " + workflowData.getConfigStr());
+
+      newJob = Job.create(workflowData);
+      this.jobTableManager.addJob(newJob); // add to database
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INTERNAL_ERROR, e.getMessage()),
+          HttpStatus.OK);
+    }
+
+    // create and run engine job
+    try {
+      // create engine job
+      String targetHost = (String) workflowData.getConfig().get("targetHost");
+      Engine engine = getEngine(targetHost, workflowData.getEngineType());
+
+      try {
+        // create
+        engine.create(newJob);
+
+        // run engine job
+        engine.run(newJob);
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+        newJob.getState().setState(State.ERROR);
+        newJob.getState().setState(e.getMessage());
+      }
+
+      // update to database
+      this.jobTableManager.updateJobState(newJob.getState());
+
+      // add to monitoring
+      this.monitoringManager.addJob(newJob);
+
+      return respond(newJob, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INTERNAL_ERROR, e.getMessage()),
+          HttpStatus.OK);
+    }
+  }
+
+  protected Engine getEngine(String targetHost, WorkflowData.EngineType engineType) {
+    String[] splits = targetHost.split(":");
+
+    return this.engineManager.getEngine(splits[0], Integer.parseInt(splits[1]), engineType);
+  }
+
+  @ApiOperation(value = "Stop job", notes = "Stop job")
+  @RequestMapping(value = "/workflows/{workflowId}/jobs/{jobId}/stop", method = RequestMethod.GET)
+  public ResponseEntity stopJob(@PathVariable("workflowId") Long workflowId,
+      @PathVariable("jobId") String jobId) {
+    try {
+      Job job = jobTableManager.getJobById(jobId);
+      stopJob(job);
+
+      return respond(job, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  private void stopJob(Job job) {
+    if (job.getState().getState() != State.RUNNING) {
+      LOGGER.error("Job is not running. jobId=" + job.getId() + "/finishTime=" + job.getState()
+          .getFinishTime());
+      return;
+    }
+
+    String targetHost = job.getConfig("targetHost");
+    Engine engine = getEngine(targetHost, EngineType.valueOf(job.getState().getEngineType()));
+
+    try {
+      engine.stop(job);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      job.getState().setState(State.STOPPED); // Set to stop, anyhow
+      job.getState().setErrorMessage(e.getMessage());
+    }
+
+    // remove from monitoring
+    this.monitoringManager.removeJob(job);
+
+    // update database
+    this.jobTableManager.updateJobState(job.getState());
+  }
+
+  @ApiOperation(value = "Monitor jobs", notes = "Monitor jobs")
+  @RequestMapping(value = "/workflows/monitor/", method = RequestMethod.GET)
+  public ResponseEntity monitorJobs() {
+    try {
+      Collection<Job> allJobs = jobTableManager.getJobs();
+
+      Map<Long, WorkflowInfo> workflowInfoMap = new HashMap<>();
+      for (Job job : allJobs) {
+        WorkflowInfo workflowInfo = workflowInfoMap.get(job.getWorkflowId());
+        if (workflowInfo == null) {
+          workflowInfo = new WorkflowInfo();
+          workflowInfo.setWorkflowId(job.getWorkflowId());
+          workflowInfo.setCount(new Count());
+          workflowInfoMap.put(job.getWorkflowId(), workflowInfo);
+        }
+        if (job.getState().getState() == State.RUNNING) {
+          workflowInfo.getCount().setRunning(workflowInfo.getCount().getRunning() + 1);
+        } else {
+          workflowInfo.getCount().setStop(workflowInfo.getCount().getStop() + 1);
+        }
+      }
+
+      WorkflowMetric workflowMetric = new WorkflowMetric();
+      workflowMetric.setWorkflowInfos(new ArrayList<>(workflowInfoMap.values()));
+
+      return respond(workflowMetric, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Monitor Job", notes = "Monitor job")
+  @RequestMapping(value = "/workflows/monitor/{workflowId}", method = RequestMethod.GET)
+  public ResponseEntity monitorJob(@PathVariable("workflowId") Long workflowId) {
+    try {
+      Collection<Job> jobs = jobTableManager.getJobsByWorkflow(workflowId);
+      WorkflowMetric.WorkflowInfo workflowInfo = new WorkflowInfo();
+      workflowInfo.setWorkflowId(workflowId);
+      workflowInfo.setCount(new Count());
+
+      jobs.forEach(job -> {
+        if (job.getState().getState() == State.RUNNING) {
+          workflowInfo.getCount().setRunning(workflowInfo.getCount().getRunning() + 1);
+        } else {
+          workflowInfo.getCount().setStop(workflowInfo.getCount().getStop() + 1);
+        }
+      });
+
+      return respond(workflowInfo, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Monitor Job", notes = "Monitor job")
+  @RequestMapping(value = "/workflows/monitor/{workflowId}/details", method = RequestMethod.GET)
+  public ResponseEntity monitorJobDetails(@PathVariable("workflowId") Long workflowId) {
+    try {
+      Collection<Job> jobs = this.jobTableManager.getJobsByWorkflow(workflowId);
+
+      WorkflowJobMetric workflowJobMetric = new WorkflowJobMetric();
+      workflowJobMetric.setGroupId(workflowId);
+
+      workflowJobMetric.setJobStates(new ArrayList<>(
+          jobs.stream().map(job -> job.getState()).collect(Collectors.toList())
+      ));
+
+      return respond(workflowJobMetric, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_DB, e.getMessage()), HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Add custom task", notes = "Adds a new custom task jar")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.POST)
+  public ResponseEntity addCustomTask(@RequestParam("file") MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Uploaded file is empty."),
+          HttpStatus.OK);
+    }
+
+    try {
+      // make file
+      int added = this.taskManager.addCustomTask(file.getOriginalFilename(), file.getInputStream());
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      response.addProperty("filename", file.getOriginalFilename());
+      response.addProperty("added", added);
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Update custom task", notes = "Updates an existing custom task jar")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.PUT)
+  public ResponseEntity updateCustomTask(@RequestParam("name") String taskName,
+      @RequestParam("type") TaskType taskType,
+      @RequestParam("file") MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Uploaded file is empty."),
+          HttpStatus.OK);
+    } else if (StringUtils.isEmpty(taskName) || taskType == null) {
+      return respond(
+          new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, "Invalid task name or type."),
+          HttpStatus.OK);
+    }
+
+    try {
+      // make file
+      int updated = this.taskManager
+          .updateCustomTask(taskName, taskType, file.getOriginalFilename(), file.getInputStream());
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      response.addProperty("filename", file.getOriginalFilename());
+      response.addProperty("updated", updated);
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
+  }
+
+  @ApiOperation(value = "Remove custom task", notes = "Removes an existing custom task")
+  @RequestMapping(value = "/upload/task", method = RequestMethod.DELETE)
+  public ResponseEntity removeCustomTask(@RequestParam("name") String taskName,
+      @RequestParam("type") TaskType taskType) {
+    try {
+      this.taskManager.removeCustomTask(taskName, taskType);
+
+      // TODO: format response
+      JsonObject response = new JsonObject();
+      response.addProperty("status", "Success");
+      return respond(response, HttpStatus.OK);
+    } catch (Exception e) {
+      return respond(new ErrorFormat(ErrorType.DPFW_ERROR_INVALID_PARAMS, e.getMessage()),
+          HttpStatus.OK);
+    }
   }
 
   private ResponseEntity listWorkflowComponentWorkflowBundles() {
