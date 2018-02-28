@@ -14,20 +14,23 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(Include.NON_NULL)
-public class WorkflowData {
+public class WorkflowData extends Format {
+
+  private static final long serialVersionUID = 1L;
 
   private Long workflowId;
   private String workflowName;
@@ -37,14 +40,6 @@ public class WorkflowData {
   private List<WorkflowProcessor> processors = new ArrayList<>();
   private List<WorkflowEdge> edges = new ArrayList<>();
   private WorkflowEditorMetadata workflowEditorMetadata;
-
-  // Make it transient so that gson does not parse this
-  @JsonIgnore
-  private transient final ObjectMapper mapper = new ObjectMapper();
-
-  public enum EngineType {
-    MULTI, FLINK, KAPACITOR, UNKNOWN
-  }
 
   public WorkflowData() {
 
@@ -182,5 +177,9 @@ public class WorkflowData {
     }
 
     return engineType;
+  }
+
+  public enum EngineType {
+    MULTI, FLINK, KAPACITOR, UNKNOWN
   }
 }

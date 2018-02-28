@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 
+import java.nio.charset.Charset;
+
 public class ZmqSource<OUT> extends RichSourceFunction<OUT> implements ResultTypeQueryable<OUT> {
 
   private static final long serialVersionUID = 1L;
@@ -37,8 +39,8 @@ public class ZmqSource<OUT> extends RichSourceFunction<OUT> implements ResultTyp
 
   private DeserializationSchema<OUT> schema;
 
-  private ZMQ.Context zmqContext = null;
-  private ZMQ.Socket zmqSocket = null;
+  private transient ZMQ.Context zmqContext = null;
+  private transient ZMQ.Socket zmqSocket = null;
 
   private transient volatile boolean running;
 
@@ -67,7 +69,7 @@ public class ZmqSource<OUT> extends RichSourceFunction<OUT> implements ResultTyp
     this.zmqSocket.connect(this.zmqConnectionConfig.getConnectionAddress());
 
     LOGGER.info("Subscribing ZMQ to {}", this.topic);
-    this.zmqSocket.subscribe(this.topic.getBytes());
+    this.zmqSocket.subscribe(this.topic.getBytes(Charset.defaultCharset()));
     this.running = true;
   }
 
@@ -78,8 +80,13 @@ public class ZmqSource<OUT> extends RichSourceFunction<OUT> implements ResultTyp
       try {
         this.zmqSocket.recvStr(); // discard this, not used (message envelop)
         data = this.zmqSocket.recvStr();
-        byte[] b = ZmqUtil.decode(data);
-        sourceContext.collect(this.schema.deserialize(b));
+        if(data != null) {
+          byte[] b = ZmqUtil.decode(data);
+          sourceContext.collect(this.schema.deserialize(b));
+        }
+        else {
+          LOGGER.error("recv data is null");
+        }
       } catch (Exception e) {
         LOGGER.error(e.getMessage(), e);
       }

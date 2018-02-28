@@ -14,20 +14,18 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.connection;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -48,12 +46,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class HTTP implements Serializable {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(HTTP.class);
+public class HTTP {
 
   private HttpClient client = null;
   private HttpHost proxy = null;
@@ -66,19 +60,28 @@ public class HTTP implements Serializable {
   public HTTP() {
   }
 
-  public HTTP initialize(String ip_port, String scheme) {
-    String ip = ip_port.substring(0, ip_port.indexOf(":"));
-    int port = Integer.parseInt(ip_port.substring(ip_port.indexOf(":") + 1, ip_port.length()));
+  /**
+   * Returns an HTTP object that initiates the given connection.
+   * The address argument must provide destination in the form of IP/HOSTNAME:PORT.
+   * The scheme argument must specify protocol to use, i.e., http or https.
+   *
+   * @param address Address of the destination (or server)
+   * @param scheme e.g.: http, https
+   * @return An object that provides RESTful interfaces for the given destination.
+   */
+  public HTTP initialize(String address, String scheme) {
+    String ip = address.substring(0, address.indexOf(":"));
+    int port = Integer.parseInt(address.substring(address.indexOf(":") + 1, address.length()));
 
     return initialize(ip, port, scheme);
   }
 
-  /***
+  /**
    * Initialize HTTP.
    *
    * @param host hostname
    * @param port port number
-   * @param scheme    e.g.: http, https
+   * @param scheme e.g.: http, https
    */
   public HTTP initialize(String host, int port, String scheme) {
     if (host == null || port <= 0) {
@@ -138,11 +141,21 @@ public class HTTP implements Serializable {
     return this.client;
   }
 
-  public JsonElement get(String path) {
+  public JsonElement get(String path) throws Exception {
     return get(path, null);
   }
 
-  public JsonElement get(String path, Map<String, String> args) {
+  /**
+   * Returns an JsonElement object as the result of GET with arguments.
+   * The path argument must specify path to the REST server, and the args argument must describe
+   * the key-value sets of arguments for a GET request.
+   *
+   * @param path REST server path from /
+   * @param args Arguments of a GET request
+   * @return Results of the GET request with arguments
+   * @throws Exception if connection is bad, or failed.
+   */
+  public JsonElement get(String path, Map<String, String> args) throws Exception {
     throwExceptionIfNotInitialized();
 
     HttpGet request = null;
@@ -161,48 +174,21 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public boolean get(String path, Map<String, String> args, String dstPath, String fName) {
-    HttpGet request = null;
-    try {
-      URI uri = createUri(path, args);
-      request = new HttpGet(uri);
-      HttpResponse response = executeRequest(request);
-
-      int httpStatusCode = response.getStatusLine().getStatusCode();
-      if (httpStatusCode != HttpStatus.SC_OK) {
-        throw new HttpResponseException(httpStatusCode,
-            String.format("Bad HTTP status: %d", httpStatusCode));
-      }
-
-      HttpEntity entity = response.getEntity();
-      if (entity != null) {
-        FileOutputStream fos = new FileOutputStream(new File(dstPath + "/" + fName));
-        entity.writeTo(fos);
-        fos.close();
-      }
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-      return false;   // Fail.
-    } finally {
-      if (request != null) {
-        request.releaseConnection();
-      }
-    }
-
-    return true;        // Success.
-  }
-
+  /**
+   * Returns an JsonElement object as the result of DELETE.
+   * The path argument must specify path to the REST server.
+   *
+   * @param path REST server path from /
+   * @return Results of the DELETE request with arguments
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement delete(String path) throws Exception {
     throwExceptionIfNotInitialized();
 
@@ -222,8 +208,6 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      throw e;
     } finally {
       if (request != null) {
         request.releaseConnection();
@@ -231,7 +215,17 @@ public class HTTP implements Serializable {
     }
   }
 
-  public JsonElement post(String path, File fileToUpload) {
+  /**
+   * Returns an JsonElement object as the result of POST with a file.
+   * The path argument must specify path to the REST server, and the fileToUpload must provide the
+   * file path to attach on this POST request.
+   *
+   * @param path REST server path from /
+   * @param fileToUpload the file to attach on the request
+   * @return Results of the POST request with the file
+   * @throws Exception if connection is bad, or failed.
+   */
+  public JsonElement post(String path, File fileToUpload) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPost request = null;
     try {
@@ -257,22 +251,30 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public JsonElement post(String path, Map<String, String> args) {
+  public JsonElement post(String path, Map<String, String> args) throws Exception {
     return post(path, args, false);
   }
 
-  public JsonElement post(String path, Map<String, String> args, boolean useArgAsParam) {
+  /**
+   * Returns an JsonElement object as the result of POST with arguments.
+   * The path argument must specify path to the REST server, and the args must provide
+   * the key-value sets of arguments for a POST request.
+   *
+   * @param path REST server path from /
+   * @param args Arguments of a POST request
+   * @param useArgAsParam Specification to deliver the arguments as parameters on the request
+   * @return Results of the POST request with the arguments
+   * @throws Exception if connection is bad, or failed.
+   */
+  public JsonElement post(String path, Map<String, String> args, boolean useArgAsParam)
+      throws Exception {
     throwExceptionIfNotInitialized();
 
     HttpPost request = null;
@@ -308,18 +310,24 @@ public class HTTP implements Serializable {
 
       return this.jsonParser.parse(rawJson);
 
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public JsonElement post(String path, String dataString) {
+  /**
+   * Returns an JsonElement object as the result of POST with encoded String value.
+   * The path argument must specify path to the REST server, and the dataString must provide String
+   * value to deliver.
+   *
+   * @param path REST server path from /
+   * @param dataString Application URL-encoded String value
+   * @return Results of the POST request with String value
+   * @throws Exception if connection is bad, or failed.
+   */
+  public JsonElement post(String path, String dataString) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPost request = null;
     try {
@@ -338,18 +346,24 @@ public class HTTP implements Serializable {
 
       String rawJson = EntityUtils.toString(response.getEntity());
       return this.jsonParser.parse(rawJson);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
-
-    return null;
   }
 
-  public JsonElement patch(String path, String dataString) {
+  /**
+   * Returns an JsonElement object as the result of PATCH with encoded String value.
+   * The path argument must specify path to the REST server, and the dataString must provide String
+   * value to deliver.
+   *
+   * @param path REST server path from /
+   * @param dataString Application URL-encoded String value
+   * @return Results of the PATCH request with String value
+   * @throws Exception if connection is bad, or failed.
+   */
+  public JsonElement patch(String path, String dataString) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPatch request = null;
     try {
@@ -368,15 +382,12 @@ public class HTTP implements Serializable {
 
       String rawJson = EntityUtils.toString(response.getEntity());
       return this.jsonParser.parse(rawJson);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
     } finally {
       if (request != null) {
         request.releaseConnection();
       }
     }
 
-    return null;
   }
 
   private void throwExceptionIfNotInitialized() {

@@ -35,7 +35,7 @@ public abstract class AbstractStorageManager {
     this.database = DatabaseManager.getInstance().getDatabase(jdbcUrl);
   }
 
-  protected synchronized Connection getConnection() {
+  protected synchronized Connection getConnection() throws SQLException {
     return this.database.getConnection();
   }
 

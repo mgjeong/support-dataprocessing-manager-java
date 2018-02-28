@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.internal.WhiteboxImpl;
+import org.springframework.boot.SpringApplication;
 import org.springframework.util.StringUtils;
 
 @RunWith(PowerMockRunner.class)
@@ -95,6 +96,16 @@ public class ApplicationTest {
       if (dir.exists()) {
         dir.delete();
       }
+    }
+  }
+
+  @Test
+  public void testMain() throws Exception {
+    try {
+      Application.main(null);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e){
+
     }
   }
 

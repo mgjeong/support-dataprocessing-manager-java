@@ -52,6 +52,9 @@ public class FlatMapTask extends RichFlatMapFunction<DataSet, DataSet> {
     ClassLoader classLoader = getRuntimeContext().getUserCodeClassLoader();
 
     task = new ModelLoader(jarPath, classLoader).newInstance(targetClass);
+    if (task == null) {
+      throw new Exception("Failed to create a new instance of " + jarPath);
+    }
 
     TaskModelParam taskModelParam = makeTaskModelParam();
 

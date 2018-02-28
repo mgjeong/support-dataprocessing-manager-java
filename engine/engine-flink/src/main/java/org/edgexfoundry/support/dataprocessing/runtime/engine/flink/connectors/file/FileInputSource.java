@@ -14,12 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.file;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
@@ -27,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileInputSource extends RichSourceFunction<DataSet> {
+
+  private static final long serialVersionUID = 1L;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileInputSource.class);
 
@@ -52,11 +57,11 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
     this.type = type;
 
     if (this.type.equals("csv")) {
-      this.delimiter = new String(",");
+      this.delimiter = ",";
     } else if (this.type.equals("tsv")) {
-      this.delimiter = new String("\t");
+      this.delimiter = "\t";
     } else {
-      this.delimiter = new String(",");
+      this.delimiter = ",";
     }
     LOGGER.debug("Path {}, Type {}", path, type);
   }
@@ -93,12 +98,17 @@ public class FileInputSource extends RichSourceFunction<DataSet> {
 
     BufferedReader br = null;
     try {
-      br = new BufferedReader(new FileReader(this.path));
+      br = new BufferedReader(
+          new InputStreamReader(new FileInputStream(this.path), Charset.defaultCharset()));
 
       while (this.running) {
 
         if (this.type.equals("csv") || this.type.equals("tsv")) {
           String line = br.readLine();
+          if (line == null) {
+            LOGGER.error("No header found.");
+            break;
+          }
           // first line is array of keys
           String[] keys = null;
           if (this.isFirstlineKey) {

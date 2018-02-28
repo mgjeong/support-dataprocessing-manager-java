@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState.State;

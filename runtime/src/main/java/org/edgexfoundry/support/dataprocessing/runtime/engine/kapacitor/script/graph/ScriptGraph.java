@@ -91,12 +91,12 @@ public class ScriptGraph {
    * @return Kapacitor script from the given graph
    */
   public String generateScript() {
-    String jobScript = "";
+    StringBuffer jobScript = new StringBuffer();
     for (ScriptVertex vertex : processingOrder) {
-      jobScript += vertex.getScript() + "\n";
+      jobScript.append(vertex.getScript() + "\n");
     }
 
-    return jobScript;
+    return jobScript.toString();
   }
 
 }

@@ -214,7 +214,10 @@ public final class TaskManager {
 
     int added = insertTaskModels(customFile, TaskOwner.USER);
     if (added == 0) {
-      customFile.delete(); // remove invalid custom task jar
+      boolean deleted = customFile.delete();// remove invalid custom task jar
+      if (!deleted) {
+        LOGGER.error("Failed to delete " + customFile.getPath());
+      }
       throw new RuntimeException("No new custom tasks found in " + filename);
     } else {
       return added;
@@ -249,7 +252,10 @@ public final class TaskManager {
     File customFile = saveFile(filename, inputStream);
     int updated = updateCustomTaskModel(existingBundle, customFile);
     if (updated == 0) {
-      customFile.delete(); // remove invalid custom task jar
+      boolean deleted = customFile.delete(); // remove invalid custom task jar
+      if (!deleted) {
+        LOGGER.error("Failed to delete: " + customFile.getPath());
+      }
       throw new RuntimeException("No custom tasks found in " + filename);
     } else {
       return updated;
@@ -291,7 +297,10 @@ public final class TaskManager {
         // Remove jar file, since it is not used anymore
         File jarFile = new File(existingBundle.getBundleJar());
         if (jarFile.exists()) {
-          jarFile.delete();
+          boolean deleted = jarFile.delete();
+          if (!deleted) {
+            LOGGER.error("Failed to delete: " + jarFile.getPath());
+          }
         }
       }
     } catch (Exception e) {
@@ -325,7 +334,7 @@ public final class TaskManager {
         continue;
       }
 
-      if (tm == null || !(tm instanceof TaskModel)) {
+      if (tm == null) {
         continue;
       } else if (tm.getName().equalsIgnoreCase(existingBundle.getName())
           && tm.getType().name().equalsIgnoreCase(existingBundle.getSubType())) {
@@ -381,7 +390,7 @@ public final class TaskManager {
         continue;
       }
 
-      if (tm == null || !(tm instanceof TaskModel)) {
+      if (tm == null) {
         continue;
       }
 

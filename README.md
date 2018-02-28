@@ -37,12 +37,32 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   - Version: 17.09
   - [How to install](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 
+## Quick Starts with Docker ##
+#### 1. Prepare engines ####
+###### Kapacitor ######
+```shell
+
+```
+###### Flink ######
+```shell
+
+```
+
+#### 2. Build and Deploy Workflow Manager ####
+```shell
+$ cd [REPOSITORY PATH]
+$ ./build.sh
+$ sudo docker build -t workflow-manager .
+$ sudo docker run -it -p 8082:8082 workflow-manager
+```
+
+#### 3. Launch sample jobs ####
+
 ## How to build  ##
 #### 1. Executable binary ####
 ```shell
 $ ./build.sh
 ```
-Note that, you can find other build scripts, **build_arm.sh** and **build_arm64**, which can be used to build the codes for ARM and ARM64 machines, respectively.
 
 ###### Binaries ######
 - Data Processing Manager is composed of four submodules.
@@ -83,7 +103,7 @@ $ sudo docker images
 REPOSITORY                   TAG        IMAGE ID        CREATED           SIZE
 support-dataprocessing-manager   latest     fcbbd4c401c2    SS seconds ago    XXX MB
 ```
-Note that, you can find other Dockerfiles, **Dockerfile_arm** and **Dockerfile_arm64**, which can be used to dockerize for ARM and ARM64 machines, respectively.
+
 
 ## How to run  ##
 #### Prerequisites ####
@@ -177,4 +197,6 @@ There are two ways to import workflow from JSON.
 
 ### Sample workflow JSON ###
 Sample workflow JSON files are available in `tools/sample_request`.
- 
+
+
+

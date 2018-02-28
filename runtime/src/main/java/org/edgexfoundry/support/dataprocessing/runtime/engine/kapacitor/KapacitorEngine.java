@@ -92,11 +92,20 @@ public class KapacitorEngine extends AbstractEngine {
 
     if (kapaResponse.get("id") == null) {
       jobState.setState(State.ERROR);
-      jobState.setErrorMessage(kapaResponse.get("error").getAsString());
+      JsonElement error = kapaResponse.get("error");
+      if(error != null) {
+        jobState.setErrorMessage(error.getAsString());
+      }
     } else {
+
       jobState.setState(State.CREATED);
       job.addConfig("script", resultScript);
-      jobState.setEngineId(kapaResponse.get("id").getAsString());
+      JsonElement kapaResponseId = kapaResponse.get("id");
+      if(kapaResponseId != null) {
+        jobState.setEngineId(kapaResponseId.getAsString());
+      } else {
+        LOGGER.warn("kapaResponseId is null");
+      }
     }
   }
 
@@ -145,11 +154,19 @@ public class KapacitorEngine extends AbstractEngine {
     if (kapaResponse.get("id") == null) {
       jobState.setState(State.ERROR);
       jobState.setStartTime(System.currentTimeMillis());
-      jobState.setErrorMessage(kapaResponse.get("error").getAsString());
+      JsonElement error = kapaResponse.get("error");
+      if(error != null) {
+        jobState.setErrorMessage(error.getAsString());
+      }
     } else {
       jobState.setState(State.RUNNING);
       jobState.setStartTime(System.currentTimeMillis());
-      jobState.setEngineId(kapaResponse.get("id").getAsString());
+      JsonElement kapaResponseId = kapaResponse.get("id");
+      if(kapaResponseId != null) {
+        jobState.setEngineId(kapaResponseId.getAsString());
+      } else {
+        LOGGER.warn("kapaResponseId is null");
+      }
     }
   }
 
