@@ -20,7 +20,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
@@ -180,7 +184,7 @@ public final class TaskManager {
     uiField.setDefaultValue(taskParam.defaultValue());
     uiField.setTooltip(taskParam.tooltip());
     uiField.setFieldName(taskParam.key());
-    uiField.setUserInput(!taskField.getType().isEnum());
+    uiField.setUserInput(true);
 
     if (taskField.getType().isEnum()) {
       Object[] options = taskField.getType().getEnumConstants();
@@ -375,11 +379,13 @@ public final class TaskManager {
     }
 
     int added = 0;
+
     for (String className : classNames) {
       TaskModel tm;
 
       try {
-        tm = JarLoader.newInstance(createdFile, className, TaskModel.class);
+//        tm = JarLoader.newInstance(createdFile, className, AbstractTaskModel.class);
+        tm = newInstance(createdFile, className, TaskModel.class);
       } catch (Exception e) {
         LOGGER.error("Failed to load class " + className);
         LOGGER.error(e.getMessage(), e);
@@ -408,5 +414,49 @@ public final class TaskManager {
       }
     }
     return added;
+  }
+
+  public <T> T newInstance(File jarFile, String className, Class<T> clazz)
+      throws Exception {
+    if (jarFile == null || !jarFile.exists()) {
+      throw new RuntimeException("Invalid jar file");
+    } else if (StringUtils.isEmpty(className)) {
+      throw new RuntimeException("Invalid classname for " + jarFile.getName());
+    }
+
+
+    URL url = jarFile.toURI().toURL();
+    URLClassLoader taskClassLoader = URLClassLoader.newInstance(new URL[]{url},
+        this.getClass().getClassLoader());
+
+
+    Class classToInstantiate = Class.forName(className, true, taskClassLoader);
+    if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
+      LOGGER.error(className + " is an abstract class.");
+      return null;
+    } else {
+      if (hasParameterlessConstructor(classToInstantiate)) {
+        Object o = classToInstantiate.newInstance();
+        if (clazz.isInstance(o)) {
+          return clazz.cast(o);
+        } else {
+          LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+          return null;
+        }
+      } else {
+        LOGGER.error(className + " does not have parameter-less constructor");
+        return null;
+      }
+    }
+  }
+
+  private boolean hasParameterlessConstructor(Class clazz) {
+    for (Constructor constructor : clazz.getConstructors()) {
+      if (constructor.getParameterCount() == 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
