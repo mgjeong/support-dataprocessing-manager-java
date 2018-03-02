@@ -37,27 +37,6 @@ $ git config --global http.proxy http://proxyuser:proxypwd@proxyserver.com:8080
   - Version: 17.09
   - [How to install](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 
-## Quick Starts with Docker ##
-#### 1. Prepare engines ####
-###### Kapacitor ######
-```shell
-
-```
-###### Flink ######
-```shell
-
-```
-
-#### 2. Build and Deploy Workflow Manager ####
-```shell
-$ cd [REPOSITORY PATH]
-$ ./build.sh
-$ sudo docker build -t workflow-manager .
-$ sudo docker run -it -p 8082:8082 workflow-manager
-```
-
-#### 3. Launch sample jobs ####
-
 ## How to build  ##
 #### 1. Executable binary ####
 ```shell
@@ -105,7 +84,7 @@ support-dataprocessing-manager   latest     fcbbd4c401c2    SS seconds ago    XX
 ```
 
 
-## How to run  ##
+## How to run ##
 #### Prerequisites ####
 a. Create a shared resource directory for Manager and Engine(Apache Flink)
   - Create `/runtime/ha` directory in system
@@ -198,5 +177,170 @@ There are two ways to import workflow from JSON.
 ### Sample workflow JSON ###
 Sample workflow JSON files are available in `tools/sample_request`.
 
+- - -
 
+## Quick start with examples ##
+0. Start Workflow Manager and engines
+- Workflow Manager
+```shell
+$ sudo docker run -it -p 8082:8082 support-dataprocessing-manager
+```
+- Flink
+```shell
+$ sudo docker run -it -p 8081:8081 -p 7778:7778 flink
+```
+- Kapacitor
+```shell
+$ sudo docker run -it -p 9092:9092 -p 5570:5570 kapacitor
+```
+### Join using Kapacitor ###
+1. Prepare input sources
+2. Deploy workflow
+- On swagger UI
+    - Open your browser and visit http://localhost:8082/swagger-ui.html
+    - Choose "Developer APIs: API List for developers"
+    - Choose POST /api/v1/workflows/create ->
+        - On Parameters, select FILE on "type"
+        - Click button and upload ${REPOSITORY}/tools/sample_request/query_join.json
+        - Write join on "workflowName" and Try it out!
+        - Checkout 200 on Response Code
+        - On Response Body, remember the number given on "id" (workflow id assigned by manager, e.g. 1)
+        - The response is similar to the following
+        <pre><code>
+        {
+          "id": 1,
+          "name": "join",
+          "config": "{\"targetHost\":\"localhost:9092\",\"workflowType\":\"query\"}"
+        }code></pre>
+    - Choose POST /api/v1/workflows/{workflowId}/run
+        - On Parameters, write id taken from above (e.g. 2)
+        - Try it out! and checkout 200 on Response Code
+        - The response is similar to the following
+        <pre><code>
+        {
+          "workflowId": 4,
+          "state": {
+            "jobId": "5a9c8b15-718f-4b96-9170-5e5e1106fec6",
+            "state": "RUNNING",
+            "startTime": 1519968069657,
+            "engineId": "5a9c8b15-718f-4b96-9170-5e5e1106fec6",
+            "engineType": "KAPACITOR",
+            "host": "localhost",
+            "port": 9092
+          },
+          "jobId": "5a9c8b15-718f-4b96-9170-5e5e1106fec6",
+          "config": "{\"targetHost\":\"localhost:9092\",\"workflowType\":\"query\",\"script\":\"var CNCAE4A21N2 = stream|from().measurement('CNCAE4A21N2')@inject().source('ezmq').address('localhost:5562').into('CNCAE4A21N2').topic('CNC/AE4-A21/N2')\\nvar CNCAE4A21N3 = stream|from().measurement('CNCAE4A21N3')@inject().source('ezmq').address('localhost:5562').into('CNCAE4A21N3').topic('CNC/AE4-A21/N3')\\n\\nvar id11=CNCAE4A21N2|join(CNCAE4A21N3).as('A', 'B').tolerance(50ms)|delete().field('B.ProcessTime').field('B.DEV_IP').field('B.delay').field('B.ret')\\n\\n@deliver().sink('ezmq').address('localhost:5570')\\n\"}"
+        }/code></pre>
 
+3. Checkout results
+- Workflow deploy by Workflow Manager
+    - Visit http://localhost:8082/swagger-ui.html
+    - Choose GET /api/v1/workflows
+        - Try it out! and checkout the workflow whose "name" is "regression" with the id
+        - The response is similar to the following
+        <pre><code>
+        {
+          "entities": [
+            {
+              "workflow": {
+                "id": 1,
+                "name": "join",
+                "config": "{\"targetHost\":\"localhost:9092\",\"workflowType\":\"query\"}"
+              }
+            }
+          ]
+        }</code></pre>
+- Job running on Kapacitor
+    - On terminal, try following and get non-empty response
+    ```shell
+    $ curl -GET http://localhost:9092/kapacitor/v1/tasks
+    ```
+4. Finish the example
+- Stop the workflow on Workflow Manager
+    - Visit http://localhost:8082/swagger-ui.html
+    - Choose DELETE /api/v1/workflows/{workflowId}/remove
+        - On Parameters, write id taken from above (e.g. 1)
+        - Try it out! and the Response Body looks like following
+        <pre><code>
+        {
+          "id": 1,
+          "name": "join",
+          "config": "{\"targetHost\":\"localhost:9092\",\"workflowType\":\"query\"}"
+        }</code></pre>
+
+### Regression using Flink ###
+1. Prepare input sources
+2. Deploy workflow
+- On swagger UI
+    - Open your browser and visit http://localhost:8082/swagger-ui.html
+    - Choose "Developer APIs: API List for developers"
+    - Choose POST /api/v1/workflows/create ->
+        - On Parameters, select FILE on "type"
+        - Click button and upload ${REPOSITORY}/tools/sample_request/linear_regression.json
+        - Write merge on "workflowName" and Try it out!
+        - Checkout 200 on Response Code
+        - On Response Body, remember the number given on "id" (workflow id assigned by manager, e.g. 2)
+        - The response is similar to the following
+        <pre><code>
+        {
+          "id": 2,
+          "name": "regression",
+          "config": "{\"targetHost\":\"localhost:8081\",\"workflowType\":\"algorithm\"}"
+        }</code></pre>
+    - Choose POST /api/v1/workflows/{workflowId}/run
+        - On Parameters, write id taken from above (e.g. 2)
+        - Try it out! and checkout 200 on Response Code
+        - The response is similar to the following
+        <pre><code>
+        {
+          "workflowId": 2,
+          "state": {
+            "jobId": "ead5d278-c98e-48cd-8980-3b85b08844c6",
+            "state": "RUNNING",
+            "startTime": 1519965925318,
+            "engineId": "7912797c23b5d3cdec7360ce8f594fa5",
+            "engineType": "FLINK",
+            "host": "localhost",
+            "port": 8081
+          },
+          "jobId": "ead5d278-c98e-48cd-8980-3b85b08844c6",
+          "config": "{\"targetHost\":\"localhost:8081\",\"workflowType\":\"algorithm\",
+          \"launcherJarId\":\"398c9fb9-e912-457e-8c2b-fd884901fd3e_ead5d278-c98e
+          -48cd-8980-3b85b08844c6.jar\"}"
+        }</code></pre>
+
+3. Checkout results
+- Workflow deploy by Workflow Manager
+    - Visit http://localhost:8082/swagger-ui.html
+    - Choose GET /api/v1/workflows
+        - Try it out! and checkout the workflow whose "name" is "regression" with the id
+        - The response is similar to the following
+        <pre><code>
+        {
+          "entities": [
+            {
+              "workflow": {
+                "id": 2,
+                "name": "regression",
+                "config": "{\"targetHost\":\"localhost:8081\",\"workflowType\":\"algorithm\"}"
+              }
+            }
+          ]
+        }</code></pre>
+- Job running on Flink
+    - Visit http://localhost:8081 on your browser
+    - On Running Jobs, there is a job whose "Job Name" is regression
+- Output data
+    -
+4. Finish the example
+- Stop the workflow on Workflow Manager
+    - Visit http://localhost:8082/swagger-ui.html
+    - Choose DELETE /api/v1/workflows/{workflowId}/remove
+        - On Parameters, write id taken from above (e.g. 2)
+        - Try it out! and the Response Body looks like following
+        <pre><code>
+        {
+          "id": 2,
+          "name": "regression",
+          "config": "{\"targetHost\":\"localhost:8081\",\"workflowType\":\"algorithm\"}"
+        }</code></pre>
