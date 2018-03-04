@@ -96,7 +96,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction() {
+  public void testMSE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -131,7 +131,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction2() {
+  public void testRMSE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -165,7 +165,7 @@ public class ErrorModelTest {
     }
   }
   @Test
-  public void testPrediction3() {
+  public void testMAE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -199,7 +199,7 @@ public class ErrorModelTest {
     }
   }
   @Test
-  public void testPrediction4() {
+  public void testME() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -234,7 +234,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction5() {
+  public void testME2() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -271,7 +271,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError() {
+  public void testMSEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -308,7 +308,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError2() {
+  public void testRMSEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -345,7 +345,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError3() {
+  public void testMEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
