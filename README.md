@@ -211,7 +211,7 @@ $ sudo docker run -it -p 9092:9092 -p 5570:5570 kapacitor
           "id": 1,
           "name": "join",
           "config": "{\"targetHost\":\"localhost:9092\",\"workflowType\":\"query\"}"
-        }code></pre>
+        }</code></pre>
     - Choose POST /api/v1/workflows/{workflowId}/run
         - On Parameters, write id taken from above (e.g. 2)
         - Try it out! and checkout 200 on Response Code
@@ -230,7 +230,7 @@ $ sudo docker run -it -p 9092:9092 -p 5570:5570 kapacitor
           },
           "jobId": "5a9c8b15-718f-4b96-9170-5e5e1106fec6",
           "config": "{\"targetHost\":\"localhost:9092\",\"workflowType\":\"query\",\"script\":\"var CNCAE4A21N2 = stream|from().measurement('CNCAE4A21N2')@inject().source('ezmq').address('localhost:5562').into('CNCAE4A21N2').topic('CNC/AE4-A21/N2')\\nvar CNCAE4A21N3 = stream|from().measurement('CNCAE4A21N3')@inject().source('ezmq').address('localhost:5562').into('CNCAE4A21N3').topic('CNC/AE4-A21/N3')\\n\\nvar id11=CNCAE4A21N2|join(CNCAE4A21N3).as('A', 'B').tolerance(50ms)|delete().field('B.ProcessTime').field('B.DEV_IP').field('B.delay').field('B.ret')\\n\\n@deliver().sink('ezmq').address('localhost:5570')\\n\"}"
-        }/code></pre>
+        }</code></pre>
 
 3. Checkout results
 - Workflow deploy by Workflow Manager
