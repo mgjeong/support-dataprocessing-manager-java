@@ -92,7 +92,7 @@ a. Create a shared resource directory for Manager and Engine(Apache Flink)
 
 b. Execute Apache Flink & Kapacitor
   - [How to execute Apache Flink Docker Image](engine/engine-flink/README.md)
-  - [How to execute Kapacitor Docker Image](engine/engine-kapacitor/README.md)  
+  - [How to execute Kapacitor Docker Image](https://github.sec.samsung.net/RS7-EdgeComputing/support-dataprocessing-engine-kapacitor-go/blob/master/README.md)
 
 #### With Executable binary ####
 ```shell
