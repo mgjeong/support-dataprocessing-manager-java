@@ -53,24 +53,8 @@ public class LauncherTest {
   private static final String[] ARGS_INVALID = {"--internal", "--json", "unreachableFile"};
   private static final String[] ARGS_FOR_EXTERNAL_CONFIG = {"--json", TEST_JSON_EXT_PATH};
   private static final String[] ARGS_FOR_INTERNAL_CONFIG = {"--internal", "--json", TEST_JSON_ID};
-
-  @Test(expected = RuntimeException.class)
-  public void testWithoutAnyCommandLineArguments() throws Exception {
-    Launcher.main(new String[]{});
-    Assert.fail("Failed: Not any exception on a job without specifications");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testWithImproperArgs() throws Exception {
-    Launcher.main(ARGS_NO_JSON);
-    Assert.fail("Failed: Not any exception on a job with invalid specifications");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testWithInputUnavailable() throws Exception {
-    Launcher.main(ARGS_INVALID);
-    Assert.fail("Failed: Not any exception on an invalid job configuration file");
-  }
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @BeforeClass
   public static void createTestFiles() throws Exception {
@@ -89,7 +73,6 @@ public class LauncherTest {
     FileUtils.writeStringToFile(jsonFile, JSON_CONTENT);
   }
 
-
   @AfterClass
   public static void deleteTestFiles() {
     File testJsonFile = new File(TEST_JSON_EXT_PATH);
@@ -106,8 +89,23 @@ public class LauncherTest {
     }
   }
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  @Test(expected = RuntimeException.class)
+  public void testWithoutAnyCommandLineArguments() throws Exception {
+    Launcher.main(new String[]{});
+    Assert.fail("Failed: Not any exception on a job without specifications");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWithImproperArgs() throws Exception {
+    Launcher.main(ARGS_NO_JSON);
+    Assert.fail("Failed: Not any exception on a job with invalid specifications");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWithInputUnavailable() throws Exception {
+    Launcher.main(ARGS_INVALID);
+    Assert.fail("Failed: Not any exception on an invalid job configuration file");
+  }
 
   @Test
   public void testWithInternalJsonFile() throws Exception {

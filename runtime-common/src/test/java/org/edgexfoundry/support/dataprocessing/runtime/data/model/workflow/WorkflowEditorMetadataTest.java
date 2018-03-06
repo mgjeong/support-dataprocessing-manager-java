@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import org.junit.Assert;
@@ -22,7 +23,7 @@ import org.junit.Test;
 public class WorkflowEditorMetadataTest {
 
   @Test
-  public void testSetterAndGetter(){
+  public void testSetterAndGetter() {
     long now = System.currentTimeMillis();
 
     WorkflowEditorMetadata metadata = new WorkflowEditorMetadata();
@@ -36,12 +37,12 @@ public class WorkflowEditorMetadataTest {
   }
 
   @Test
-  public void testInvalidSetter(){
+  public void testInvalidSetter() {
     WorkflowEditorMetadata metadata = new WorkflowEditorMetadata();
-    try{
+    try {
       metadata.setWorkflowId(null);
       Assert.fail("Should not reach here.");
-    } catch(RuntimeException e){
+    } catch (RuntimeException e) {
       // success
     }
   }

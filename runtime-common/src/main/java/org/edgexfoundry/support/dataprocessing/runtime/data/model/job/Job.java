@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,11 +43,53 @@ public class Job extends Format {
   private Map<String, Object> config;
   private transient WorkflowData workflowData = null;
 
+  /**
+   * Constructs an Job object to deploy the workflow on an engine.
+   *
+   * @param id Job ID
+   * @param workflowId Workflow ID
+   */
   public Job(String id, Long workflowId) {
     this.id = id;
     this.workflowId = workflowId;
     this.config = new HashMap<>();
     this.state = new JobState(id);
+  }
+
+  /**
+   * Returns an Job object with id validation.
+   *
+   * @param jobId Job ID to use
+   * @param workflowId Workflow ID to use
+   * @return Initialized engine-level object corresponding to workflow ID
+   */
+  public static Job create(String jobId, Long workflowId) {
+    if (StringUtils.isEmpty(jobId) || workflowId == null) {
+      throw new RuntimeException("Job id or workflow id is null.");
+    }
+    return new Job(jobId, workflowId);
+  }
+
+  /**
+   * Returns an Job object with workflow specifications.
+   * The workflowData argument must describe the workflow to deploy with engine to use.
+   *
+   * @param workflowData Input workflow
+   * @return Engine-level object to deploy the input workflow as a job
+   */
+  public static Job create(WorkflowData workflowData) {
+    if (workflowData == null) {
+      throw new RuntimeException("Workflow data is null.");
+    }
+    Job job = create(UUID.randomUUID().toString(), workflowData.getWorkflowId());
+    job.setWorkflowData(workflowData);
+    job.setConfig(workflowData.getConfig());
+    try {
+      job.getState().setEngineType(workflowData.getEngineType().name());
+    } catch (Exception e) {
+      job.getState().setEngineType(EngineType.UNKNOWN.name());
+    }
+    return job;
   }
 
   public JobState getState() {
@@ -72,11 +115,29 @@ public class Job extends Format {
     return (T) config.get(key);
   }
 
+  /**
+   * Sets configurations of the job.
+   *
+   * @param config Key-value sets of configurations
+   */
+  @JsonIgnore
+  public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config");
+    }
+    this.config = config;
+  }
+
   @JsonIgnore
   public void addConfig(String key, Object value) {
     this.config.put(key, value);
   }
 
+  /**
+   * Returns stringified of configurations.
+   *
+   * @return JSON string of the map object of configurations
+   */
   @JsonProperty("config")
   public String getConfigStr() {
     try {
@@ -86,14 +147,11 @@ public class Job extends Format {
     }
   }
 
-  @JsonIgnore
-  public void setConfig(Map<String, Object> config) {
-    if (config == null) {
-      throw new RuntimeException("Invalid config");
-    }
-    this.config = config;
-  }
-
+  /**
+   * Sets stringified configurations into map.
+   *
+   * @param configStr JSON string of configurations
+   */
   @JsonProperty("config")
   public void setConfigStr(String configStr) {
     try {
@@ -108,36 +166,13 @@ public class Job extends Format {
   }
 
   @JsonIgnore
-  public void setWorkflowData(WorkflowData workflowData) {
-    this.workflowData = workflowData;
-  }
-
-  @JsonIgnore
   public WorkflowData getWorkflowData() {
     return this.workflowData;
   }
 
-
-  public static Job create(String jobId, Long workflowId) {
-    if (StringUtils.isEmpty(jobId) || workflowId == null) {
-      throw new RuntimeException("Job id or workflow id is null.");
-    }
-    return new Job(jobId, workflowId);
-  }
-
-  public static Job create(WorkflowData workflowData) {
-    if (workflowData == null) {
-      throw new RuntimeException("Workflow data is null.");
-    }
-    Job job = create(UUID.randomUUID().toString(), workflowData.getWorkflowId());
-    job.setWorkflowData(workflowData);
-    job.setConfig(workflowData.getConfig());
-    try {
-      job.getState().setEngineType(workflowData.getEngineType().name());
-    } catch (Exception e) {
-      job.getState().setEngineType(EngineType.UNKNOWN.name());
-    }
-    return job;
+  @JsonIgnore
+  public void setWorkflowData(WorkflowData workflowData) {
+    this.workflowData = workflowData;
   }
 
   @JsonIgnore

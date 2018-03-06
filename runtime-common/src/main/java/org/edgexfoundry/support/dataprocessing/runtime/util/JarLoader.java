@@ -40,6 +40,18 @@ public final class JarLoader {
     );
   }
 
+  /**
+   * Returns an Object that is loaded from the given jar file.
+   * The jarFile argument must provide a jar file, the className argument must describe full
+   * class name to load, and the clazz argument must provide the Class of the object to instantiate.
+   *
+   * @param jarFile Jar file containing the class definition to instantiate
+   * @param className Class name to instantiate an object
+   * @param clazz Class of the return object
+   * @param <T> Type to cast for the return object
+   * @return New instance of the specified class
+   * @throws Exception if jar file is invalid to load class, or loading class failed.
+   */
   public static <T> T newInstance(File jarFile, String className, Class<T> clazz)
       throws Exception {
     if (jarFile == null || !jarFile.exists()) {

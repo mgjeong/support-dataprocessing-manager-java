@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 public final class Settings {
@@ -33,15 +34,15 @@ public final class Settings {
 
   private static Settings instance = null;
 
+  private Settings() {
+
+  }
+
   public synchronized static Settings getInstance() {
     if (instance == null) {
       instance = new Settings();
     }
     return instance;
-  }
-
-  private Settings() {
-
   }
 
   public String getDockerPath() {

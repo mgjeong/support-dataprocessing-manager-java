@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,10 +40,6 @@ public class WorkflowData extends Format {
   private List<WorkflowProcessor> processors = new ArrayList<>();
   private List<WorkflowEdge> edges = new ArrayList<>();
   private WorkflowEditorMetadata workflowEditorMetadata;
-
-  public enum EngineType {
-    MULTI, FLINK, KAPACITOR, UNKNOWN
-  }
 
   public WorkflowData() {
 
@@ -180,5 +177,9 @@ public class WorkflowData extends Format {
     }
 
     return engineType;
+  }
+
+  public enum EngineType {
+    MULTI, FLINK, KAPACITOR, UNKNOWN
   }
 }

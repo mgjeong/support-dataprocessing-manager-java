@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.connection;
 
 import com.google.gson.JsonElement;
@@ -59,19 +60,28 @@ public class HTTP {
   public HTTP() {
   }
 
-  public HTTP initialize(String ip_port, String scheme) {
-    String ip = ip_port.substring(0, ip_port.indexOf(":"));
-    int port = Integer.parseInt(ip_port.substring(ip_port.indexOf(":") + 1, ip_port.length()));
+  /**
+   * Returns an HTTP object that initiates the given connection.
+   * The address argument must provide destination in the form of IP/HOSTNAME:PORT.
+   * The scheme argument must specify protocol to use, i.e., http or https.
+   *
+   * @param address Address of the destination (or server)
+   * @param scheme e.g.: http, https
+   * @return An object that provides RESTful interfaces for the given destination.
+   */
+  public HTTP initialize(String address, String scheme) {
+    String ip = address.substring(0, address.indexOf(":"));
+    int port = Integer.parseInt(address.substring(address.indexOf(":") + 1, address.length()));
 
     return initialize(ip, port, scheme);
   }
 
-  /***
+  /**
    * Initialize HTTP.
    *
    * @param host hostname
    * @param port port number
-   * @param scheme    e.g.: http, https
+   * @param scheme e.g.: http, https
    */
   public HTTP initialize(String host, int port, String scheme) {
     if (host == null || port <= 0) {
@@ -135,6 +145,16 @@ public class HTTP {
     return get(path, null);
   }
 
+  /**
+   * Returns an JsonElement object as the result of GET with arguments.
+   * The path argument must specify path to the REST server, and the args argument must describe
+   * the key-value sets of arguments for a GET request.
+   *
+   * @param path REST server path from /
+   * @param args Arguments of a GET request
+   * @return Results of the GET request with arguments
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement get(String path, Map<String, String> args) throws Exception {
     throwExceptionIfNotInitialized();
 
@@ -161,6 +181,14 @@ public class HTTP {
     }
   }
 
+  /**
+   * Returns an JsonElement object as the result of DELETE.
+   * The path argument must specify path to the REST server.
+   *
+   * @param path REST server path from /
+   * @return Results of the DELETE request with arguments
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement delete(String path) throws Exception {
     throwExceptionIfNotInitialized();
 
@@ -187,6 +215,16 @@ public class HTTP {
     }
   }
 
+  /**
+   * Returns an JsonElement object as the result of POST with a file.
+   * The path argument must specify path to the REST server, and the fileToUpload must provide the
+   * file path to attach on this POST request.
+   *
+   * @param path REST server path from /
+   * @param fileToUpload the file to attach on the request
+   * @return Results of the POST request with the file
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement post(String path, File fileToUpload) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPost request = null;
@@ -224,6 +262,17 @@ public class HTTP {
     return post(path, args, false);
   }
 
+  /**
+   * Returns an JsonElement object as the result of POST with arguments.
+   * The path argument must specify path to the REST server, and the args must provide
+   * the key-value sets of arguments for a POST request.
+   *
+   * @param path REST server path from /
+   * @param args Arguments of a POST request
+   * @param useArgAsParam Specification to deliver the arguments as parameters on the request
+   * @return Results of the POST request with the arguments
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement post(String path, Map<String, String> args, boolean useArgAsParam)
       throws Exception {
     throwExceptionIfNotInitialized();
@@ -268,6 +317,16 @@ public class HTTP {
     }
   }
 
+  /**
+   * Returns an JsonElement object as the result of POST with encoded String value.
+   * The path argument must specify path to the REST server, and the dataString must provide String
+   * value to deliver.
+   *
+   * @param path REST server path from /
+   * @param dataString Application URL-encoded String value
+   * @return Results of the POST request with String value
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement post(String path, String dataString) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPost request = null;
@@ -294,6 +353,16 @@ public class HTTP {
     }
   }
 
+  /**
+   * Returns an JsonElement object as the result of PATCH with encoded String value.
+   * The path argument must specify path to the REST server, and the dataString must provide String
+   * value to deliver.
+   *
+   * @param path REST server path from /
+   * @param dataString Application URL-encoded String value
+   * @return Results of the PATCH request with String value
+   * @throws Exception if connection is bad, or failed.
+   */
   public JsonElement patch(String path, String dataString) throws Exception {
     throwExceptionIfNotInitialized();
     HttpPatch request = null;

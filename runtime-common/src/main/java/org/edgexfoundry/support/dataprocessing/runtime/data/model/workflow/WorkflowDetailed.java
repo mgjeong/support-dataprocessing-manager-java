@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,13 +23,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowDetailed extends Format {
 
-  public enum RunningStatus {
-    RUNNING, NOT_RUNNING, UNKNOWN
-  }
-
   private Workflow workflow;
   private RunningStatus running;
-
   public WorkflowDetailed() {
 
   }
@@ -53,5 +49,9 @@ public class WorkflowDetailed extends Format {
       throw new RuntimeException("Invalid running status");
     }
     this.running = running;
+  }
+
+  public enum RunningStatus {
+    RUNNING, NOT_RUNNING, UNKNOWN
   }
 }

@@ -36,6 +36,11 @@ public class Launcher {
   private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
   private StreamExecutionEnvironment env;
 
+  public static void main(String[] args) throws Exception {
+    Launcher launcher = new Launcher();
+    launcher.execute(args);
+  }
+
   private void execute(String[] args) throws Exception {
     ParameterTool params = ParameterTool.fromArgs(args);
 
@@ -76,10 +81,5 @@ public class Launcher {
         jsonReader.close();
       }
     }
-  }
-
-  public static void main(String[] args) throws Exception {
-    Launcher launcher = new Launcher();
-    launcher.execute(args);
   }
 }

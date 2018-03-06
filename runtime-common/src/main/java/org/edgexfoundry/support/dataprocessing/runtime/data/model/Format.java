@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +26,7 @@ import java.io.Serializable;
 public abstract class Format implements Serializable, Cloneable {
 
   @JsonIgnore
-  protected transient final ObjectMapper mapper = new ObjectMapper();
+  protected final transient ObjectMapper mapper = new ObjectMapper();
 
   public static <T> T create(String data, Class<T> classType) throws Exception {
     return new ObjectMapper().readValue(data, classType);
