@@ -179,7 +179,7 @@ Sample workflow JSON files are available in `tools/sample_request`.
 
 - - -
 
-## Quick start with examples ##
+## Quick start with examples (Docker) ##
 0. Start Workflow Manager and engines
 - Workflow Manager
 ```shell
@@ -193,6 +193,14 @@ $ sudo docker run -it -p 8081:8081 -p 7778:7778 flink
 ```shell
 $ sudo docker run -it -p 9092:9092 -p 5570:5570 kapacitor
 ```
+### Workflow JSON ###
+Sample workflows are provided as JSON in [tools/sample_request]. Before test each sample JSON file, replace "localhost" into host IP. Or,
+```shell
+$ cd tools/sample_request
+$ sed -i -e 's/localhost/{HOST_IP}/g'
+```
+{HOST_IP} will be the IP address of the machine tested.
+
 ### Join using Kapacitor ###
 1. Prepare input sources
 2. Deploy workflow
