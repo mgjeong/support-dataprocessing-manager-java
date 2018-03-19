@@ -58,7 +58,7 @@ copy_here $target_engine "engine-flink.jar"
 copy_here $target_common "manager-common.jar"
 
 echo "Extracting task jars: "
-for i in `find $target_task_parent_dir -name \*${version}\*.jar | grep "target/"`
+for i in `find $target_task_parent_dir -name \*${version}\*-jar-with-dependencies.jar | grep "target/"`
 do
 	copy_here $i "task/$(basename $i)"
 done

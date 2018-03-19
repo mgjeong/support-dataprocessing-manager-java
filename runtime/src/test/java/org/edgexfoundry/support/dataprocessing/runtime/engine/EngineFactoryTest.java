@@ -18,22 +18,41 @@
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class EngineFactoryTest {
 
   @Test
-  public void testCreateEngine() {
+  public void testCreateEngine() throws Exception {
+    Engine fw = EngineFactory.createEngine(WorkflowData.EngineType.FLINK, "localhost", 8081);
+    Assert.assertNotNull(fw);
+    fw = EngineFactory.createEngine(WorkflowData.EngineType.KAPACITOR, "localhost", 8081);
+    Assert.assertNotNull(fw);
+  }
+
+  @Test
+  public void testInvalidEngine() {
+    try {
+      EngineFactory.createEngine(null, "localhost", 1111);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+
+    }
 
     try {
-      Engine fw = EngineFactory.createEngine(WorkflowData.EngineType.FLINK, "localhost", 8081);
+      EngineFactory.createEngine(EngineType.UNKNOWN, "localhost", 1111);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
 
-      fw = EngineFactory.createEngine(WorkflowData.EngineType.KAPACITOR, "localhost", 8081);
-
-    } catch (RuntimeException e) {
-
-      e.printStackTrace();
     }
   }
 
+  @Test
+  public void testConstructor() {
+    // Is this really necessary?
+    EngineFactory engineFactory = new EngineFactory();
+    Assert.assertNotNull(engineFactory);
+  }
 }

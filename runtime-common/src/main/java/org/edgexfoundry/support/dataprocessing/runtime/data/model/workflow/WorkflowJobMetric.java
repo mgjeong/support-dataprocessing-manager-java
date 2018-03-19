@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class WorkflowJobMetric extends Format {
     return jobStates;
   }
 
-  public WorkflowJobMetric setJobStates(ArrayList<JobState> jobStates) {
+  public WorkflowJobMetric setJobStates(List<JobState> jobStates) {
     this.jobStates.clear();
     this.jobStates.addAll(jobStates);
     return this;

@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.task;
 
 import java.util.List;
@@ -35,10 +36,6 @@ public final class TestModel implements TaskModel {
 
   @TaskParam(key = "gender", uiType = UiFieldType.ENUMSTRING, uiName = "Gender")
   private Gender gender;
-
-  public enum Gender {
-    Male, Female
-  }
 
   @Override
   public TaskType getType() {
@@ -68,5 +65,9 @@ public final class TestModel implements TaskModel {
   @Override
   public DataSet calculate(DataSet in) {
     return in;
+  }
+
+  public enum Gender {
+    Male, Female
   }
 }

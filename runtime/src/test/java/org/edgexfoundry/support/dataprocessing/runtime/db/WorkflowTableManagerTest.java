@@ -112,7 +112,7 @@ public class WorkflowTableManagerTest extends DatabaseTest {
     Workflow workflow = new Workflow();
     workflow.setId(null);
     workflow.setName("FirstWorkflow");
-    workflow.addConfig("targetHost", "192.168.0.1");
+    workflow.addConfig("targetHost", "192.168.0.1:5555");
     workflow = workflowTable.addWorkflow(workflow);
     Assert.assertTrue(workflow.getId() != null); // added successfully
 

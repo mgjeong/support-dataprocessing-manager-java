@@ -22,18 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 
 public class JobGraph {
+
   private String jobId;
   private List<Vertex> processingOrder;
   private Map<Vertex, List<Vertex>> edges;
-
-  private enum State {
-    VISITED,
-    UNVISITED
-  }
 
   public JobGraph(String jobId, Map<Vertex, List<Vertex>> edges) {
     this.jobId = jobId;
@@ -84,7 +79,12 @@ public class JobGraph {
     return edges.get(current);
   }
 
-
+  /**
+   * Initializes job graphs to schedule and pipeline tasks in Flink job.
+   * While traversing the given graph, Flink APIs are invoked via {@link Vertex}, which compose
+   * the new graph entity using {@link DataStream}. After all, Flink deploys entities using
+   * {@link org.apache.flink.streaming.api.environment.StreamExecutionEnvironment}
+   */
   public void initExecution() throws Exception {
     for (Vertex vertex : processingOrder) {
       DataStream<DataSet> outFlux = vertex.serve();
@@ -95,6 +95,12 @@ public class JobGraph {
         }
       }
     }
+  }
+
+
+  private enum State {
+    VISITED,
+    UNVISITED
   }
 
 }

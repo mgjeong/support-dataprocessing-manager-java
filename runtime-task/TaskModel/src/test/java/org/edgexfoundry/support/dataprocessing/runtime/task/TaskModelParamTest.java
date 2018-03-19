@@ -16,253 +16,252 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TaskModelParamTest {
 
-    @Test
-    public void createTest() {
+  @Test
+  public void createTest() {
 
-        TaskModelParam test = new TaskModelParam();
-        test.put("test", "test");
+    TaskModelParam test = new TaskModelParam();
+    test.put("test", "test");
 
-        TaskModelParam param = TaskModelParam.create(test.toString());
+    TaskModelParam param = TaskModelParam.create(test.toString());
 
-        Assert.assertEquals(param.get("test"), "test");
+    Assert.assertEquals(param.get("test"), "test");
 
-        Assert.assertNotNull(param.toString());
+    Assert.assertNotNull(param.toString());
 
-        TaskModelParam param2 = TaskModelParam.create(null);
-        Assert.assertNull(param2);
+    TaskModelParam param2 = TaskModelParam.create(null);
+    Assert.assertNull(param2);
 
+  }
+
+  @Test
+  public void extractDouble2DArrayTest() {
+
+    Double[] values = {1.0, 2.0, 3.0};
+
+    List<Number> list = new ArrayList<>();
+
+    for (Double value : values) {
+      list.add(value);
     }
 
-    @Test
-    public void extractDouble2DArrayTest() {
-
-        Double[] values = {1.0, 2.0, 3.0};
-
-        List<Number> list = new ArrayList<>();
-
-        for (Double value : values) {
-            list.add(value);
-        }
-
-        List<List<Number>> dList = new ArrayList<>();
-        for (int loop = 0; loop < 5; loop++) {
-            dList.add(list);
-        }
-
-        Double[][] testList = TaskModelParam.transformToDouble2DArray(dList);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[0][index].doubleValue(), values[index].doubleValue(), 0);
-        }
-
+    List<List<Number>> dList = new ArrayList<>();
+    for (int loop = 0; loop < 5; loop++) {
+      dList.add(list);
     }
 
-    @Test
-    public void extractDouble1DArrayTest() {
+    Double[][] testList = TaskModelParam.transformToDouble2DArray(dList);
 
-        Double[] values = {1.0, 2.0, 3.0};
-
-        List<Number> list = new ArrayList();
-
-        for (Double value : values) {
-            list.add(value);
-        }
-
-        Double[] testList = TaskModelParam.transformToDouble1DArray(list);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[index].doubleValue(), values[index].doubleValue(), 0);
-        }
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[0][index].doubleValue(), values[index].doubleValue(), 0);
     }
 
-    @Test
-    public void extractNativeDouble2DArrayTest() {
+  }
 
-        Double[] values = {1.0, 2.0, 3.0};
+  @Test
+  public void extractDouble1DArrayTest() {
 
-        List<Number> list = new ArrayList<>();
+    Double[] values = {1.0, 2.0, 3.0};
 
-        for (Double value : values) {
-            list.add(value);
-        }
+    List<Number> list = new ArrayList();
 
-        List<List<Number>> dList = new ArrayList<>();
-        for (int loop = 0; loop < 5; loop++) {
-            dList.add(list);
-        }
-
-        double[][] testList = TaskModelParam.transformToNativeDouble2DArray(dList);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[0][index], values[index].doubleValue(), 0);
-        }
-
+    for (Double value : values) {
+      list.add(value);
     }
 
-    @Test
-    public void extractNativeDouble1DArrayTest() {
+    Double[] testList = TaskModelParam.transformToDouble1DArray(list);
 
-        Double[] values = {1.0, 2.0, 3.0};
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[index].doubleValue(), values[index].doubleValue(), 0);
+    }
+  }
 
-        List<Number> list = new ArrayList();
+  @Test
+  public void extractNativeDouble2DArrayTest() {
 
-        for (Double value : values) {
-            list.add(value);
-        }
+    Double[] values = {1.0, 2.0, 3.0};
 
-        double[] testList = TaskModelParam.transformToNativeDouble1DArray(list);
+    List<Number> list = new ArrayList<>();
 
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[index], values[index].doubleValue(), 0);
-        }
+    for (Double value : values) {
+      list.add(value);
     }
 
-    @Test
-    public void extractNativeDouble2DArrayTest2() {
-
-        Double[] values = {1.0, 2.0, 3.0};
-
-        List<Number> list = new ArrayList<>();
-
-        for (Double value : values) {
-            list.add(value);
-        }
-
-        List<List<Number>> dList = new ArrayList<>();
-        for (int loop = 0; loop < 5; loop++) {
-            dList.add(list);
-        }
-
-        double[][] testList = TaskModelParam.extractDouble2DArray(dList);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[0][index], values[index].doubleValue(), 0);
-        }
-
+    List<List<Number>> dList = new ArrayList<>();
+    for (int loop = 0; loop < 5; loop++) {
+      dList.add(list);
     }
 
-    @Test
-    public void extractNativeDouble1DArrayTest2() {
+    double[][] testList = TaskModelParam.transformToNativeDouble2DArray(dList);
 
-        Double[] values = {1.0, 2.0, 3.0};
-
-        List<Number> list = new ArrayList();
-
-        for (Double value : values) {
-            list.add(value);
-        }
-
-        double[] testList = TaskModelParam.extractDouble1DArray(list);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[index], values[index].doubleValue(), 0);
-        }
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[0][index], values[index].doubleValue(), 0);
     }
 
+  }
 
-    @Test
-    public void extractInt1DArrayTest() {
+  @Test
+  public void extractNativeDouble1DArrayTest() {
 
-        Integer[] values = {1, 2, 3};
+    Double[] values = {1.0, 2.0, 3.0};
 
-        List<Number> list = new ArrayList();
+    List<Number> list = new ArrayList();
 
-        for (Integer value : values) {
-            list.add(value);
-        }
-
-        Integer[] testList = TaskModelParam.transformToInt1DArray(list);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[index].intValue(), values[index].intValue(), 0);
-        }
+    for (Double value : values) {
+      list.add(value);
     }
 
-    @Test
-    public void extractNativeInt1DArrayTest() {
+    double[] testList = TaskModelParam.transformToNativeDouble1DArray(list);
 
-        Integer[] values = {1, 2, 3};
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[index], values[index].doubleValue(), 0);
+    }
+  }
 
-        List<Number> list = new ArrayList();
+  @Test
+  public void extractNativeDouble2DArrayTest2() {
 
-        for (Integer value : values) {
-            list.add(value);
-        }
+    Double[] values = {1.0, 2.0, 3.0};
 
-        int[] testList = TaskModelParam.transformToNativeInt1DArray(list);
+    List<Number> list = new ArrayList<>();
 
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[index], values[index].intValue(), 0);
-        }
+    for (Double value : values) {
+      list.add(value);
     }
 
-    @Test
-    public void extractNativeInt2DArrayTest() {
-
-        Integer[] values = {1, 2, 3};
-
-        List<Number> list = new ArrayList<>();
-
-        for (Integer value : values) {
-            list.add(value);
-        }
-
-        List<List<Number>> dList = new ArrayList<>();
-        for (int loop = 0; loop < 5; loop++) {
-            dList.add(list);
-        }
-
-        int[][] testList = TaskModelParam.transformToNativeInt2DArray(dList);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[0][index], values[index].intValue(), 0);
-        }
-
+    List<List<Number>> dList = new ArrayList<>();
+    for (int loop = 0; loop < 5; loop++) {
+      dList.add(list);
     }
 
-    @Test
-    public void extractInt2DArrayTest() {
+    double[][] testList = TaskModelParam.extractDouble2DArray(dList);
 
-        Integer[] values = {1, 2, 3};
-
-        List<Number> list = new ArrayList<>();
-
-        for (Integer value : values) {
-            list.add(value);
-        }
-
-        List<List<Number>> dList = new ArrayList<>();
-        for (int loop = 0; loop < 5; loop++) {
-            dList.add(list);
-        }
-
-        Integer[][] testList = TaskModelParam.transformToInt2DArray(dList);
-
-        for (int index = 0; index < values.length; index++) {
-            Assert.assertEquals(testList[0][index].intValue(), values[index].intValue(), 0);
-        }
-
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[0][index], values[index].doubleValue(), 0);
     }
 
-    @Test
-    public void toStringTest() {
+  }
 
-        TaskModelParam param = new TaskModelParam();
+  @Test
+  public void extractNativeDouble1DArrayTest2() {
 
-        param.toString();
+    Double[] values = {1.0, 2.0, 3.0};
 
-        param.put("test", "test");
-        System.out.println(param.toString());
+    List<Number> list = new ArrayList();
 
-        param.put("/test/", ":/test/giulrd6yqv345tq3");
-        System.out.println(param.toString());
+    for (Double value : values) {
+      list.add(value);
     }
+
+    double[] testList = TaskModelParam.extractDouble1DArray(list);
+
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[index], values[index].doubleValue(), 0);
+    }
+  }
+
+
+  @Test
+  public void extractInt1DArrayTest() {
+
+    Integer[] values = {1, 2, 3};
+
+    List<Number> list = new ArrayList();
+
+    for (Integer value : values) {
+      list.add(value);
+    }
+
+    Integer[] testList = TaskModelParam.transformToInt1DArray(list);
+
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[index].intValue(), values[index].intValue(), 0);
+    }
+  }
+
+  @Test
+  public void extractNativeInt1DArrayTest() {
+
+    Integer[] values = {1, 2, 3};
+
+    List<Number> list = new ArrayList();
+
+    for (Integer value : values) {
+      list.add(value);
+    }
+
+    int[] testList = TaskModelParam.transformToNativeInt1DArray(list);
+
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[index], values[index].intValue(), 0);
+    }
+  }
+
+  @Test
+  public void extractNativeInt2DArrayTest() {
+
+    Integer[] values = {1, 2, 3};
+
+    List<Number> list = new ArrayList<>();
+
+    for (Integer value : values) {
+      list.add(value);
+    }
+
+    List<List<Number>> dList = new ArrayList<>();
+    for (int loop = 0; loop < 5; loop++) {
+      dList.add(list);
+    }
+
+    int[][] testList = TaskModelParam.transformToNativeInt2DArray(dList);
+
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[0][index], values[index].intValue(), 0);
+    }
+
+  }
+
+  @Test
+  public void extractInt2DArrayTest() {
+
+    Integer[] values = {1, 2, 3};
+
+    List<Number> list = new ArrayList<>();
+
+    for (Integer value : values) {
+      list.add(value);
+    }
+
+    List<List<Number>> dList = new ArrayList<>();
+    for (int loop = 0; loop < 5; loop++) {
+      dList.add(list);
+    }
+
+    Integer[][] testList = TaskModelParam.transformToInt2DArray(dList);
+
+    for (int index = 0; index < values.length; index++) {
+      Assert.assertEquals(testList[0][index].intValue(), values[index].intValue(), 0);
+    }
+
+  }
+
+  @Test
+  public void toStringTest() {
+
+    TaskModelParam param = new TaskModelParam();
+
+    param.toString();
+
+    param.put("test", "test");
+    System.out.println(param.toString());
+
+    param.put("/test/", ":/test/giulrd6yqv345tq3");
+    System.out.println(param.toString());
+  }
 }

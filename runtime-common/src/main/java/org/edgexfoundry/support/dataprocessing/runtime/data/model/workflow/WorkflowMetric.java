@@ -14,33 +14,34 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
-import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 public class WorkflowMetric extends Format {
 
-  private ArrayList<GroupInfo> groups;
+  private List<WorkflowInfo> workflowInfos;
 
-  public ArrayList<GroupInfo> getGroups() {
-    return groups;
+  public List<WorkflowInfo> getWorkflowInfos() {
+    return workflowInfos;
   }
 
-  public void setGroups(ArrayList<GroupInfo> groups) {
-    this.groups = groups;
+  public void setWorkflowInfos(List<WorkflowInfo> workflowInfos) {
+    this.workflowInfos = workflowInfos;
   }
 
-  public static class Work extends Format {
+  public static class Count extends Format {
 
     private long running;
     private long stop;
 
-    public Work(){
+    public Count() {
       this(0, 0);
     }
 
-    public Work(long running, long stop) {
+    public Count(long running, long stop) {
       setRunning(running);
       setStop(stop);
     }
@@ -62,25 +63,26 @@ public class WorkflowMetric extends Format {
     }
   }
 
-  public static class GroupInfo extends Format {
+  public static class WorkflowInfo extends Format {
 
-    private String groupId;
-    private Work works;
+    private Long workflowId;
+    private Count count;
 
-    public String getGroupId() {
-      return groupId;
+    public Long getWorkflowId() {
+      return workflowId;
     }
 
-    public void setGroupId(String groupId) {
-      this.groupId = groupId;
+    public void setWorkflowId(Long workflowId) {
+      this.workflowId = workflowId;
     }
 
-    public Work getWorks() {
-      return works;
+    public Count getCount() {
+      return count;
     }
 
-    public void setWorks(Work works) {
-      this.works = works;
+    public void setCount(
+        Count count) {
+      this.count = count;
     }
   }
 }

@@ -34,9 +34,16 @@ public class ZmqSink<DataT> extends RichSinkFunction<DataT> {
   private final String topic;
   private SerializationSchema<DataT> schema;
 
-  private ZMQ.Context zmqContext;
-  private ZMQ.Socket zmqSocket;
+  private transient ZMQ.Context zmqContext;
+  private transient ZMQ.Socket zmqSocket;
 
+  /**
+   * Class constructor specifying ZeroMQ connection with data schema.
+   *
+   * @param zmqConnectionConfig ZeroMQ connection configuration including ip, port, parallelism
+   * @param topic ZeroMQ topic name
+   * @param schema Serialization schema when reading the entity on ZeroMQ
+   */
   public ZmqSink(ZmqConnectionConfig zmqConnectionConfig, String topic,
       SerializationSchema<DataT> schema) {
     this.zmqConnectionConfig = zmqConnectionConfig;

@@ -22,7 +22,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class DataSetSchemeTest {
 

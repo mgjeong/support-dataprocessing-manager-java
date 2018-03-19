@@ -90,12 +90,13 @@ public class ErrorModelTest {
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     model.setParam(params);
   }
 
   @Test
-  public void testPrediction() {
+  public void testMSE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -109,6 +110,7 @@ public class ErrorModelTest {
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -129,7 +131,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction2() {
+  public void testRMSE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -143,6 +145,7 @@ public class ErrorModelTest {
     params.put("type", "rmse");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -162,7 +165,7 @@ public class ErrorModelTest {
     }
   }
   @Test
-  public void testPrediction3() {
+  public void testMAE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -176,6 +179,7 @@ public class ErrorModelTest {
     params.put("type", "mae");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -195,7 +199,7 @@ public class ErrorModelTest {
     }
   }
   @Test
-  public void testPrediction4() {
+  public void testME() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -209,6 +213,7 @@ public class ErrorModelTest {
     params.put("type", "me");
     params.put("observation", "/records/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -229,7 +234,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction5() {
+  public void testME2() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -242,6 +247,7 @@ public class ErrorModelTest {
     params.put("type", "me");
     params.put("observation", "/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -265,7 +271,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError() {
+  public void testMSEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -278,6 +284,7 @@ public class ErrorModelTest {
     params.put("type", "mse");
     params.put("observation", "/FIELD1");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -301,7 +308,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError2() {
+  public void testRMSEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -314,6 +321,7 @@ public class ErrorModelTest {
     params.put("type", "rmse");
     params.put("observation", "/FIELD10");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -337,7 +345,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError3() {
+  public void testMEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -350,6 +358,7 @@ public class ErrorModelTest {
     params.put("type", "me");
     params.put("observation", "/FIELD10");
     params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);

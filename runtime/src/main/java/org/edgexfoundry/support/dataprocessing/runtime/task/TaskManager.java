@@ -14,13 +14,18 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
@@ -37,7 +42,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.util.JarLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +77,6 @@ public final class TaskManager {
     if (!this.customJarDirectory.exists() || !this.customJarDirectory.isDirectory()) {
       throw new InvalidParameterException("Directory not found: " + customJarPath);
     }
-  }
-
-  public void terminate() {
-    LOGGER.info("TaskManager terminated.");
   }
 
   private List<String> getClassNames(File taskModelFile) throws Exception {
@@ -184,7 +184,7 @@ public final class TaskManager {
     uiField.setDefaultValue(taskParam.defaultValue());
     uiField.setTooltip(taskParam.tooltip());
     uiField.setFieldName(taskParam.key());
-    uiField.setUserInput(!taskField.getType().isEnum());
+    uiField.setUserInput(true);
 
     if (taskField.getType().isEnum()) {
       Object[] options = taskField.getType().getEnumConstants();
@@ -218,7 +218,10 @@ public final class TaskManager {
 
     int added = insertTaskModels(customFile, TaskOwner.USER);
     if (added == 0) {
-      customFile.delete(); // remove invalid custom task jar
+      boolean deleted = customFile.delete();// remove invalid custom task jar
+      if (!deleted) {
+        LOGGER.error("Failed to delete " + customFile.getPath());
+      }
       throw new RuntimeException("No new custom tasks found in " + filename);
     } else {
       return added;
@@ -253,7 +256,10 @@ public final class TaskManager {
     File customFile = saveFile(filename, inputStream);
     int updated = updateCustomTaskModel(existingBundle, customFile);
     if (updated == 0) {
-      customFile.delete(); // remove invalid custom task jar
+      boolean deleted = customFile.delete(); // remove invalid custom task jar
+      if (!deleted) {
+        LOGGER.error("Failed to delete: " + customFile.getPath());
+      }
       throw new RuntimeException("No custom tasks found in " + filename);
     } else {
       return updated;
@@ -295,7 +301,10 @@ public final class TaskManager {
         // Remove jar file, since it is not used anymore
         File jarFile = new File(existingBundle.getBundleJar());
         if (jarFile.exists()) {
-          jarFile.delete();
+          boolean deleted = jarFile.delete();
+          if (!deleted) {
+            LOGGER.error("Failed to delete: " + jarFile.getPath());
+          }
         }
       }
     } catch (Exception e) {
@@ -318,7 +327,7 @@ public final class TaskManager {
       TaskModel tm;
 
       try {
-        tm = JarLoader.newInstance(customFile, className, TaskModel.class);
+        tm = newInstance(customFile, className, TaskModel.class);
       } catch (Exception e) {
         LOGGER.error("Failed to load class " + className);
         LOGGER.error(e.getMessage(), e);
@@ -329,7 +338,7 @@ public final class TaskManager {
         continue;
       }
 
-      if (tm == null || !(tm instanceof TaskModel)) {
+      if (tm == null) {
         continue;
       } else if (tm.getName().equalsIgnoreCase(existingBundle.getName())
           && tm.getType().name().equalsIgnoreCase(existingBundle.getSubType())) {
@@ -370,11 +379,13 @@ public final class TaskManager {
     }
 
     int added = 0;
+
     for (String className : classNames) {
       TaskModel tm;
 
       try {
-        tm = JarLoader.newInstance(createdFile, className, TaskModel.class);
+//        tm = JarLoader.newInstance(createdFile, className, AbstractTaskModel.class);
+        tm = newInstance(createdFile, className, TaskModel.class);
       } catch (Exception e) {
         LOGGER.error("Failed to load class " + className);
         LOGGER.error(e.getMessage(), e);
@@ -385,7 +396,7 @@ public final class TaskManager {
         continue;
       }
 
-      if (tm == null || !(tm instanceof TaskModel)) {
+      if (tm == null) {
         continue;
       }
 
@@ -403,5 +414,47 @@ public final class TaskManager {
       }
     }
     return added;
+  }
+
+  public <T> T newInstance(File jarFile, String className, Class<T> clazz)
+      throws Exception {
+    if (jarFile == null || !jarFile.exists()) {
+      throw new RuntimeException("Invalid jar file");
+    } else if (StringUtils.isEmpty(className)) {
+      throw new RuntimeException("Invalid classname for " + jarFile.getName());
+    }
+
+    URL url = jarFile.toURI().toURL();
+    URLClassLoader taskClassLoader = URLClassLoader.newInstance(new URL[]{url},
+        this.getClass().getClassLoader());
+
+    Class classToInstantiate = Class.forName(className, true, taskClassLoader);
+    if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
+      LOGGER.info(className + " is an abstract class.");
+      return null;
+    } else {
+      if (hasParameterlessConstructor(classToInstantiate)) {
+        Object o = classToInstantiate.newInstance();
+        if (clazz.isInstance(o)) {
+          return clazz.cast(o);
+        } else {
+          LOGGER.info(className + " is not an instance of " + clazz.getCanonicalName());
+          return null;
+        }
+      } else {
+        LOGGER.info(className + " does not have parameter-less constructor");
+        return null;
+      }
+    }
+  }
+
+  private boolean hasParameterlessConstructor(Class clazz) {
+    for (Constructor constructor : clazz.getConstructors()) {
+      if (constructor.getParameterCount() == 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

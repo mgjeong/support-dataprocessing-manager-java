@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.job;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,6 +24,7 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 @JsonInclude(Include.NON_NULL)
 public class JobState extends Format {
 
+  private final String jobId;
   private State state;
   private Long startTime;
   private Long finishTime;
@@ -32,7 +34,6 @@ public class JobState extends Format {
   private String host;
   private int port;
 
-  private final String jobId;
   public JobState(String jobId) {
     this.jobId = jobId;
     this.state = State.CREATED;
@@ -69,16 +70,16 @@ public class JobState extends Format {
     return state;
   }
 
-  public JobState setState(State state) {
-    this.state = state;
-    return this;
-  }
-
   public JobState setState(String state) {
     this.state = State.toState(state);
     if (this.state == null) {
       throw new RuntimeException("Failed to update state to " + state);
     }
+    return this;
+  }
+
+  public JobState setState(State state) {
+    this.state = state;
     return this;
   }
 

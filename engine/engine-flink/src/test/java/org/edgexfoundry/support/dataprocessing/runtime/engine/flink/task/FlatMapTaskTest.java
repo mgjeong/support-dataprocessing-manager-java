@@ -52,7 +52,8 @@ public class FlatMapTaskTest {
   private static final String INNER_KEY = "nestedInnerKey";
   private static final String NESTED_KEY = OUTER_KEY + "/" + INNER_KEY;
   private static final String INNER_VALUE = "nestedInnerValue";
-
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
   private FlatMapTask flatMapTask;
 
   @BeforeClass
@@ -93,9 +94,6 @@ public class FlatMapTaskTest {
       jarFile.delete();
     }
   }
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   private Map<String, Object> applyProperties(String jarFile, String className) {
     Map<String, Object> properties = new HashMap<>();

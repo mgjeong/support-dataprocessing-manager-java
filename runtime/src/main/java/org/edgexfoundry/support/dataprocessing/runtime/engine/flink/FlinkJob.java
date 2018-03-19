@@ -20,8 +20,6 @@ import com.google.gson.annotations.SerializedName;
 
 public class FlinkJob {
 
-  public static String FAIL = "FAIL";
-
   private String jid;
   private String name;
   private String state;
@@ -30,7 +28,8 @@ public class FlinkJob {
   @SerializedName("end-time")
   private long endTime;
   private long duration;
-  private long last_modification;
+  @SerializedName("last_modification")
+  private long lastModification;
 
   private FlinkTask tasks;
 
@@ -66,12 +65,12 @@ public class FlinkJob {
     this.duration = duration;
   }
 
-  public long getLast_modification() {
-    return last_modification;
+  public long getLastModification() {
+    return lastModification;
   }
 
-  public void setLast_modification(long last_modification) {
-    this.last_modification = last_modification;
+  public void setLastModification(long lastModification) {
+    this.lastModification = lastModification;
   }
 
   public FlinkTask getTasks() {

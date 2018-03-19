@@ -20,6 +20,7 @@ import java.util.Map;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowSink;
 
 public class DeliverVertex implements ScriptVertex {
+
   WorkflowSink config;
 
   public DeliverVertex(WorkflowSink config) {
@@ -55,21 +56,21 @@ public class DeliverVertex implements ScriptVertex {
     }
 
     if (names != null) {
-      String result = "";
+      StringBuilder result = new StringBuilder();
       for (String name : names) {
-        result += generateScriptTailByTopic(dataType, deliverAddress, name);
+        result.append(generateScriptTailByTopic(dataType, deliverAddress, name));
       }
-      return result;
+      return result.toString();
     }
 
     if (topics == null) {
       return generateScriptTailByTopic(dataType, deliverAddress, null);
     } else {
-      String scriptTail = "";
+      StringBuilder scriptTail = new StringBuilder();
       for (String topic : topics) {
-        scriptTail += generateScriptTailByTopic(dataType, deliverAddress, topic);
+        scriptTail.append(generateScriptTailByTopic(dataType, deliverAddress, topic));
       }
-      return scriptTail;
+      return scriptTail.toString();
     }
   }
 

@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.task.model;
 
 import java.util.ArrayList;
@@ -91,7 +92,8 @@ public class ErrorModel extends AbstractTaskModel {
   public void setParam(TaskModelParam params) {
 
     if (params.containsKey("type")) {
-      this.algorithmType = ErrorFunction.MEASURE.valueOf(params.get("type").toString().toUpperCase());
+      this.algorithmType = ErrorFunction.MEASURE
+          .valueOf(params.get("type").toString().toUpperCase());
     }
     if (params.containsKey("observation")) {
       this.observation = params.get("observation").toString();
@@ -141,7 +143,7 @@ public class ErrorModel extends AbstractTaskModel {
         if (observationList.size() >= this.mWindowSize) {
           observationList.removeFirst();
         }
-        observationList.addLast(observe.doubleValue());
+        observationList.addLast(observe);
 
         for (int index = 0; index < inRecordKeys.size(); index++) {
           Number predict = in.getValue(inRecordKeys.get(index), Number.class);
@@ -150,10 +152,8 @@ public class ErrorModel extends AbstractTaskModel {
           if (temp == null) {
             value = new LinkedList<Number>();
             LOGGER.info("Instantiate new Linked List for : {}", inRecordKeys.get(index));
-          } else if (temp instanceof LinkedList) {
-            value = (LinkedList<Number>) temp;
           } else {
-            value = null;
+            value = (LinkedList<Number>) temp;
           }
 
           if (value != null) {
@@ -178,14 +178,14 @@ public class ErrorModel extends AbstractTaskModel {
         for (int index = 0; index < inRecordKeys.size(); index++) {
           ArrayList<Number> predict = in.getValue(inRecordKeys.get(index), ArrayList.class);
 
-          if (observe.size() == predict.size()) {
+          if (predict != null && observe.size() == predict.size()) {
             Double[] tArr = observe.toArray(new Double[0]);
             Double[] tObs = predict.toArray(new Double[0]);
 
             in.setValue(outRecordKeys.get(index), getAverageError(tArr, tObs));
           } else {
             LOGGER.error("Size of List not match Observe {} : Predict {}", observe.size(),
-                predict.size());
+                (predict != null ? predict.size() : -1));
           }
         }
       }

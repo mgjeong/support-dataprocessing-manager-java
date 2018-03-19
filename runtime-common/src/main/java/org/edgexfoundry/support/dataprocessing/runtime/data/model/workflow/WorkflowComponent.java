@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -114,6 +114,13 @@ public class WorkflowComponent extends Format {
     return config;
   }
 
+  public void setConfig(Config config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config.");
+    }
+    this.config = config;
+  }
+
   public String getBundleName() {
     return bundleName;
   }
@@ -128,13 +135,6 @@ public class WorkflowComponent extends Format {
 
   public void setBundleSubType(String bundleSubType) {
     this.bundleSubType = bundleSubType;
-  }
-
-  public void setConfig(Config config) {
-    if (config == null) {
-      throw new RuntimeException("Invalid config.");
-    }
-    this.config = config;
   }
 
   @JsonIgnore

@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
+import java.util.Collection;
 import java.util.UUID;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.junit.Assert;
@@ -59,6 +60,38 @@ public class JobTableManagerTest extends DatabaseTest {
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().contains("not found"));
       // success
+    }
+  }
+
+  @Test
+  public void testGetJobs() {
+    Job jobA = Job.create(UUID.randomUUID().toString(), 1L);
+    Job jobB = Job.create(UUID.randomUUID().toString(), 2L);
+    try {
+      jobTable.addJob(jobA);
+      jobTable.addJob(jobB);
+      Collection<Job> jobs = jobTable.getJobs();
+      Assert.assertTrue(!jobs.isEmpty());
+    } finally {
+      jobTable.removeJob(jobA.getId());
+      jobTable.removeJob(jobB.getId());
+    }
+  }
+
+  @Test
+  public void testGetJobsByWorkflow() {
+    Job jobA = Job.create(UUID.randomUUID().toString(), 1L);
+    Job jobB = Job.create(UUID.randomUUID().toString(), 2L);
+    try {
+      jobTable.addJob(jobA);
+      jobTable.addJob(jobB);
+      Collection<Job> jobs = jobTable.getJobsByWorkflow(System.currentTimeMillis());
+      Assert.assertTrue(jobs.isEmpty());
+      jobs = jobTable.getJobsByWorkflow(1L);
+      Assert.assertTrue(!jobs.isEmpty());
+    } finally {
+      jobTable.removeJob(jobA.getId());
+      jobTable.removeJob(jobB.getId());
     }
   }
 

@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -27,30 +28,15 @@ import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldTyp
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowComponentBundle extends Format {
 
-  public enum WorkflowComponentBundleType {
-    SOURCE, PROCESSOR, SINK, WORKFLOW, LINK;
-
-    public static WorkflowComponentBundleType toWorkflowComponentBundleType(String type) {
-      for (WorkflowComponentBundleType t : WorkflowComponentBundleType.values()) {
-        if (t.name().equalsIgnoreCase(type)) {
-          return t;
-        }
-      }
-      return null;
-    }
-  }
-
   private Long id;
   private String name;
   private WorkflowComponentBundleType type;
   private String streamingEngine;
   private String subType;
   private String bundleJar;
-
   private ComponentUISpecification workflowComponentUISpecification;
   private String transformationClass;
   private Boolean builtin;
-
   public WorkflowComponentBundle() {
 
   }
@@ -126,6 +112,19 @@ public class WorkflowComponentBundle extends Format {
 
   public void setBuiltin(Boolean builtin) {
     this.builtin = builtin;
+  }
+
+  public enum WorkflowComponentBundleType {
+    SOURCE, PROCESSOR, SINK, WORKFLOW, LINK;
+
+    public static WorkflowComponentBundleType toWorkflowComponentBundleType(String type) {
+      for (WorkflowComponentBundleType t : WorkflowComponentBundleType.values()) {
+        if (t.name().equalsIgnoreCase(type)) {
+          return t;
+        }
+      }
+      return null;
+    }
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)

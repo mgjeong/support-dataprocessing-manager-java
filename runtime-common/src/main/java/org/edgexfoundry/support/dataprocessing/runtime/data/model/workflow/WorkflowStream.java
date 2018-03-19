@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,6 +31,8 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowStream extends Format {
+
+  private static final long serialVersionUID = 1L;
 
   private Long id;
   private Long componentId;
@@ -138,12 +141,37 @@ public class WorkflowStream extends Format {
     SHUFFLE, FIELDS
   }
 
+  public enum SchemaType {
+    BOOLEAN(Boolean.class),
+    BYTE(Byte.class),
+    SHORT(Short.class),
+    INTEGER(Integer.class),
+    LONG(Long.class),
+    FLOAT(Float.class),
+    DOUBLE(Double.class),
+    STRING(String.class),
+    BINARY(byte[].class),
+    NESTED(Map.class),
+    ARRAY(List.class),
+    BLOB(InputStream.class);
+
+    private final Class<?> javaType;
+
+    SchemaType(Class<?> javaType) {
+      this.javaType = javaType;
+    }
+
+    public Class<?> getJavaType() {
+      return this.javaType;
+    }
+  }
+
   @JsonInclude(Include.NON_NULL)
-  public static class Field {
+  public static class Field extends Format {
 
     private String name;
     private SchemaType type;
-    boolean optional;
+    private boolean optional;
 
     public Field() {
 
@@ -171,31 +199,6 @@ public class WorkflowStream extends Format {
 
     public void setOptional(boolean optional) {
       this.optional = optional;
-    }
-  }
-
-  public enum SchemaType {
-    BOOLEAN(Boolean.class),
-    BYTE(Byte.class),
-    SHORT(Short.class),
-    INTEGER(Integer.class),
-    LONG(Long.class),
-    FLOAT(Float.class),
-    DOUBLE(Double.class),
-    STRING(String.class),
-    BINARY(byte[].class),
-    NESTED(Map.class),
-    ARRAY(List.class),
-    BLOB(InputStream.class);
-
-    private final Class<?> javaType;
-
-    SchemaType(Class<?> javaType) {
-      this.javaType = javaType;
-    }
-
-    public Class<?> getJavaType() {
-      return this.javaType;
     }
   }
 }

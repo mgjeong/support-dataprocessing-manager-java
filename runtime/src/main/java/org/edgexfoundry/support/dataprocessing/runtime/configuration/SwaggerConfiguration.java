@@ -53,8 +53,8 @@ public class SwaggerConfiguration {
   public MultipartConfigElement multipartConfigElement() {
     MultipartConfigFactory factory = new MultipartConfigFactory();
 
-    factory.setMaxFileSize(Settings.API_MAX_FILE_SIZE);
-    factory.setMaxRequestSize(Settings.API_MAX_REQUEST_SIZE);
+    factory.setMaxFileSize(Settings.getInstance().getApiMaxFileSize());
+    factory.setMaxRequestSize(Settings.getInstance().getApiMaxRequestSize());
 
     return factory.createMultipartConfig();
   }

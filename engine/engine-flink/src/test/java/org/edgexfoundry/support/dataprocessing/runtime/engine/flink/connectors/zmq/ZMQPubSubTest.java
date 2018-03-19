@@ -38,25 +38,6 @@ public class ZMQPubSubTest {
 
   private static long sentAt = 0L;
 
-  @Test
-  public void testPubSubListOfStreamData() {
-    ZMQSubscriber subscriber = new ZMQSubscriber();
-    ZMQPublisher publisher = new ZMQPublisher();
-    try {
-      publisher.start();
-      subscriber.start();
-
-      subscriber.join();
-      publisher.join();
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail(e.getMessage());
-    } finally {
-      subscriber.terminate();
-      publisher.terminate();
-    }
-  }
-
   private static List<DataSet> deserialize(byte[] b) throws Exception {
     ByteArrayInputStream bis = null;
     ObjectInput in = null;
@@ -109,6 +90,25 @@ public class ZMQPubSubTest {
           e.printStackTrace();
         }
       }
+    }
+  }
+
+  @Test
+  public void testPubSubListOfStreamData() {
+    ZMQSubscriber subscriber = new ZMQSubscriber();
+    ZMQPublisher publisher = new ZMQPublisher();
+    try {
+      publisher.start();
+      subscriber.start();
+
+      subscriber.join();
+      publisher.join();
+    } catch (Exception e) {
+      e.printStackTrace();
+      Assert.fail(e.getMessage());
+    } finally {
+      subscriber.terminate();
+      publisher.terminate();
     }
   }
 

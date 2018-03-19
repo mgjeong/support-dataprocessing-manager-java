@@ -20,18 +20,17 @@ import org.junit.Test;
 
 public class KernelFunctionTest {
 
-    @Test
-    public void calculateTest() {
-        double val = 1.0;
+  @Test
+  public void calculateTest() {
+    double val = 1.0;
 
+    KernelFunction.calculate(val, KernelFunction.KERNELTYPE.GAUSSIAN);
 
-        KernelFunction.calculate(val, KernelFunction.KERNELTYPE.GAUSSIAN);
+    KernelFunction.calculate(val, KernelFunction.KERNELTYPE.LOGISTIC);
 
-        KernelFunction.calculate(val, KernelFunction.KERNELTYPE.LOGISTIC);
+    KernelFunction.calculate(val, KernelFunction.KERNELTYPE.SIGMOID);
 
-        KernelFunction.calculate(val, KernelFunction.KERNELTYPE.SIGMOID);
+    KernelFunction.calculate(val, KernelFunction.KERNELTYPE.INVALID);
 
-        KernelFunction.calculate(val, KernelFunction.KERNELTYPE.INVALID);
-
-    }
+  }
 }

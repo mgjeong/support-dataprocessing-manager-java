@@ -35,6 +35,8 @@ import org.mockito.Mockito;
 public class SourceVertexTest {
 
   private static final Long TEST_ID = 1234L;
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   private SourceVertex initialize(Map<String, String> info) {
     WorkflowSource source = new WorkflowSource();
@@ -97,9 +99,6 @@ public class SourceVertexTest {
     SourceVertex testSource = initialize(properties);
     testSource.serve();
   }
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void testServeWithShortProperties() throws Exception {

@@ -14,117 +14,118 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.task;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModelParam;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskType;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @ApiModel(value = "Process", description = "Process")
 public class TaskFormat extends Format {
-    @ApiModelProperty(required = false)
-    private TaskType type;
-    @ApiModelProperty(required = true)
-    private String name;
-    @ApiModelProperty(required = true, dataType = "json")
-    private TaskModelParam params;
-    @ApiModelProperty(required = true)
-    private List<String> inrecord;
-    @ApiModelProperty(required = true)
-    private List<String> outrecord;
-    @ApiModelProperty(required = false)
-    private String jar = null;
-    @ApiModelProperty(required = false)
-    private String className = null;
 
-    private Long id;
+  @ApiModelProperty(required = false)
+  private TaskType type;
+  @ApiModelProperty(required = true)
+  private String name;
+  @ApiModelProperty(required = true, dataType = "json")
+  private TaskModelParam params;
+  @ApiModelProperty(required = true)
+  private List<String> inrecord;
+  @ApiModelProperty(required = true)
+  private List<String> outrecord;
+  @ApiModelProperty(required = false)
+  private String jar = null;
+  @ApiModelProperty(required = false)
+  private String className = null;
 
-    public TaskFormat() {
-        this(TaskType.INVALID, null, (TaskModelParam) null);
-    }
+  private Long id;
 
-    public TaskFormat(TaskFormat task) {
-        this(task.getType(), task.getName(), task.getParams());
-    }
+  public TaskFormat() {
+    this(TaskType.INVALID, null, (TaskModelParam) null);
+  }
 
-    public TaskFormat(TaskType type, String name, String params) {
-        this(type, name, TaskModelParam.create(params));
-    }
+  public TaskFormat(TaskFormat task) {
+    this(task.getType(), task.getName(), task.getParams());
+  }
 
-    public TaskFormat(TaskType type, String name, TaskModelParam params) {
-        setType(type);
-        setName(name);
-        setParams(params);
-        this.inrecord = new ArrayList<>();
-        this.outrecord = new ArrayList<>();
-    }
+  public TaskFormat(TaskType type, String name, String params) {
+    this(type, name, TaskModelParam.create(params));
+  }
 
-    public TaskModelParam getParams() {
-        return params;
-    }
+  public TaskFormat(TaskType type, String name, TaskModelParam params) {
+    setType(type);
+    setName(name);
+    setParams(params);
+    this.inrecord = new ArrayList<>();
+    this.outrecord = new ArrayList<>();
+  }
 
-    public void setParams(TaskModelParam params) {
-        this.params = params;
-    }
+  public TaskModelParam getParams() {
+    return params;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public void setParams(TaskModelParam params) {
+    this.params = params;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public TaskType getType() {
-        return type;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setType(TaskType type) {
-        this.type = type;
-    }
+  public TaskType getType() {
+    return type;
+  }
 
-    public List<String> getInrecord() {
-        return inrecord;
-    }
+  public void setType(TaskType type) {
+    this.type = type;
+  }
 
-    public void setInrecord(List<String> inrecord) {
-        this.inrecord = inrecord;
-    }
+  public List<String> getInrecord() {
+    return inrecord;
+  }
 
-    public List<String> getOutrecord() {
-        return outrecord;
-    }
+  public void setInrecord(List<String> inrecord) {
+    this.inrecord = inrecord;
+  }
 
-    public void setOutrecord(List<String> outrecord) {
-        this.outrecord = outrecord;
-    }
+  public List<String> getOutrecord() {
+    return outrecord;
+  }
 
-    public String getJar() {
-        return this.jar;
-    }
+  public void setOutrecord(List<String> outrecord) {
+    this.outrecord = outrecord;
+  }
 
-    public void setJar(String jar) {
-        this.jar = jar;
-    }
+  public String getJar() {
+    return this.jar;
+  }
 
-    public String getClassName() {
-        return this.className;
-    }
+  public void setJar(String jar) {
+    this.jar = jar;
+  }
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
+  public String getClassName() {
+    return this.className;
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public void setClassName(String className) {
+    this.className = className;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
 }

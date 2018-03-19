@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 public class MongoDbSink extends RichSinkFunction<DataSet> {
 
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSink.class);
 
   private final String ip;
@@ -38,10 +40,18 @@ public class MongoDbSink extends RichSinkFunction<DataSet> {
   private final String dbName;
   private final String tableName;
 
-  private MongoClient client = null;
-  private MongoDatabase db = null;
-  private MongoCollection<Document> table = null;
+  private transient MongoClient client = null;
+  private transient MongoDatabase db = null;
+  private transient MongoCollection<Document> table = null;
 
+  /**
+   * Class constructor specifying target DB.   *
+   *
+   * @param ip IP address or hostname of target MongoDB
+   * @param port port number of target MongoDB
+   * @param dbName Target database name
+   * @param tableName Target table name
+   */
   public MongoDbSink(String ip, int port, String dbName, String tableName) {
     this.ip = ip;
     this.port = port;

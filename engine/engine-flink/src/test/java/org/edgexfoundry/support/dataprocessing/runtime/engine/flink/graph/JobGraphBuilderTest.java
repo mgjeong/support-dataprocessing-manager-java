@@ -36,11 +36,10 @@ import org.mockito.Mockito;
 
 public class JobGraphBuilderTest {
 
-  StreamExecutionEnvironment env = Mockito.mock(StreamExecutionEnvironment.class);
   private static long count = 1;
-
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+  StreamExecutionEnvironment env = Mockito.mock(StreamExecutionEnvironment.class);
 
   @Test
   public void testGetInstanceWithNullEnvironment() throws Exception {
@@ -160,7 +159,7 @@ public class JobGraphBuilderTest {
     Assert.assertEquals(edgeMap.size(), 3);
 
     int total = 0;
-    for (Vertex vertex: edgeMap.keySet()) {
+    for (Vertex vertex : edgeMap.keySet()) {
       total += edgeMap.get(vertex).size();
     }
     Assert.assertEquals(total, 4);

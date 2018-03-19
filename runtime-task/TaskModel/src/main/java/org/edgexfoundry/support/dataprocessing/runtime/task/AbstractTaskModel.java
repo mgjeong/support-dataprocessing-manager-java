@@ -17,6 +17,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.util.List;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 
 public abstract class AbstractTaskModel implements TaskModel {
