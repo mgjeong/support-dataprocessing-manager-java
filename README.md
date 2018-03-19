@@ -200,6 +200,7 @@ $ cd tools/sample_request
 $ sed -i -e 's/localhost/{HOST_IP}/g'
 ```
 {HOST_IP} will be the IP address of the machine tested.
+(IP address on which an engine is running either container, or local machine)
 
 ### Join using Kapacitor ###
 1. Prepare input sources
