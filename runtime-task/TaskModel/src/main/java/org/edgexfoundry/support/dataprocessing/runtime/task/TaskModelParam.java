@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -219,6 +219,6 @@ public class TaskModelParam extends HashMap<String, Object> implements Serializa
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return null;
+        return "";
     }
 }

@@ -1,41 +1,53 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import java.util.HashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
 
 public final class EngineManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EngineManager.class);
-  //  HashMap<IP, Engine>
-  private static HashMap<String, Engine> engines = new HashMap<String, Engine>();
+  private final Map<String, Engine> engineMap;
 
+  private static EngineManager instance = null;
 
-  public static Engine getEngine(String host, EngineType engineType) {
-    Engine engine = engines.get(host);
-
-    if (null == engine) {
-      engine = EngineManager.createEngine(engineType, host);
+  public synchronized static EngineManager getInstance() {
+    if (instance == null) {
+      instance = new EngineManager();
     }
+    return instance;
+  }
 
+  private EngineManager() {
+    this.engineMap = new ConcurrentHashMap<>();
+  }
+
+  public synchronized Engine getEngine(String host, int port, EngineType engineType) {
+    String key = getKey(host, port, engineType);
+    Engine engine = engineMap.get(key);
+    if (engine == null) {
+      engine = EngineFactory.createEngine(engineType, host, port);
+      engineMap.put(key, engine);
+    }
     return engine;
   }
 
-  private static Engine createEngine(EngineType engineType, String host) {
-
-    Engine engine = null;
-
-    try {
-      String ip = host.substring(0, host.indexOf(":"));
-      int port = Integer.parseInt(host.substring(host.indexOf(":") + 1, host.length()));
-
-      engine = EngineFactory.createEngine(engineType, ip, port);
-      engines.put(host, engine);
-    } catch (NumberFormatException e) {
-      LOGGER.error(e.getMessage(), e);
-      engine = null;
-    }
-
-    return engine;
+  private String getKey(String host, int port, EngineType engineType) {
+    return String.format("%s_%s_%d", engineType.name(), host, port);
   }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 public final class Settings {
@@ -26,7 +27,57 @@ public final class Settings {
   public static final String DB_PATH = "DPFW.db";
   public static final String JDBC_PATH = "jdbc:sqlite:" + DOCKER_PATH + DB_PATH;
 
+  public static final String API_MAX_FILE_SIZE = "16MB";
+  public static final String API_MAX_REQUEST_SIZE = "32MB";
+
+  public static final long JOB_MONITORING_INTERVAL = 5 * 1000L; // in milliseconds
+
+  private static Settings instance = null;
+
   private Settings() {
 
+  }
+
+  public synchronized static Settings getInstance() {
+    if (instance == null) {
+      instance = new Settings();
+    }
+    return instance;
+  }
+
+  public String getDockerPath() {
+    return DOCKER_PATH;
+  }
+
+  public String getFwJarPath() {
+    return FW_JAR_PATH;
+  }
+
+  public String getCustomJarPath() {
+    return CUSTOM_JAR_PATH;
+  }
+
+  public String getResourcePath() {
+    return RESOURCE_PATH;
+  }
+
+  public String getDbPath() {
+    return DB_PATH;
+  }
+
+  public String getJdbcPath() {
+    return JDBC_PATH;
+  }
+
+  public String getApiMaxFileSize() {
+    return API_MAX_FILE_SIZE;
+  }
+
+  public String getApiMaxRequestSize() {
+    return API_MAX_REQUEST_SIZE;
+  }
+
+  public long getJobMonitoringInterval() {
+    return JOB_MONITORING_INTERVAL;
   }
 }

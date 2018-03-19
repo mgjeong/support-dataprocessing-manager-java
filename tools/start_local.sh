@@ -13,4 +13,3 @@ fi
 ##### Start Application #####
 echo "Starting Application..."
 (cd $framework_repo; java -jar ./runtime/target/manager-0.1.0-SNAPSHOT.jar)
-

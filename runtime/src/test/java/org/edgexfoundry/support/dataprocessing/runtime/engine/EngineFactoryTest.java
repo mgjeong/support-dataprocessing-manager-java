@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,45 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData.EngineType;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class EngineFactoryTest {
 
-    @Test
-    public void testCreateEngine() {
+  @Test
+  public void testCreateEngine() throws Exception {
+    Engine fw = EngineFactory.createEngine(WorkflowData.EngineType.FLINK, "localhost", 8081);
+    Assert.assertNotNull(fw);
+    fw = EngineFactory.createEngine(WorkflowData.EngineType.KAPACITOR, "localhost", 8081);
+    Assert.assertNotNull(fw);
+  }
 
-        try {
-            Engine fw = EngineFactory.createEngine(EngineType.Flink, "localhost", 8081);
+  @Test
+  public void testInvalidEngine() {
+    try {
+      EngineFactory.createEngine(null, "localhost", 1111);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
 
-            fw = EngineFactory.createEngine(EngineType.Kapacitor, "localhost", 8081);
-
-        } catch (RuntimeException e) {
-
-            e.printStackTrace();
-        }
     }
 
+    try {
+      EngineFactory.createEngine(EngineType.UNKNOWN, "localhost", 1111);
+      Assert.fail("Should not reach here.");
+    } catch (Exception e) {
+
+    }
+  }
+
+  @Test
+  public void testConstructor() {
+    // Is this really necessary?
+    EngineFactory engineFactory = new EngineFactory();
+    Assert.assertNotNull(engineFactory);
+  }
 }

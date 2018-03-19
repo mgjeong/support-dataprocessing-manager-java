@@ -40,11 +40,11 @@ rm $framework_dir/jar/task_user/*.jar
 
 ##### Copy task models #####
 echo "Copying task models..."
-find "$framework_repo/runtime-task/" -name \*SNAPSHOT.jar -exec cp {} "$framework_dir/jar/task/" \;
+find "$framework_repo/runtime-task/" -name \*SNAPSHOT-jar-with-dependencies.jar -exec cp {} "$framework_dir/jar/task/" \;
 rm $framework_dir/jar/task/task-model-*.jar
 
 echo "Copying engine-flink.jar..."
 cp $framework_repo/engine/engine-flink/target/engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar $framework_repo/runtime/resource/engine-flink.jar
 cp $framework_repo/engine/engine-flink/target/engine-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar $framework_dir/resource/engine-flink.jar
 
-echo "Done."
+echo "Done!"

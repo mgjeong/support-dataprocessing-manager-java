@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,38 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.flink.FlinkEngine;
 import org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.KapacitorEngine;
 
 public class EngineFactory {
 
-    public static Engine createEngine(EngineType engineType, String host, Integer port) {
-        final Engine engine;
+  /**
+   * Create an request generator depending on engine type Generally, it will make a job/request
+   * which is runnable on actual engines respectively.
+   *
+   * @param engineType Type of the engine to use
+   * @param host hostname of the engine
+   * @param port port number of the engine
+   * @return Request generator of specified engine
+   */
+  public static Engine createEngine(WorkflowData.EngineType engineType, String host, Integer port) {
+    final Engine engine;
 
-        switch (engineType) {
-            case Flink:
-                engine = new FlinkEngine(host, port);
-                break;
-            case Kapacitor:
-                engine = new KapacitorEngine(host, port);
-                break;
-            case Spark: // TODO
-            default:
-                throw new RuntimeException("Unsupported engine type selected.");
-        }
-        return engine;
+    switch (engineType) {
+      case FLINK:
+        engine = new FlinkEngine(host, port);
+        break;
+      case KAPACITOR:
+        engine = new KapacitorEngine(host, port);
+        break;
+      default:
+        throw new RuntimeException("Unsupported engine type selected.");
     }
+    return engine;
+  }
 }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.edgexfoundry.support.dataprocessing.runtime;
 
 import java.io.File;
+import org.edgexfoundry.support.dataprocessing.runtime.monitor.MonitoringManager;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,9 @@ public class Application extends SpringBootServletInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
+  // TODO: load settings from elsewhere
+  private static Settings settings = Settings.getInstance();
+
   private static void initialize() throws Exception {
 
     // 1. Check if resource directory exists, make and copy resources if necessary
@@ -38,13 +42,16 @@ public class Application extends SpringBootServletInitializer {
     makeDatabaseIfNecessary();
 
     // 3. Run task manager to scan for tasks
-    TaskManager.getInstance().initialize();
-    TaskManager.getInstance().scanTaskModel(Settings.FW_JAR_PATH);
+    TaskManager.getInstance().initialize(settings.getCustomJarPath());
+    TaskManager.getInstance().scanBuiltinTaskModel(settings.getFwJarPath());
+
+    // 4. Run Monitoring
+    MonitoringManager.getInstance().startMonitoring();
   }
 
   private static void makeDatabaseIfNecessary() throws Exception {
     // Check database
-    File db = new File(Settings.DOCKER_PATH + Settings.DB_PATH);
+    File db = new File(settings.getDockerPath() + settings.getDbPath());
     if (!db.exists()) {
       LOGGER.info("Executing bootstrap on {}", db.getAbsolutePath());
       Bootstrap bootstrap = new Bootstrap();
@@ -54,15 +61,15 @@ public class Application extends SpringBootServletInitializer {
 
   private static void makeResourceDirectoryIfNecessary() throws Exception {
     // Check jar directory
-    File fwJarPath = new File(Settings.FW_JAR_PATH);
+    File fwJarPath = new File(settings.getFwJarPath());
     makeDirectory(fwJarPath);
 
     // Check custom jar directory
-    File customJarPath = new File(Settings.CUSTOM_JAR_PATH);
+    File customJarPath = new File(settings.getCustomJarPath());
     makeDirectory(customJarPath);
 
     // Check resource directory
-    File resourcePath = new File(Settings.RESOURCE_PATH);
+    File resourcePath = new File(settings.getResourcePath());
     makeDirectory(resourcePath);
 
     // Copy resources
@@ -81,19 +88,12 @@ public class Application extends SpringBootServletInitializer {
   }
 
   private static void terminate() {
-    TaskManager.getInstance().terminate();
+    MonitoringManager.getInstance().terminate();
   }
 
   public static void main(String[] args) throws Exception {
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> terminate()));
     initialize();
-
     SpringApplication.run(Application.class, args);
-
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        terminate();
-      }
-    });
   }
 }

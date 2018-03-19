@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,14 @@ import org.slf4j.LoggerFactory;
 
 public class EzmqSink extends RichSinkFunction<DataSet> implements EZMQCallback {
 
+  private static final long serialVersionUID = 1L;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(EzmqSink.class);
 
   private final int port;
 
-  private EZMQAPI ezmqApi = null;
-  private EZMQPublisher ezmqPublisher = null;
+  private transient EZMQAPI ezmqApi = null;
+  private transient EZMQPublisher ezmqPublisher = null;
 
   public EzmqSink(int port) {
     this.port = port;

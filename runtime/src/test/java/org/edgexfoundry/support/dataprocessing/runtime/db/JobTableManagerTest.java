@@ -1,6 +1,23 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.db;
 
 import java.util.Collection;
+import java.util.UUID;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -16,7 +33,8 @@ public class JobTableManagerTest extends DatabaseTest {
   @BeforeClass
   public static void setup() throws Exception {
     jobTable = JobTableManager.getInstance();
-    java.lang.reflect.Field databaseField = AbstractStorageManager.class.getDeclaredField("database");
+    java.lang.reflect.Field databaseField = AbstractStorageManager.class
+        .getDeclaredField("database");
     databaseField.setAccessible(true);
     databaseField.set(jobTable,
         DatabaseManager.getInstance().getDatabase("jdbc:sqlite:" + testDB.getAbsolutePath()));
@@ -27,35 +45,17 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testGettingExistingJob() {
-    Job job = Job.create(1L);
-    job = jobTable.addOrUpdateWorkflowJob(job);
-    Assert.assertNotNull(job);
-
-    try {
-      Collection<Job> jobs = jobTable.listWorkflowJobs(1L);
-      Assert.assertNotNull(jobs);
-      Assert.assertEquals(1, jobs.size());
-
-      jobTable.getWorkflowJob(job.getId());
-    } finally {
-      // Remove job
-      jobTable.removeWorkflowJob(job.getId());
-    }
-  }
-
-  @Test
   public void testGettingNonExistingJob() {
     // Invalid param
     try {
-      jobTable.getWorkflowJob(null);
+      jobTable.getJobById(null);
       Assert.fail("Should not reach here");
     } catch (Exception e) {
       // success
     }
 
     try {
-      jobTable.getWorkflowJob("non-existing-job");
+      jobTable.getJobById("non-existing-job");
       Assert.fail("Should not reach here");
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().contains("not found"));
@@ -64,20 +64,53 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testAddWorkflowJobState() {
-    Job job = Job.create(2L);
+  public void testGetJobs() {
+    Job jobA = Job.create(UUID.randomUUID().toString(), 1L);
+    Job jobB = Job.create(UUID.randomUUID().toString(), 2L);
     try {
-      jobTable.addOrUpdateWorkflowJobState(job.getId(), job.getState());
+      jobTable.addJob(jobA);
+      jobTable.addJob(jobB);
+      Collection<Job> jobs = jobTable.getJobs();
+      Assert.assertTrue(!jobs.isEmpty());
     } finally {
-      jobTable.removeWorkflowJob(job.getId());
+      jobTable.removeJob(jobA.getId());
+      jobTable.removeJob(jobB.getId());
     }
   }
 
   @Test
-  public void testAddInvalidWorkflowJobState() {
-    Job job = Job.create(3L);
+  public void testGetJobsByWorkflow() {
+    Job jobA = Job.create(UUID.randomUUID().toString(), 1L);
+    Job jobB = Job.create(UUID.randomUUID().toString(), 2L);
     try {
-      jobTable.addOrUpdateWorkflowJobState(job.getId(), null);
+      jobTable.addJob(jobA);
+      jobTable.addJob(jobB);
+      Collection<Job> jobs = jobTable.getJobsByWorkflow(System.currentTimeMillis());
+      Assert.assertTrue(jobs.isEmpty());
+      jobs = jobTable.getJobsByWorkflow(1L);
+      Assert.assertTrue(!jobs.isEmpty());
+    } finally {
+      jobTable.removeJob(jobA.getId());
+      jobTable.removeJob(jobB.getId());
+    }
+  }
+
+  @Test
+  public void testUpdateJobState() {
+    Job job = Job.create(UUID.randomUUID().toString(), 2L);
+    try {
+      jobTable.addJob(job);
+      jobTable.updateJobState(job.getState());
+    } finally {
+      jobTable.removeJob(job.getId());
+    }
+  }
+
+  @Test
+  public void testAddInvalidJobState() {
+    Job job = Job.create(UUID.randomUUID().toString(), 3L);
+    try {
+      jobTable.updateJobState(null);
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success
@@ -85,19 +118,19 @@ public class JobTableManagerTest extends DatabaseTest {
   }
 
   @Test
-  public void testAddWorkflowJob() {
-    Job job = Job.create(4L);
+  public void testAddJob() {
+    Job job = Job.create(UUID.randomUUID().toString(), 4L);
     try {
-      jobTable.addOrUpdateWorkflowJob(job);
+      jobTable.addJob(job);
     } finally {
-      jobTable.removeWorkflowJob(job.getId());
+      jobTable.removeJob(job.getId());
     }
   }
 
   @Test
-  public void testAddInvalidWorkflowJob() {
+  public void testAddInvalidJob() {
     try {
-      jobTable.addOrUpdateWorkflowJob(null);
+      jobTable.addJob(null);
       Assert.fail("Should not reach here.");
     } catch (Exception e) {
       // success

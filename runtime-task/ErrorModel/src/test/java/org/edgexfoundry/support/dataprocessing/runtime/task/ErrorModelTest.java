@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
  *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
+import org.edgexfoundry.support.dataprocessing.runtime.task.model.ErrorModel;
 import java.util.ArrayList;
 import java.util.List;
-import org.edgexfoundry.support.dataprocessing.runtime.task.model.ErrorModel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -78,13 +78,8 @@ public class ErrorModelTest {
 
   @Test
   public void testGetName() {
-
     ErrorModel model = new ErrorModel();
-
     Assert.assertEquals("error", model.getName());
-
-    Assert.assertNotNull(model.getDefaultParam());
-
   }
 
   @Test
@@ -94,16 +89,14 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    interval.put("time", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     model.setParam(params);
   }
 
   @Test
-  public void testPrediction() {
+  public void testMSE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -116,9 +109,8 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "mse");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -139,7 +131,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction2() {
+  public void testRMSE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -152,9 +144,8 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "rmse");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -174,7 +165,7 @@ public class ErrorModelTest {
     }
   }
   @Test
-  public void testPrediction3() {
+  public void testMAE() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -187,9 +178,8 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "mae");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -209,7 +199,7 @@ public class ErrorModelTest {
     }
   }
   @Test
-  public void testPrediction4() {
+  public void testME() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -222,9 +212,8 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "me");
     params.put("observation", "/records/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -245,7 +234,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPrediction5() {
+  public void testME2() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -257,9 +246,8 @@ public class ErrorModelTest {
     TaskModelParam params = new TaskModelParam();
     params.put("type", "me");
     params.put("observation", "/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -283,7 +271,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError() {
+  public void testMSEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -293,11 +281,10 @@ public class ErrorModelTest {
     List<String> output = new ArrayList<>();
     output.add("/Out1");
     TaskModelParam params = new TaskModelParam();
-    params.put("type", "aa");
+    params.put("type", "mse");
     params.put("observation", "/FIELD1");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -321,7 +308,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError2() {
+  public void testRMSEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -331,11 +318,10 @@ public class ErrorModelTest {
     List<String> output = new ArrayList<>();
     output.add("/Out1");
     TaskModelParam params = new TaskModelParam();
-    params.put("type", "aa");
+    params.put("type", "rmse");
     params.put("observation", "/FIELD10");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);
@@ -359,7 +345,7 @@ public class ErrorModelTest {
   }
 
   @Test
-  public void testPredictionError3() {
+  public void testMEAbnormal() {
     List<String> target = new ArrayList<>();
     for (int index = 2; index <= 3; index++) {
       //target.add("/FIELD"+index);
@@ -369,11 +355,10 @@ public class ErrorModelTest {
     List<String> output = new ArrayList<>();
     output.add("/Out1");
     TaskModelParam params = new TaskModelParam();
-    params.put("type", "aa");
+    params.put("type", "me");
     params.put("observation", "/FIELD10");
-    TaskModelParam interval = new TaskModelParam();
-    interval.put("data", 3);
-    params.put("interval", interval);
+    params.put("windowSize", 3);
+    params.put("windowOption", "TIME");
 
     ErrorModel model = new ErrorModel();
     model.setParam(params);

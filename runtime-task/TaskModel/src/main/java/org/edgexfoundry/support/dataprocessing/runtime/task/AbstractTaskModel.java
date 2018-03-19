@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.util.List;
+import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskModel;
+import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam;
 import org.edgexfoundry.support.dataprocessing.runtime.task.TaskParam.UiFieldType;
 
 public abstract class AbstractTaskModel implements TaskModel {

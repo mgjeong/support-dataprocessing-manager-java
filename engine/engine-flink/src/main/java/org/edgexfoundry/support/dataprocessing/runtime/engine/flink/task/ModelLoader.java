@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.task;
 
 import java.io.File;
@@ -16,9 +32,15 @@ public class ModelLoader {
   private static final Logger LOGGER = LoggerFactory.getLogger(ModelLoader.class);
   private URLClassLoader urlClassLoader = null;
   private ClassLoader classLoader = null;
-  private String jarPath = null;
+  private String jarPath;
 
-  public ModelLoader(String jarPath, ClassLoader classLoader) throws Exception {
+  /**
+   * Class constructor specifying model jar path and classloader.
+   *
+   * @param jarPath Task model jar path in the job jar file
+   * @param classLoader Classloader to use for task model
+   */
+  public ModelLoader(String jarPath, ClassLoader classLoader) {
     if (null == jarPath) {
       throw new NullPointerException("Jar path should be specified");
     }
@@ -27,6 +49,13 @@ public class ModelLoader {
     this.classLoader = classLoader;
   }
 
+  /**
+   * Returns TaskModel object that is loaded from a jar for task model.
+   *
+   * @param modelName Class name of task model to load
+   * @return TaskModel object dynamically loaded from the given model
+   * @throws Exception If loading the class named model name is failed.
+   */
   public TaskModel newInstance(String modelName) throws Exception {
     loadJar(jarPath);
     Class<TaskModel> cls = getClassInstance(modelName);
@@ -55,8 +84,9 @@ public class ModelLoader {
     LOGGER.info("HH {}", targetJar.getAbsolutePath());
     if (!targetJar.exists()) {
       LOGGER.info("HH {}", getClass().getResource("/" + jarPath));
-      InputStream jarStream = getClass().getResourceAsStream(inJarPath);
-      Files.copy(jarStream, targetJar.getAbsoluteFile().toPath());
+      try (InputStream jarStream = getClass().getResourceAsStream(inJarPath)) {
+        Files.copy(jarStream, targetJar.getAbsoluteFile().toPath());
+      }
     }
 
     this.urlClassLoader = new URLClassLoader(new URL[]{targetJar.toURI().toURL()},

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,29 @@
 
 package org.edgexfoundry.support.dataprocessing.runtime.engine;
 
-import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+import java.util.List;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.Job;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.job.JobState;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowData;
+
+import java.util.ArrayList;
 
 public interface Engine {
 
   /**
-   * Creates an engine job instance from workflow data
+   * Creates a job
    */
-  Job create(WorkflowData workflow) throws Exception;
+  void create(Job job) throws Exception;
 
   /**
    * Runs an engine job
    */
-  Job run(Job job) throws Exception;
+  void run(Job job) throws Exception;
 
-  Job stop(Job job) throws Exception;
+  void stop(Job job) throws Exception;
 
-  Job delete(Job job) throws Exception;
+  void delete(Job job) throws Exception;
+
+  boolean updateMetrics(JobState jobState) throws Exception;
 }
 

@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.task;
 
 import static org.mockito.Mockito.mock;
@@ -14,6 +30,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.util.Collector;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.task.TestModel;
 import org.edgexfoundry.support.dataprocessing.runtime.task.DataSet;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -35,7 +52,8 @@ public class FlatMapTaskTest {
   private static final String INNER_KEY = "nestedInnerKey";
   private static final String NESTED_KEY = OUTER_KEY + "/" + INNER_KEY;
   private static final String INNER_VALUE = "nestedInnerValue";
-
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
   private FlatMapTask flatMapTask;
 
   @BeforeClass
@@ -76,9 +94,6 @@ public class FlatMapTaskTest {
       jarFile.delete();
     }
   }
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   private Map<String, Object> applyProperties(String jarFile, String className) {
     Map<String, Object> properties = new HashMap<>();

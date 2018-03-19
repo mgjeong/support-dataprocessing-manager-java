@@ -6,17 +6,18 @@ target/
 target/*
 .idea/
 .idea/*
+**/dependency-reduced-pom.xml
 
 ### Temporary resources for Docker ###
 docker_files/resources/*
 **/docker_files/resources/*
 
-
 ### Binary Executables after builds ###
-engine/engine-kapacitor/inject
-engine/engine-kapacitor/deliver
-
+runtime/resource/engine-flink.jar
 
 ### VIM ###
 *.swp
 
+### svace ###
+.svace-dir/*
+report/*

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017 Samsung Electronics All Rights Reserved.
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.engine.flink.connectors.websocket;
 
 import io.netty.bootstrap.Bootstrap;
@@ -118,9 +119,9 @@ public class WebSocketServerSinkTest {
   private static class WebClient {
 
     private final URI uri;
-    private Channel clientChannel;
     private final EventLoopGroup group = new NioEventLoopGroup();
     private final WebSocketVersion webSocketVersion;
+    private Channel clientChannel;
 
     WebClient(int port) {
       this(port, WebSocketVersion.V13);
@@ -244,4 +245,3 @@ public class WebSocketServerSinkTest {
     }
   }
 }
-

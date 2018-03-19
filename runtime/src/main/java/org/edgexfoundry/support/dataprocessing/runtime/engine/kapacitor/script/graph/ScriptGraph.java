@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.edgexfoundry.support.dataprocessing.runtime.engine.kapacitor.script.graph;
 
 import java.util.ArrayList;
@@ -29,12 +45,11 @@ public class ScriptGraph {
     this.jobId = jobId;
   }
 
-  public ScriptGraph initialize() {
-    this.processingOrder = TopologicalSort();
-    return this;
+  public void initialize() {
+    this.processingOrder = topologicalSort();
   }
 
-  private List<ScriptVertex> TopologicalSort() {
+  private List<ScriptVertex> topologicalSort() {
     Map<ScriptVertex, State> state = new HashMap<>();
     List<ScriptVertex> res = new ArrayList<>();
     for (ScriptVertex component : edges.keySet()) {
@@ -49,7 +64,7 @@ public class ScriptGraph {
   private List<ScriptVertex> dfs(ScriptVertex current, Map<ScriptVertex, State> state) {
     List<ScriptVertex> res = new ArrayList<>();
     if (state.get(current) == State.UNVISITED) {
-      throw new IllegalStateException("Cycle");
+      throw new IllegalStateException("Cycle is detected. Failed to compose job graph");
     }
     state.put(current, State.UNVISITED);
     List<ScriptVertex> adjVertices = adjacent(current);
@@ -69,13 +84,19 @@ public class ScriptGraph {
     return edges.get(current);
   }
 
-  public String generateScript() throws Exception {
-    String jobScript = "";
+  /**
+   * Compose scripts from the graph and generate Kapacitor script.
+   * Automatically it uses user-defined functions in Kapacitor for EdgeX message framework
+   * when it comes to sourcing and sinking.
+   * @return Kapacitor script from the given graph
+   */
+  public String generateScript() {
+    StringBuffer jobScript = new StringBuffer();
     for (ScriptVertex vertex : processingOrder) {
-      jobScript += vertex.getScript() + "\n";
+      jobScript.append(vertex.getScript() + "\n");
     }
 
-    return jobScript;
+    return jobScript.toString();
   }
 
 }

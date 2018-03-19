@@ -26,9 +26,9 @@ COPY run.sh /
 
 # Framework environment variables
 ENV FW_PATH /runtime
-ENV ENGINE_PATH ${FW_PATH}/resource
-ENV FW_JAR /runtime.jar
 ENV FW_HA ${FW_PATH}/ha
+ENV ENGINE_PATH ${FW_HA}/resource
+ENV FW_JAR /manager.jar
 
 # Deploy runtime
 RUN mkdir -p $ENGINE_PATH/task

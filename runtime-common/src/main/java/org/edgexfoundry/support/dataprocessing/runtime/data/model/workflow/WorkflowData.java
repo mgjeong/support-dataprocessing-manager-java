@@ -1,19 +1,36 @@
+/*******************************************************************************
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
+import org.edgexfoundry.support.dataprocessing.runtime.data.model.Format;
 
 @JsonInclude(Include.NON_NULL)
-public class WorkflowData {
+public class WorkflowData extends Format {
+
+  private static final long serialVersionUID = 1L;
 
   private Long workflowId;
   private String workflowName;
@@ -23,14 +40,6 @@ public class WorkflowData {
   private List<WorkflowProcessor> processors = new ArrayList<>();
   private List<WorkflowEdge> edges = new ArrayList<>();
   private WorkflowEditorMetadata workflowEditorMetadata;
-
-  // Make it transient so that gson does not parse this
-  @JsonIgnore
-  private transient final ObjectMapper mapper = new ObjectMapper();
-
-  public enum EngineType {
-    MULTI, FLINK, KAPACITOR, UNKNOWN
-  }
 
   public WorkflowData() {
 
@@ -44,7 +53,7 @@ public class WorkflowData {
     this.workflowName = workflowName;
   }
 
-  @JsonProperty("config")
+  @JsonIgnore
   public String getConfigStr() {
     try {
       if (!this.config.isEmpty()) {
@@ -57,23 +66,18 @@ public class WorkflowData {
     }
   }
 
-  @JsonIgnore
+  @JsonProperty("config")
   public Map<String, Object> getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(String configStr) {
-    try {
-      if (StringUtils.isEmpty(configStr)) {
-        throw new RuntimeException("Invalid config");
-      }
-      this.config = mapper
-          .readValue(configStr, new TypeReference<Map<String, Object>>() {
-          });
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+  public void setConfig(Map<String, Object> config) {
+    if (config == null) {
+      throw new RuntimeException("Invalid config");
     }
+
+    this.config = config;
   }
 
   public List<WorkflowSource> getSources() {
@@ -147,6 +151,7 @@ public class WorkflowData {
     this.workflowId = workflowId;
   }
 
+  @JsonIgnore
   public EngineType getEngineType() {
     EngineType engineType = null;
 
@@ -172,5 +177,9 @@ public class WorkflowData {
     }
 
     return engineType;
+  }
+
+  public enum EngineType {
+    MULTI, FLINK, KAPACITOR, UNKNOWN
   }
 }
