@@ -6,6 +6,7 @@ target/
 target/*
 .idea/
 .idea/*
+**/dependency-reduced-pom.xml
 
 ### Temporary resources for Docker ###
 docker_files/resources/*
@@ -19,3 +20,4 @@ runtime/resource/engine-flink.jar
 
 ### svace ###
 .svace-dir/*
+report/*

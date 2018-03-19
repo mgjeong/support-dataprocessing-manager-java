@@ -327,7 +327,7 @@ public final class TaskManager {
       TaskModel tm;
 
       try {
-        tm = JarLoader.newInstance(customFile, className, TaskModel.class);
+        tm = newInstance(customFile, className, TaskModel.class);
       } catch (Exception e) {
         LOGGER.error("Failed to load class " + className);
         LOGGER.error(e.getMessage(), e);
