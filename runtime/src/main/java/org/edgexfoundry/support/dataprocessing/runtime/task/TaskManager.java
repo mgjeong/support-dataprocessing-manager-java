@@ -41,7 +41,6 @@ import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.Workf
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.UIField;
 import org.edgexfoundry.support.dataprocessing.runtime.data.model.workflow.WorkflowComponentBundle.WorkflowComponentBundleType;
 import org.edgexfoundry.support.dataprocessing.runtime.db.WorkflowTableManager;
-import org.edgexfoundry.support.dataprocessing.runtime.util.JarLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
