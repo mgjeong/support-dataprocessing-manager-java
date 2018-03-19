@@ -37,6 +37,8 @@
                 </includes>
               </artifactSet>
             </configuration>
+            <shadedArtifactAttached>true</shadedArtifactAttached>
+            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
           </execution>
         </executions>
       </plugin>

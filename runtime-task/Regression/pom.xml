@@ -36,6 +36,8 @@
                   <include>org.edgexfoundry.*:*</include>
                 </includes>
               </artifactSet>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
             </configuration>
           </execution>
         </executions>
