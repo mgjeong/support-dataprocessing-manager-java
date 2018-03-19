@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
+
 package org.edgexfoundry.support.dataprocessing.runtime.task;
 
 import java.io.File;
@@ -423,15 +424,13 @@ public final class TaskManager {
       throw new RuntimeException("Invalid classname for " + jarFile.getName());
     }
 
-
     URL url = jarFile.toURI().toURL();
     URLClassLoader taskClassLoader = URLClassLoader.newInstance(new URL[]{url},
         this.getClass().getClassLoader());
 
-
     Class classToInstantiate = Class.forName(className, true, taskClassLoader);
     if (Modifier.isAbstract(classToInstantiate.getModifiers())) {
-      LOGGER.error(className + " is an abstract class.");
+      LOGGER.info(className + " is an abstract class.");
       return null;
     } else {
       if (hasParameterlessConstructor(classToInstantiate)) {
@@ -439,11 +438,11 @@ public final class TaskManager {
         if (clazz.isInstance(o)) {
           return clazz.cast(o);
         } else {
-          LOGGER.error(className + " is not an instance of " + clazz.getCanonicalName());
+          LOGGER.info(className + " is not an instance of " + clazz.getCanonicalName());
           return null;
         }
       } else {
-        LOGGER.error(className + " does not have parameter-less constructor");
+        LOGGER.info(className + " does not have parameter-less constructor");
         return null;
       }
     }
